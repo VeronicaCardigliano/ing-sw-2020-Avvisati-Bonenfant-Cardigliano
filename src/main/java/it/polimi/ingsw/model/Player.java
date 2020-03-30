@@ -33,17 +33,17 @@ public class Player {
         builders.add(builder2);
     }
 
-    public void setGodCard (GodCard godCard) throws IllegalArgumentException {
-        if (godCard == null)
-            throw new IllegalArgumentException ("GodCard can't be null");
-        this.godCard = godCard;
-    }
-
-    public List<Builder> getBuilders () {
-        return builders;
-    }
-
-    public GodCard getGodCard () {
-        return godCard;
-    }
+//    public void setGodCard (GodCard godCard) throws IllegalArgumentException {
+//        if (godCard == null)
+//            throw new IllegalArgumentException ("GodCard can't be null");
+//        this.godCard = godCard;
+//    }
+//
+//    public List<Builder> getBuilders () {
+//        return builders;
+//    }
+//
+//    public GodCard getGodCard () {
+//        return godCard;
+//    }
 }
