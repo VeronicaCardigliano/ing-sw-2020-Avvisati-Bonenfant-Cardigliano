@@ -1,0 +1,78 @@
+{
+  "_comment": "This is a comment and should not be parsed. Default: numberOfMoves:1, pushForce:0, numberOfBuilds:1, canBuildDomeEverywhere=false, secondBuildSameSpaceNotDome=false, secondBuildSameSpaceNotDome=false, canBuildBefore=false, downStepsToWin=4",
+
+  "default":
+  {"name": "default",
+    "description": "default GodCard. Has no special power."},
+
+  "Apollo":
+  {"name": "Apollo",
+    "type": "MOVE",
+    "description": "Your Worker may move into an opponent Worker’s space by forcing their yours just vacated. ",
+    "states": [["MOVE", "BUILD"]],
+    "pushForce": -1},
+
+  "Artemis":
+  {"name": "Artemis",
+    "type": "MOVE",
+    "description": "Your Worker may move one additional time, but no back to its initial space",
+    "numberOfMoves": 2,
+    "secondMoveDiffDest": true},
+
+  "Athena":
+  {"name": "Athena",
+    "type": "OPPONENTS",
+    "description": "If one of your Workers moved up on your last turn, opponent Workers cannot move up this turn",
+    "activeOnMoveUp": true;
+  },
+
+  "Atlas":
+  {"name": "Atlas",
+    "type": "BUILD",
+    "description": "Your Worker may build a dome at any level",
+    "canBuildDomeEverywhere": true},
+
+  "Demeter":
+  {"name": "Demeter",
+    "type": "BUILD",
+    "description": "Your Worker may build one additional time, but not on the same space",
+    "numberOfBuilds": 2,
+    "states": [["MOVE", "BUILD", "BUILD"]],
+    "secondBuildDiffDest": true},
+
+  "Hephaestus":
+  {"name": "Hephaestus",
+    "type": "BUILD",
+    "description": "Your Worker may build one additional block (not dome) on top of your first block",
+    "states": [["MOVE", "BUILD", "BUILD"]],
+    "numberOfBuilds": 2,
+    "secondBuildDiffDest": false,
+    "secondBuildNotDome": true},
+
+  "Minotaur":
+  {"name": "Minotaur",
+    "type": "MOVE",
+    "description": "Your Worker may move into an opponent Worker’s space, if their Worker can be forced one space straight backwards to an unoccupied space at any level",
+    "pushForce": 1},
+
+  "Pan":
+  {"name": "Pan",
+    "type": "WIN",
+    "description": "You also win if your Worker moves down two or more levels",
+    "minimumDownStepsToWin": 2},
+
+  "Chronus":
+  {"name": "Chronus",
+    "type": "WIN",
+    "description": "You also win when there are at least five complete towers on the board",
+    "completeTowersToWin": 2},
+
+  "Prometheus":
+  {"name": "Prometheus",
+    "type": "TURN",
+    "description": "If your worker does not move up, it may build both before and after moving",
+    "states": [["MOVE", "BUILD"],
+                ["BUILD", "MOVE", "BUILD"]],
+    "canBuildBefore": true}
+
+}

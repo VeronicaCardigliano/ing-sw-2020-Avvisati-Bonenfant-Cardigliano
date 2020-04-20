@@ -6,6 +6,7 @@
 
   <groupId>it.polimi.ingsw</groupId>
   <artifactId>AM24</artifactId>
+
   <version>1.0-SNAPSHOT</version>
 
   <name>AM24</name>
@@ -31,6 +32,11 @@
       <version>5.3.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+    <groupId>org.json</groupId>
+    <artifactId>json</artifactId>
+    <version>20190722</version>
+  </dependency>
   </dependencies>
 
 
