@@ -1,97 +1,101 @@
 package it.polimi.ingsw.model;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
 public class CellTest {
-    Cell tested = new Cell(3, 4);
-    Builder testBuilder = new Builder(new Player("A"));
 
+    /**
+     * Dimension of IslandBoard is 5x5, so the limits of the coordinates are dimension - 1 and dimension - 1
+     */
+    @Test
+    public void raiseExceptionIfWrongCoordinates() {
+        assertThrows(IllegalArgumentException.class, () -> new Cell(-1,4));
+        assertThrows(IllegalArgumentException.class, () -> new Cell(1,-3));
+        assertThrows(IllegalArgumentException.class, () -> new Cell(IslandBoard.dimension,4));
+        assertThrows(IllegalArgumentException.class, () -> new Cell(1,IslandBoard.dimension));
+    }
 
     @Test
-    public void basicTest(){
+    public void correctValuesAtConstruction(){
+        Cell cell = new Cell(3,4);
 
         //Initial values
-        assertEquals(tested.getHeight(), 0);
-        assertEquals(tested.isDomePresent(), false);
-        assertEquals(tested.getBuilder(), null);
-        assertEquals(tested.getIcoordinate(),3);
-        assertEquals(tested.getJcoordinate(),4);
+        assertEquals(0, cell.getHeight());
+        assertFalse(cell.isDomePresent());
+        assertNull(cell.getBuilder());
+        assertEquals(3, cell.getI());
+        assertEquals(4, cell.getJ());
 
     }
 
     @Test
-    public void occupantTest(){
+    public void canSetNewOccupantOnlyIfNotBusy() {
+        Cell cell = new Cell(3, 4);
+        Builder builder1 = new Builder(new Player("thomas"), Builder.BuilderColor.WHITE);
+        Builder builder2 = new Builder(new Player("giulio"), Builder.BuilderColor.GREY);
 
-        Cell tested = new Cell(3, 4);
-        Builder testBuilder = new Builder(new Player("A"));
-        Builder test2Builder = new Builder(new Player("B"));
+        assertTrue(cell.setOccupant(builder1));
+        assertTrue(cell.isOccupied());
 
-        try {
-            tested = tested.setOccupant(testBuilder);
-        } catch (AlreadyOccupiedException e){
-            fail("Shouldn't be occupied at this stage");
-        }
-        catch (InvalidOccupationException e){
-            fail("Cannot occupy a Cell with a doom");
-        }
-        assertEquals(tested.isOccupied(), true);
-        assertEquals(tested.getBuilder(), testBuilder);
+        assertEquals(builder1, cell.getBuilder());
 
-        Cell testedTmp = tested;
-        assertThrows(AlreadyOccupiedException.class,()->testedTmp.setOccupant(test2Builder));
+        assertFalse(cell.setOccupant(builder2));
 
-        try {
-            tested = tested.setOccupant(null);
-        } catch (AlreadyOccupiedException e){
-            fail("Set occupant should not care about AlreadyOccupiedException");
-        } catch (InvalidOccupationException e){
-            fail("Cannot occupy a Cell with a doom");
-        }
-
-        assertEquals(tested.isOccupied(), false);
+        assertEquals(builder1, cell.getBuilder());
     }
+
+
 
 
     @Test
-    public void commonAddBlockTest(){
-        Cell tested2 = new Cell(2,3);
-        try {
-        tested2 = tested2.addBlock(false);
-        assertEquals(tested2.getHeight(), 1);
-        tested2 = tested2.addBlock(false);
-        assertEquals(tested2.getHeight(), 2);
-        tested2 = tested2.addBlock(false);
-        tested2 = tested2.addBlock(false);
-    } catch (MaxHeightReachedException e) {
-        fail("Shouldn't have reached max height");
+    public void canBuildOnly3Blocks() {
+        Cell cell = new Cell(2, 3);
+        int height = cell.getHeight();
+
+        for(int i = 0; i < 3; i++)
+        {
+            assertTrue(cell.addBlock());
+            assertEquals(height + 1,cell.getHeight());
+            height = cell.getHeight();
+        }
+
+        assertFalse(cell.addBlock());
+        assertEquals(height, cell.getHeight());
     }
-        Cell tested3 = tested2;
-        assertThrows(MaxHeightReachedException.class,()->tested3.addBlock(false));
+
+    @Test
+    public void cannotBuildUponDome() {
+        Cell cell = new Cell(2,3);
+        assertTrue(cell.addDome());
+        assertTrue(cell.isDomePresent());
+
+        assertFalse(cell.addBlock());
 
     }
 
     @Test
-    public void domeAddBlockException(){
+    public void canRemoveOccupantOnlyIfPresent() {
+        Cell cell = new Cell(2,3);
+        assertFalse(cell.removeOccupant());
+        assertFalse(cell.isOccupied());
 
-        tested = new Cell(3, 4);
-
-        try {
-            tested = tested.addBlock(true);
-        } catch (MaxHeightReachedException e){
-            fail("Shouldn't have reached max height");
-        }
-        assertTrue(tested.isDomePresent());
-        assertThrows(MaxHeightReachedException.class,()->tested.addBlock(false));
-
+        cell.setOccupant(new Builder(new Player("thomas"), Builder.BuilderColor.WHITE));
+        assertTrue(cell.isOccupied());
+        assertTrue(cell.removeOccupant());
+        assertFalse(cell.isOccupied());
     }
 
     @Test
-    public void validCoordinates(){
-        assertThrows(IllegalArgumentException.class, ()->new Cell(6,7));
-        assertThrows(IllegalArgumentException.class, ()->new Cell(-6,-7));
+    public void incrementHeightWhenAddingBlock() {
+        Cell cell = new Cell(0,0);
+        assertEquals(0, cell.getHeight());
+
+        assertTrue(cell.addBlock());
+        assertEquals(1, cell.getHeight());
     }
+
+
 }
