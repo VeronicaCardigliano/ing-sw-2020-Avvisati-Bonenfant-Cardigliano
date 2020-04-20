@@ -1,7 +1,10 @@
 package it.polimi.ingsw.model;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * @author veronica
@@ -9,9 +12,10 @@ import java.util.List;
  */
 
 public class Player {
-    //private GodCard godCard;
+    private GodCard godCard;
     private final List<Builder> builders = new ArrayList<>();
     private final String nickname;
+    private final long birthday;
 
     /**
      * @param nickname : unique identifier of each player of the game
@@ -19,9 +23,24 @@ public class Player {
      */
 
     public Player(String nickname) throws IllegalArgumentException {
+        this(nickname, "01 01 1970");
+    }
+
+    public Player(String nickname, String birthday) throws IllegalArgumentException {
+        long epoch = 0;
+
         if (nickname == null)
             throw new IllegalArgumentException ("Nickname can't be null");
         this.nickname = nickname;
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy mm dd");
+        try {
+            epoch = df.parse(birthday).getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        this.birthday = epoch;
     }
 
     public void setBuilders (Builder builder1, Builder builder2) {
@@ -33,17 +52,25 @@ public class Player {
         builders.add(builder2);
     }
 
-//    public void setGodCard (GodCard godCard) throws IllegalArgumentException {
-//        if (godCard == null)
-//            throw new IllegalArgumentException ("GodCard can't be null");
-//        this.godCard = godCard;
-//    }
-//
-//    public List<Builder> getBuilders () {
-//        return builders;
-//    }
-//
-//    public GodCard getGodCard () {
-//        return godCard;
-//    }
+    public String getNickname (){
+        return nickname;
+    }
+
+    public void setGodCard (GodCard godCard) throws IllegalArgumentException {
+        if (godCard == null)
+            throw new IllegalArgumentException ("GodCard can't be null");
+        this.godCard = godCard;
+    }
+
+    public List<Builder> getBuilders () {
+        return builders;
+    }
+
+    public GodCard getGodCard () {
+        return godCard;
+    }
+
+    public long getBirthday () {
+        return birthday;
+    }
 }
