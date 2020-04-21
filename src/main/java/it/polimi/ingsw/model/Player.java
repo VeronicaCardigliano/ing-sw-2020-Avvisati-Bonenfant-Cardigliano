@@ -1,5 +1,7 @@
 package it.polimi.ingsw.model;
 
+import it.polimi.ingsw.model.godCards.GodCard;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ public class Player {
      */
 
     public Player(String nickname) throws IllegalArgumentException {
-        this(nickname, "01 01 1970");
+        this(nickname, "1970.02.14");
     }
 
     public Player(String nickname, String birthday) throws IllegalArgumentException {
@@ -33,7 +35,7 @@ public class Player {
             throw new IllegalArgumentException ("Nickname can't be null");
         this.nickname = nickname;
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy mm dd");
+        SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
         try {
             epoch = df.parse(birthday).getTime();
         } catch (ParseException e) {

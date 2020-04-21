@@ -1,5 +1,6 @@
-package it.polimi.ingsw.model;
+package it.polimi.ingsw.model.godCards;
 
+import it.polimi.ingsw.model.Player;
 import org.json.JSONObject;
 
 public class YourTurnGodCard extends GodCard {

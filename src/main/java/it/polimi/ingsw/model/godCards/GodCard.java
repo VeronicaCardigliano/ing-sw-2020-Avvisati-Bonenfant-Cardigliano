@@ -1,10 +1,13 @@
-package it.polimi.ingsw.model;
+package it.polimi.ingsw.model.godCards;
 
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
+import it.polimi.ingsw.model.Cell;
+import it.polimi.ingsw.model.Event;
+import it.polimi.ingsw.model.IslandBoard;
+import it.polimi.ingsw.model.Player;
 import org.json.*;
 
 
@@ -15,8 +18,6 @@ import org.json.*;
  * GodCard manages move and build logic interacting with the IslandBoard gameMap.
  */
 public class GodCard {
-    private final static String cardsPath = "src/main/java/it/polimi/ingsw/model/";
-
     private final String name;
     private final String description;
     private final Player player;
@@ -100,6 +101,14 @@ public class GodCard {
             }
     }
 
+    public String getName() {
+        return this.name;
+    }
+
+    public String getDescription() {
+        return this.description;
+    }
+
     /**
      * @author veronica
      *
@@ -141,8 +150,7 @@ public class GodCard {
     }
 
 
-
-
+    //TODO: move the factory method with the json in a special package
     /**
      * factory method that parses the json and creates a new GodCard from the right subclass.
      * If the JSON file is invalid it will automatically create a default GodCard.
@@ -307,7 +315,7 @@ public class GodCard {
      * Has to be called after a move or a build.
      * @return if that event causes the player associated to the godCard to win.
      */
-    protected boolean winCondition() {
+    public boolean winCondition() {
 
         return event != null && event.getType() == Event.EventType.MOVE && event.heightDifference() == 1 &&
                 event.getDstBlockHeight() == 3;

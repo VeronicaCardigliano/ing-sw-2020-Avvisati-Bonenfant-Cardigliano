@@ -1,3 +1,4 @@
 # Project exclude paths
-/target/
-*.iml
+ing-sw-2020-Avvisati-Bonenfant-Cardigliano.iml
+.idea
+.target

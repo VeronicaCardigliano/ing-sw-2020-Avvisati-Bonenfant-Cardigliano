@@ -1,8 +1,8 @@
 package it.polimi.ingsw.model;
 
-import java.util.ArrayList;
+import it.polimi.ingsw.model.godCards.OpponentTurnGodCard;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**

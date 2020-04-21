@@ -1,5 +1,8 @@
-package it.polimi.ingsw.model;
+package it.polimi.ingsw.model.godCards;
 
+import it.polimi.ingsw.model.Event;
+import it.polimi.ingsw.model.IslandBoard;
+import it.polimi.ingsw.model.Player;
 import org.json.JSONObject;
 
 /*
@@ -37,7 +40,7 @@ public class WinConditionGodCard extends GodCard {
     }
 
     @Override
-    protected boolean winCondition() {
+    public boolean winCondition() {
         int completeTowers = 0;
 
         for(int i = 0; i < IslandBoard.dimension && completeTowers < completeTowersToWin; i++)

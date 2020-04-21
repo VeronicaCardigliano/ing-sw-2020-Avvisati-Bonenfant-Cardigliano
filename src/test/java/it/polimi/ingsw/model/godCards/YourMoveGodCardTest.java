@@ -1,5 +1,7 @@
-package it.polimi.ingsw.model;
-import org.junit.jupiter.api.BeforeAll;
+package it.polimi.ingsw.model.godCards;
+import it.polimi.ingsw.model.Builder;
+import it.polimi.ingsw.model.IslandBoard;
+import it.polimi.ingsw.model.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

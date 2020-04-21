@@ -1,8 +1,9 @@
-package it.polimi.ingsw.model;
+package it.polimi.ingsw.model.godCards;
 
+import it.polimi.ingsw.model.Cell;
+import it.polimi.ingsw.model.IslandBoard;
+import it.polimi.ingsw.model.Player;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
 
 import static java.lang.Math.max;
 

@@ -1,10 +1,4 @@
 {
-  "_comment": "This is a comment and should not be parsed. Default: numberOfMoves:1, pushForce:0, numberOfBuilds:1, canBuildDomeEverywhere=false, secondBuildSameSpaceNotDome=false, secondBuildSameSpaceNotDome=false, canBuildBefore=false, downStepsToWin=4",
-
-  "default":
-  {"name": "default",
-    "description": "default GodCard. Has no special power."},
-
   "Apollo":
   {"name": "Apollo",
     "type": "MOVE",

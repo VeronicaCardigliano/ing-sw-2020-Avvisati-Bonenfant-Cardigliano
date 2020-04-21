@@ -1,8 +1,11 @@
 package it.polimi.ingsw.model;
 
+import it.polimi.ingsw.controller.Controller;
+import it.polimi.ingsw.model.godCards.GodCard;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -18,14 +21,19 @@ public class Model {
 
     private final ArrayList<Player> players = new ArrayList<>();
     private final IslandBoard gameMap;
+    private final int numPlayers;
     private Player currPlayer;
-    private CyclingIterator<Player> turnManager = new CyclingIterator<Player>(players);
+    private CyclingIterator<Player> turnManager = new CyclingIterator<>(players);
     public enum State { SETUP_PLAYERS, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
     //in this class currState refers to the match state, instead currStep refers to the single movement during GAME state
     private State currState;
     private String currStep;
     private JSONObject jsonObject;
-    private final int numPlayers;
+
+    private Controller controller;
+
+    Set<String> chosenCards = new HashSet<>();
+    Set<String> chosenColors = new HashSet<>();
 
     /**
      * possibleDst contains the list of Cells in which the player can move or build
@@ -70,31 +78,38 @@ public class Model {
      * @throws IllegalArgumentException if the nickname has already been added
      */
 
-    public boolean addPlayer (String nickname, String birthday) throws IllegalArgumentException {
-        boolean added = false;
+    public boolean addPlayer (String nickname, String birthday) {
+        boolean younger = false;
+        Player tmp = null;
 
-        if (nickname == null)
-            throw new IllegalArgumentException("Nickname can't be null");
+        if (nickname == null) {
+            System.out.println("ERROR: Nickname can't be null ");
+            return false;
+        }
+
         for (Player x: players) {
 
-            if (nickname.equals(x.getNickname()))
-                throw new IllegalArgumentException("This nickname has already been used");
-
-        }
-        if (players.size() < 3) {
-            Player newPlayer = new Player(nickname, birthday);
-            for (Player x: players) {
-
-                if (x.getBirthday() > newPlayer.getBirthday()) {
-                    Player tmp = players.set(players.indexOf(x), newPlayer);
-                    players.add (tmp);
-                }
+            if (nickname.equals(x.getNickname())) {
+                System.out.println("ERROR: This nickname has already been used");
+                return false;
             }
-            players.add(newPlayer);
-            added = true;
-
         }
-        return added;
+
+        Player newPlayer = new Player(nickname, birthday);
+        for (Player x: players)
+            //birthday is the distance since the epoch 1970-01-01 00:00:00.0 so the shorter it is, the older is the player
+            if (x.getBirthday() < newPlayer.getBirthday()) {
+                tmp = players.set(players.indexOf(x), newPlayer);
+                younger = true;
+            }
+
+        if (younger)
+            players.add(tmp);
+        else {
+            //newPlayer take the place of x and is returned in tmp
+            players.add(newPlayer);
+        }
+        return true;
     }
 
     /**
@@ -103,21 +118,21 @@ public class Model {
      * @return true if the player has been added
      */
     public boolean addPlayer(String nickname) {
-        boolean added = false;
+        if (nickname == null) {
+            System.out.println("ERROR: Nickname can't be null ");
+            return false;
+        }
 
-        if (nickname == null)
-            throw new IllegalArgumentException("Nickname can't be null");
         for (Player x: players) {
 
-            if (nickname.equals(x.getNickname()))
-                throw new IllegalArgumentException("This nickname has already been used");
+            if (nickname.equals(x.getNickname())) {
+                System.out.println("ERROR: This nickname has already been used");
+                return false;
+            }
+        }
 
-        }
-        if (players.size() < 3) {
-            players.add(new Player(nickname));
-            added = true;
-        }
-        return added;
+        players.add(new Player(nickname));
+        return true;
     }
 
 
@@ -126,8 +141,7 @@ public class Model {
      */
 
     public ArrayList<Player> getPlayers() {
-        ArrayList<Player> players = new ArrayList<>(this.players);
-        return players;
+        return new ArrayList<>(this.players);
     }
 
     /**
@@ -151,24 +165,87 @@ public class Model {
         return currState;
     }
 
-    /**
-     * @author veronica
+    //TODO: manage properly the interaction Model - Controller
+
+    /*
+
+
+     * This method is used by run() to assign a godCard to a player
+     * @param currPlayer is the player who's currently choosing his GodCard
+     * @param chosenGodCard the name of GodCard the current player has chosen
+     * @throws IllegalArgumentException whether the player choose a different name from the ones printed
+
+
+    private boolean assignCard (Player currPlayer, String chosenGodCard) {
+        boolean existing = false;
+        for (String s: chosenCards) {
+            if (chosenGodCard.equals(s)){
+                System.out.println("ERROR: GodCard name already used ");
+                return false;
+            }
+        }
+        for (String s: getGodNames())
+            if (s.equals(chosenGodCard)) {
+                existing = true;
+                break;
+            }
+
+        if (!existing) {
+             System.out.println("ERROR: The name entered is not an existing godCard, choose from the available ones ");
+             return false;
+        }
+        chosenCards.add(chosenGodCard);
+        currPlayer.setGodCard(GodCard.createCard(currPlayer, jsonObject.getJSONObject(chosenGodCard)));
+        currPlayer.getGodCard().setGameMap(gameMap);
+        return true;
+    }
+
+    private boolean assignColor (Player currPlayer, Builder.BuilderColor chosenColor) {
+        String chosenColorString = chosenColor.toString().toUpperCase();
+        boolean existing = false;
+        for (String s: chosenColors) {
+            if (chosenColorString.equals(s)){
+                System.out.println("ERROR: Color already used, choose from the available ones ");
+                return false;
+            }
+        }
+
+        for (Builder.BuilderColor color: Builder.BuilderColor.values()) {
+            if (color.equals(chosenColor)) {
+                existing = true;
+                break;
+            }
+        }
+        if (!existing) {
+            System.out.println("ERROR: The name entered is not an existing color, choose from the available ones ");
+            return false;
+        }
+
+        chosenColors.add(chosenColorString);
+        currPlayer.setBuilders(new Builder(currPlayer, chosenColor), new Builder(currPlayer, chosenColor));
+        return true;
+    }
+
+
+
+     *
      * the method run has to manage turns, match states and movement steps using iterators
      * (a simple one for SETUP states and a cycling one for GAME state)
      *
-     */
-    public void run() {
-        Scanner input = new Scanner(System.in);
+     * @param source has to be System.in unless it's a test
+
+    public void run (InputStream source) {
+        Scanner input = new Scanner(source);
         Iterator<Player> playersIterator = players.iterator();
         while (currState != State.ENDGAME) {
             switch (currState) {
                 case SETUP_PLAYERS:
                     while (players.isEmpty() || players.size() < numPlayers) {
-                        System.out.println("Insert Player name: ");
-                        String nickname = input.nextLine();
-                        System.out.println("Insert Birthday date in the form: yyyy mm dd ");
-                        String birthday = input.nextLine();
-                        addPlayer(nickname, birthday);
+                    System.out.println("Insert Player name: ");
+                    String nickname = input.nextLine();
+                    System.out.println("Insert Birthday date in the form \"yyyy.MM.dd\" ");
+                    String birthday = input.nextLine();
+                    addPlayer(nickname, birthday);
                     }
                     currPlayer = players.get(0);
                     currState = State.SETUP_CARDS;
@@ -176,11 +253,26 @@ public class Model {
 
                 case SETUP_CARDS:
                     while (playersIterator.hasNext()) {
-                        System.out.println(getGodNames().toString());
-                        System.out.println("Select your GodCard from the available ones");
-                        String godCardName = input.nextLine();
-                        currPlayer.setGodCard(GodCard.createCard(currPlayer, jsonObject.getJSONObject(godCardName)));
-                        currPlayer.getGodCard().setGameMap(gameMap);
+                        boolean correctValue = false;
+                        while (!correctValue) {
+                            boolean alreadyUsed = false;
+                            //prints the GodNames and their description only of still available cards
+                            for (String s: getGodNames()) {
+                                for (String x: chosenCards) {
+                                    if (s.equals(x)) {
+                                        alreadyUsed = true;
+                                        break;
+                                    }
+                                }
+                                if (!alreadyUsed) {
+                                    System.out.println(s);
+                                    System.out.println(jsonObject.getJSONObject(s).getString("description"));
+                                }
+                            }
+                            System.out.println("Select your GodCard from the available ones");
+                            String godCardName = input.nextLine();
+                            correctValue = assignCard (currPlayer, godCardName);
+                        }
                         currPlayer = playersIterator.next();
                     }
                     currState = State.SETUP_BUILDERS;
@@ -188,24 +280,39 @@ public class Model {
 
                 case SETUP_BUILDERS:
                     while (playersIterator.hasNext()) {
-                        System.out.println("Select a color for your Builders");
-                        Builder.BuilderColor builderColor = Builder.BuilderColor.valueOf(input.nextLine().toUpperCase());
-                        currPlayer.setBuilders(new Builder(currPlayer, builderColor), new Builder(currPlayer, builderColor));
+                        boolean correctValue = false;
+                        while (!correctValue)
+                        {
+                            boolean alreadyUsed = false;
+                            System.out.println("Available builder colors: ");
+                            //prints the colors only if they're still available
+                            for (Builder.BuilderColor color: Builder.BuilderColor.values()) {
+                                for (String alreadyChosen: chosenColors) {
+                                    if (alreadyChosen.equals(color.toString()))
+                                        alreadyUsed = true;
+                                }
+                                if (!alreadyUsed)
+                                    System.out.println(color.name().toUpperCase() + " ");
+                            }
+
+                            System.out.println("Select a color for your Builders ");
+                            Builder.BuilderColor chosenColor = Builder.BuilderColor.valueOf(input.nextLine().toUpperCase());
+                            correctValue = assignColor (currPlayer,chosenColor);
+                        }
                         currPlayer = playersIterator.next();
                     }
                     currState = State.GAME;
                     break;
 
                 case GAME:
-                    while (!currPlayer.getGodCard().winCondition() && players.size() != 1 ) {
-                        currStep = currPlayer.getGodCard().currState;
+                    while (!currPlayer.getGodCard().winCondition() && players.size() > 1) {
+
+                        currStep = currPlayer.getGodCard().getCurrState();
 
                         if (currStep.equals("MOVE")) {
                             /*
-                             * I can find the possible destinations for both the builders of the currPlayer (done) or
-                             * wait for a choice and then find the correct destinations
-                             * //Builder chosenBuilder = Controller.getChosenBuilder ();
-                             */
+                             * Finds the possible destinations for both the builders of the currPlayer
+
                             for (Builder b : currPlayer.getBuilders()) {
                                 Cell src = b.getCell();
                                 int x, y;
@@ -227,7 +334,8 @@ public class Model {
                             }
                             /*Have to get the chosen destination from the controller (between the possible ones) to do the
                             effective move (if the player hasn't lost)
-                            currPlayer.getGodCard().move(cell src, cell dst)*/
+                            Builder chosenBuilder = Controller.getChosenBuilder ();
+                            currPlayer.getGodCard().move(cell src, cell dst)
 
                         } else if (currStep.equals("BUILD")) {
 
@@ -269,12 +377,12 @@ public class Model {
                     currState = State.ENDGAME;
                     break;
             }
-            if (currPlayer.getGodCard().winCondition())
-                System.out.println("Player " + currPlayer.getNickname() + " won the game!!!");
-            else
-                System.out.println("Player " + players.get(0).getNickname() + " won the game!!!");
+//            if (currPlayer.getGodCard().winCondition())
+ //               System.out.println("Player " + currPlayer.getNickname() + " won the game!!!");
+            //          else
+     //           System.out.println("Player " + players.get(0).getNickname() + " won the game!!!");
 
         }
-    }
+    } */
 
 }
