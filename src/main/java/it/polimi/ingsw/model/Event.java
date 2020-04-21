@@ -11,27 +11,22 @@ package it.polimi.ingsw.model;
  */
 public class Event {
     public enum EventType {
-        MOVE, BUILD
+        MOVE, BUILD, BUILD_DOME
     }
 
     private final EventType type;
     private final Cell srcCell;
     private final Cell dstCell;
-    private final Cell buildCell;
-    private final boolean buildDome;
 
-    public Event(EventType type, Cell srcCell, Cell dstCell, Cell buildCell, boolean buildDome) throws IllegalArgumentException {
-        if(type == EventType.MOVE && (buildCell != null || buildDome))
-            throw new IllegalArgumentException("MoveType Events don't have build information");
 
-        else if(type == EventType.BUILD && (srcCell != null || dstCell != null))
-            throw new IllegalArgumentException("BuildType Events don't have move information");
+    public Event(EventType type, Cell srcCell, Cell dstCell) throws NullPointerException {
+        if(type != null && srcCell != null && dstCell != null) {
+            this.type = type;
+            this.srcCell = srcCell;
+            this.dstCell = dstCell;
+        } else
+            throw new NullPointerException("Event is incomplete");
 
-        this.type = type;
-        this.srcCell = srcCell;
-        this.dstCell = dstCell;
-        this.buildCell = buildCell;
-        this.buildDome = buildDome;
     }
 
     public EventType getType() {
@@ -50,12 +45,12 @@ public class Event {
     }
 
     public boolean builtDome() {
-        return buildDome;
+        return type == EventType.BUILD_DOME;
     }
 
     public int getBuiltBlockHeight() {
         if(type == EventType.BUILD)
-            return buildCell.getHeight();
+            return dstCell.getHeight();
         return -1;
     }
 

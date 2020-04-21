@@ -23,7 +23,8 @@
   {"name": "Athena",
     "type": "OPPONENTS",
     "description": "If one of your Workers moved up on your last turn, opponent Workers cannot move up this turn",
-    "activeOnMoveUp": true;
+    "activeOnMoveUp": true,
+    "blockMoveUp": true
   },
 
   "Atlas":
@@ -73,6 +74,15 @@
     "description": "If your worker does not move up, it may build both before and after moving",
     "states": [["MOVE", "BUILD"],
                 ["BUILD", "MOVE", "BUILD"]],
-    "canBuildBefore": true}
+    "canBuildBefore": true},
+
+  "Limus":
+  {
+    "name": "Limus",
+    "type": "OPPONENT",
+    "description": "Opponent workers cannot build on spaces neighboring your workers, unless building a dome to create a Complete Tower",
+    "alwaysActive": true,
+    "limusPower": true
+  }
 
 }

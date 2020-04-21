@@ -1,5 +1,10 @@
 package it.polimi.ingsw.model;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * author @giulio
  *
@@ -10,8 +15,8 @@ public class IslandBoard {
 
     public final static int dimension = 5;
 
-    private static Cell[][] matrix = new Cell[dimension][dimension];
-    //private List<OpponentTurnCard> constrainsList;
+    private Cell[][] matrix = new Cell[dimension][dimension];
+    private Set<OpponentTurnGodCard> constraintsList;
 
     /**
      * Initializes a matrix[dimension][dimension] of Cell
@@ -22,9 +27,12 @@ public class IslandBoard {
                 matrix[i][j] = new Cell(i,j);
             }
         }
+
+        //create empty set of constraint OpponentTurnGodCard
+        constraintsList = new HashSet<>();
     }
 
-    public static Cell getCell(int i, int j) throws RuntimeException {
+    public Cell getCell(int i, int j) throws RuntimeException {
         if (i >= dimension || j >= dimension || i < 0 || j < 0) throw new RuntimeException("Invalid coordinate");
         return matrix[i][j];
     }
@@ -88,4 +96,33 @@ public class IslandBoard {
 
         return !(modI == 0 && modJ == 0) && modI < 2 && modJ < 2;
     }
+
+    /**
+     * Add a new Constraint for next players.
+     * @param card with contraint
+     */
+    public void addConstraint(OpponentTurnGodCard card) {
+        constraintsList.add(card);
+    }
+
+    /**
+     * Remove Constraint for next players
+     * @param card with constraint
+     */
+    public void removeConstraint(OpponentTurnGodCard card) {
+        constraintsList.remove(card);
+    }
+
+    public boolean check(Event event) {
+        boolean allowed = true;
+
+        for(OpponentTurnGodCard constraintCard : constraintsList)
+            if(!constraintCard.checkFutureEvent(event)) {
+                allowed = false;
+                break;
+            }
+
+        return allowed;
+    }
+
 }

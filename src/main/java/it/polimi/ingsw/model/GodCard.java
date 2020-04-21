@@ -3,6 +3,7 @@ package it.polimi.ingsw.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.json.*;
 
@@ -203,15 +204,18 @@ public class GodCard {
             dst = gameMap.getCell(i_dst, j_dst);
             built = true;
 
-            if(buildDome)
+            if(buildDome) {
                 dst.addDome();
-            else
+                event = new Event(Event.EventType.BUILD_DOME, gameMap.getCell(i_src, j_src), dst);
+            }
+            else {
                 dst.addBlock();
+                event = new Event(Event.EventType.BUILD, gameMap.getCell(i_src, j_src), dst);
+
+            }
 
             setNextState("BUILD");
 
-            //TODO:controllare che nel caso la build non avvenga non aggiornare event non causi problemi
-            event = new Event(Event.EventType.BUILD, null, null, dst, buildDome);
         }
         return built;
     }
@@ -244,10 +248,7 @@ public class GodCard {
 
             setNextState("MOVE");
 
-            // DEVE AVVENIRE PER FORZA SE LA STO CHIAMANDO 🤠
-            //TODO:controllare che nel caso la move non avvenga non aggiornare event non causi problemi
-            event = new Event(Event.EventType.MOVE, src, dst, null, false);
-
+            event = new Event(Event.EventType.MOVE, gameMap.getCell(i_src, j_src), dst);
         }
 
 
@@ -271,7 +272,8 @@ public class GodCard {
 
         return src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) &&
                 //IslandBoard.distanceOne(src, dst) &&
-                IslandBoard.heightDifference(src, dst) <= 1 && !dst.isDomePresent() && !dst.isOccupied();
+                IslandBoard.heightDifference(src, dst) <= 1 && !dst.isDomePresent() && !dst.isOccupied() &&
+                gameMap.check(new Event(Event.EventType.MOVE, src, dst));
 
     }
 
@@ -290,11 +292,15 @@ public class GodCard {
         src = gameMap.getCell(i_src, j_src);
         dst = gameMap.getCell(i_dst, j_dst);
 
+        Event.EventType type = buildDome ? Event.EventType.BUILD_DOME : Event.EventType.BUILD;
+
+
         boolean buildHeightCondition = (dst.getHeight() < 3 && !buildDome) || (dst.getHeight() == 3 && buildDome);
 
         return src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) &&
                 //&& IslandBoard.distanceOne(src, dst)
-                !dst.isDomePresent() && !dst.isOccupied() && buildHeightCondition;
+                !dst.isDomePresent() && !dst.isOccupied() && buildHeightCondition &&
+                gameMap.check(new Event(type, src, dst));
     }
 
     /**
@@ -310,6 +316,19 @@ public class GodCard {
 
     public String getCurrState() {
         return currState;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GodCard godCard = (GodCard) o;
+
+        if (!Objects.equals(name, godCard.name)) return false;
+        if (!Objects.equals(description, godCard.description)) return false;
+        if (!Objects.equals(player, godCard.player)) return false;
+        return Objects.equals(gameMap, godCard.gameMap);
     }
 
 }
