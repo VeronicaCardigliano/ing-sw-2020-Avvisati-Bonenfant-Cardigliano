@@ -11,11 +11,13 @@
     "type": "MOVE",
     "description": "Your Worker may move one additional time, but no back to its initial space",
     "numberOfMoves": 2,
+    "states": [["MOVE", "BUILD"],
+                ["MOVE", "MOVE", "BUILD"]],
     "secondMoveDiffDest": true},
 
   "Athena":
   {"name": "Athena",
-    "type": "OPPONENTS",
+    "type": "OPPONENT",
     "description": "If one of your Workers moved up on your last turn, opponent Workers cannot move up this turn",
     "activeOnMoveUp": true,
     "blockMoveUp": true

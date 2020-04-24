@@ -2,7 +2,8 @@ package it.polimi.ingsw.model.godCards;
 
 import it.polimi.ingsw.model.Cell;
 import it.polimi.ingsw.model.Player;
-import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class YourBuildGodCard extends GodCard {
 
@@ -10,35 +11,22 @@ public class YourBuildGodCard extends GodCard {
     private boolean secondBuildDiffDest;
     private int numberOfBuilds;
     private boolean secondBuildNotDome;
-    private Player player;
     private Cell firstBuildDst;
 
     /**
      * @author veronica
      *
      * @param player     whose card is
-     * @param jsonObject constructor parses JSON
      */
-    public YourBuildGodCard(Player player, JSONObject jsonObject) {
-        super(player, jsonObject);
+    public YourBuildGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
+                            int numberOfBuilds, boolean canBuildDomeEverywhere, boolean secondBuildDiffDest, boolean secondBuildNotDome) {
+        super(player, name, description, states);
 
-        if (jsonObject.opt("canBuildDomeEverywhere") != null) {
-            this.canBuildDomeEverywhere = jsonObject.getBoolean("canBuildDomeEverywhere");
-        } else this.canBuildDomeEverywhere = false;
+        this.numberOfBuilds = numberOfBuilds;
+        this.canBuildDomeEverywhere = canBuildDomeEverywhere;
+        this.secondBuildDiffDest = secondBuildDiffDest;
+        this.secondBuildNotDome = secondBuildNotDome;
 
-        if (jsonObject.opt("secondBuildDiffDest") != null) {
-            this.secondBuildDiffDest = jsonObject.getBoolean("secondBuildDiffDest");
-        } else this.secondBuildDiffDest = false;
-
-        if (jsonObject.opt("secondBuildNotDome") != null) {
-            this.secondBuildNotDome = jsonObject.getBoolean("secondBuildNotDome");
-        } else this.secondBuildNotDome = false;
-
-        if (jsonObject.opt("numberOfBuilds") != null) {
-            this.numberOfBuilds = jsonObject.getInt("numberOfBuilds");
-        } else this.numberOfBuilds = 1;
-
-        this.player = player;
     }
 
     public Cell getFirstBuildDst() {

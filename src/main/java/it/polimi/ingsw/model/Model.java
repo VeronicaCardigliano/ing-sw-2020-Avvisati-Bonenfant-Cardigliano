@@ -1,11 +1,9 @@
 package it.polimi.ingsw.model;
 
 import it.polimi.ingsw.controller.Controller;
-import it.polimi.ingsw.model.godCards.GodCard;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -17,7 +15,7 @@ import java.util.*;
  */
 
 public class Model {
-    private final static String jsonPath = "src/main/java/it/polimi/ingsw/model/cards.json";
+    private final static String jsonPath = "src/main/java/it/polimi/ingsw/parser/cards.json";
 
     private final ArrayList<Player> players = new ArrayList<>();
     private final IslandBoard gameMap;

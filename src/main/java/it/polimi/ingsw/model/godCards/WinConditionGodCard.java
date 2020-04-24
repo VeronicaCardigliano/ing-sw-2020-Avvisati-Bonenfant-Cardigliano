@@ -5,6 +5,8 @@ import it.polimi.ingsw.model.IslandBoard;
 import it.polimi.ingsw.model.Player;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /*
  * GODS WITH WINCONDITION PROPERTY:
  * Pan
@@ -23,20 +25,14 @@ public class WinConditionGodCard extends GodCard {
      * GodCard constructor. Parses JSON
      *
      * @param player     whose card is
-     * @param jsonObject
+     *
      */
-    public WinConditionGodCard(Player player, JSONObject jsonObject) {
-        super(player, jsonObject);
+    public WinConditionGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
+                               int minimumDownStepsToWin, int completeTowersToWin) {
+        super(player, name, description, states);
 
-        if(jsonObject.opt("minimumDownStepsToWin") != null)
-            minimumDownStepsToWin = jsonObject.getInt("minimumDownStepsToWin");
-        else
-            minimumDownStepsToWin = 4; //it is impossible to go down 4 steps
-
-        if(jsonObject.opt("completeTowersToWin") != null)
-            completeTowersToWin = jsonObject.getInt("completeTowersToWin");
-        else
-            completeTowersToWin = IslandBoard.dimension * IslandBoard.dimension + 1; //too many towers to complete
+        this.minimumDownStepsToWin = minimumDownStepsToWin;
+        this.completeTowersToWin = completeTowersToWin;
     }
 
     @Override

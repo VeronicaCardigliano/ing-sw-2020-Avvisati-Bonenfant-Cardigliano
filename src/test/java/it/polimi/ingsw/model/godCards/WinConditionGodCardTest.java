@@ -1,7 +1,7 @@
 package it.polimi.ingsw.model.godCards;
 
 import it.polimi.ingsw.model.*;
-import org.json.JSONObject;
+import it.polimi.ingsw.parser.GodCardParser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,20 +10,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WinConditionGodCardTest {
     static GodCard godCardPan;
-    static GodCard godCardChronos;
+    static GodCard godCardChronus;
     static Player player;
     static IslandBoard gameMap;
     static Builder builder1;
     static Builder builder2;
     static int maxCoordinate = IslandBoard.dimension - 1;
 
-    final static String panJSONString = "{" +
-            "\"type\": \"WIN\"," +
-            "\"minimumDownStepsToWin\": 2 }";
-
-    final static String chronusJSONString = "{" +
-            "\"type\": \"WIN\"," +
-            "\"completeTowersToWin\": 5 }";
 
     @BeforeAll
     public static void setup() {
@@ -35,9 +28,9 @@ class WinConditionGodCardTest {
         builder2 = new Builder(player);
         player.setBuilders(builder1, builder2);
 
-        System.out.println("giving player1 Pan card...");
-        godCardPan = new WinConditionGodCard(player, new JSONObject(panJSONString));
-        godCardChronos = new WinConditionGodCard(player, new JSONObject(chronusJSONString));
+        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/parser/cards.json");
+        godCardPan = parser.createCard(player, "Pan");
+        godCardChronus = parser.createCard(player, "Chronus");
 
     }
 
@@ -119,12 +112,12 @@ class WinConditionGodCardTest {
     @Test
     public void chronusWinCondition() {
         Cell cell;
-        System.out.println("# Testing Chronus Win Conidition...");
+        System.out.println("# Testing Chronus Win Condition...");
 
-        godCardChronos.setGameMap(gameMap);
+        godCardChronus.setGameMap(gameMap);
 
-        assertTrue(godCardChronos.move(2,2, 2,3));
-        assertFalse(godCardChronos.winCondition());
+        assertTrue(godCardChronus.move(2,2, 2,3));
+        assertFalse(godCardChronus.winCondition());
 
         //building 5 complete towers
         for(int j = 0; j < IslandBoard.dimension; j++) {
@@ -140,8 +133,8 @@ class WinConditionGodCardTest {
         }
 
         //move builder 2
-        assertTrue(godCardChronos.move(4,4,4,3));
-        assertTrue(godCardChronos.winCondition());
+        assertTrue(godCardChronus.move(4,4,4,3));
+        assertTrue(godCardChronus.winCondition());
 
 
     }

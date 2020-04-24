@@ -4,6 +4,8 @@ import it.polimi.ingsw.model.Event;
 import it.polimi.ingsw.model.Player;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /**
  * @author thomas
  *
@@ -21,31 +23,14 @@ public class OpponentTurnGodCard extends GodCard {
      * GodCard constructor. Parses JSON
      *
      * @param player     whose card is
-     * @param jsonObject
+     *
      */
-    public OpponentTurnGodCard(Player player, JSONObject jsonObject) {
-        super(player, jsonObject);
+    public OpponentTurnGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
+                               boolean activeOnMoveUp, boolean blockMoveUp) {
+        super(player, name, description, states);
 
-        if(jsonObject.opt("activeOnMoveUp") != null)
-            activeOnMoveUp = jsonObject.getBoolean("activeOnMoveUp");
-        else
-            activeOnMoveUp = false;
-
-        /*
-        if(jsonObject.opt("alwaysActive") != null)
-            alwaysActive = jsonObject.getBoolean("alwaysActive");
-        else
-            alwaysActive = false;*/
-
-        if(jsonObject.opt("blockMoveUp") != null)
-            blockMoveUp = jsonObject.getBoolean("blockMoveUp");
-        else
-            blockMoveUp = false;
-
-        /*if(jsonObject.opt("limusPower") != null)
-            limusPower = jsonObject.getBoolean("limusPower");
-        else
-            limusPower = false;*/
+        this.activeOnMoveUp = activeOnMoveUp;
+        this.blockMoveUp = blockMoveUp;
     }
 
     @Override

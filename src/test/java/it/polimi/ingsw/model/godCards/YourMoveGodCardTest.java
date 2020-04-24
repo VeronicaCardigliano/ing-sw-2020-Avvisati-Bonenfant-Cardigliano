@@ -2,6 +2,7 @@ package it.polimi.ingsw.model.godCards;
 import it.polimi.ingsw.model.Builder;
 import it.polimi.ingsw.model.IslandBoard;
 import it.polimi.ingsw.model.Player;
+import it.polimi.ingsw.parser.GodCardParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,6 +30,8 @@ public class  YourMoveGodCardTest {
     JSONObject mino = new JSONObject("{}");
     JSONObject arte = new JSONObject("{}");
 
+    GodCardParser parser;
+
 
     @BeforeEach
     public void setup(){
@@ -51,12 +54,14 @@ public class  YourMoveGodCardTest {
         arte = new JSONObject("{\"name\": \"Artemis\", \"type\": \"MOVE\", \"description\": \"simple " +
                 "description\", \"secondMoveDiffDest\": true, \"states\": [[\"MOVE\", \"MOVE\", \"BUILD\"]]}");
 
+        parser = new GodCardParser("src/main/java/it/polimi/ingsw/parser/cards.json");
+
     }
 
     @Test
     public void domeCheck() {
 
-        GodCard god = GodCard.createCard(mePlayer, mino);
+        GodCard god = parser.createCard(mePlayer, "Minotaur");
         god.setGameMap(testBoard);
 
         assertFalse(god.move(1, 1, 2, 2)); //in 3,3 there is a dome
@@ -66,7 +71,7 @@ public class  YourMoveGodCardTest {
     @Test
     public void pushAndMove(){
 
-        GodCard god = GodCard.createCard(mePlayer, mino);
+        GodCard god = parser.createCard(mePlayer, "Minotaur");
         god.setGameMap(testBoard);
 
         assertTrue(god.move(1,1,2,1)); //this pushes and height difference is ok
@@ -80,7 +85,7 @@ public class  YourMoveGodCardTest {
 
     @Test
     public void pushAtCorner(){
-        GodCard god = GodCard.createCard(mePlayer, mino);
+        GodCard god = parser.createCard(mePlayer, "Minotaur");
         god.setGameMap(testBoard);
         assertFalse(god.move(1,1,0,0));
         //nothing has changed
@@ -92,7 +97,7 @@ public class  YourMoveGodCardTest {
     @Test
     public void secondMoveDiffDist(){
 
-        GodCard god = GodCard.createCard(mePlayer, arte);
+        GodCard god = parser.createCard(mePlayer, "Artemis");
         god.setGameMap(testBoard);
 
         god.startTurn();

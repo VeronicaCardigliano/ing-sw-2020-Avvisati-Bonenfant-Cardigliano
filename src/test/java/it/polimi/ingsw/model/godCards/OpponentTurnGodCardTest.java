@@ -3,6 +3,7 @@ package it.polimi.ingsw.model.godCards;
 import it.polimi.ingsw.model.Builder;
 import it.polimi.ingsw.model.IslandBoard;
 import it.polimi.ingsw.model.Player;
+import it.polimi.ingsw.parser.GodCardParser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,8 +36,10 @@ public class OpponentTurnGodCardTest {
         player1 = new Player("player1");
         player2 = new Player("player2");
 
-        athena = new OpponentTurnGodCard(player1, new JSONObject(athenaJSONString));
-        defaultCard = new GodCard(player2, new JSONObject("{}"));
+        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/parser/cards.json");
+
+        athena = parser.createCard(player1, "Athena");
+        defaultCard = parser.createCard(player2, "default");
 
         player1.setGodCard(athena);
         player2.setGodCard(defaultCard);

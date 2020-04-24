@@ -5,6 +5,8 @@ import it.polimi.ingsw.model.IslandBoard;
 import it.polimi.ingsw.model.Player;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import static java.lang.Math.max;
 
 /**
@@ -16,31 +18,18 @@ import static java.lang.Math.max;
  */
 public class YourMoveGodCard extends GodCard {
 
-    private int numberOfMoves;
-    private int moves;
     private int pushForce;
     private boolean secondMoveDiffDst;
     private Cell firstSrcCell;
 
 
-    public YourMoveGodCard(Player player, JSONObject jsonObject) {
+    public YourMoveGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
+                           int pushForce, boolean secondMoveDiffDest) {
 
-        super(player, jsonObject);
+        super(player, name, description, states);
 
-        if (jsonObject.opt("numberOfMoves") != null) {
-            this.numberOfMoves = jsonObject.getInt("numberOfMoves");
-            moves = this.numberOfMoves;
-        } else this.numberOfMoves = 1;
-
-
-        if (jsonObject.opt("pushForce") != null) {
-            this.pushForce = jsonObject.getInt("pushForce");
-        } else this.pushForce = 0;
-
-
-        if (jsonObject.opt("secondMoveDiffDest") != null) {
-            this.secondMoveDiffDst = jsonObject.getBoolean("secondMoveDiffDest");
-        } else this.secondMoveDiffDst = false;
+        this.pushForce = pushForce;
+        this.secondMoveDiffDst = secondMoveDiffDest;
 
     }
 

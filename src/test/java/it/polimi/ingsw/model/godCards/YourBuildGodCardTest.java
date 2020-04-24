@@ -4,11 +4,11 @@ import it.polimi.ingsw.model.Builder;
 import it.polimi.ingsw.model.Cell;
 import it.polimi.ingsw.model.IslandBoard;
 import it.polimi.ingsw.model.Player;
-import it.polimi.ingsw.model.godCards.YourBuildGodCard;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,9 +57,16 @@ class YourBuildGodCardTest {
         player2.setBuilders(builder3, builder4);
 
         System.out.println("giving player1 Atlas card...");
-        godCardAtlas = new YourBuildGodCard(player, new JSONObject(atlasJSONString));
-        godCardDemeter = new YourBuildGodCard(player, new JSONObject(demeterJSONString));
-        godCardHephaestus = new YourBuildGodCard(player2, new JSONObject(hephaestusJSONString));
+
+        ArrayList<ArrayList<String>> states = new ArrayList<>();
+        ArrayList<String> tmp = new ArrayList<>();
+        tmp.add("MOVE");
+        tmp.add("BUILD");
+        states.add(tmp);
+
+        godCardAtlas = new YourBuildGodCard(player, "", "", states, 1, true, false, false);
+        godCardDemeter = new YourBuildGodCard(player, "", "", states, 2, false, true, false);
+        godCardHephaestus = new YourBuildGodCard(player2, "", "", states, 2, false, false, true);
     }
 
     @BeforeEach

@@ -8,7 +8,6 @@ import it.polimi.ingsw.model.Cell;
 import it.polimi.ingsw.model.Event;
 import it.polimi.ingsw.model.IslandBoard;
 import it.polimi.ingsw.model.Player;
-import org.json.*;
 
 
 /**
@@ -20,7 +19,7 @@ import org.json.*;
 public class GodCard {
     private final String name;
     private final String description;
-    private final Player player;
+    protected final Player player;
     protected IslandBoard gameMap;
 
     protected String currState;
@@ -37,48 +36,16 @@ public class GodCard {
      * GodCard constructor. Parses JSON
      * @param player whose card is
      */
-    public GodCard(Player player, JSONObject jsonObject) {
+    public GodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states) {
         if(player == null)
             throw new RuntimeException("player can't be null");
 
         this.player = player;
+        this.name = name;
+        this.description = description;
+        this.states = states;
 
-        if (jsonObject.opt("name") != null && jsonObject.opt("description") != null) {
-            this.name = jsonObject.getString("name");
-            this.description = jsonObject.getString("description");
-        }
-        else {
-            this.name = "default";
-            this.description = "this is an empty godCard with no special powers";
-        }
-
-        states = new ArrayList<>();
         statesCopy = new ArrayList<>();
-
-        //initialize states attribute which contains all possible states' configurations
-        if(jsonObject.opt("states") != null) {
-
-            JSONArray outerList = jsonObject.getJSONArray("states");
-            ArrayList<String> innerList;
-
-            //converts outerList into an ArrayList (states)
-            for(int i = 0; i < outerList.length(); i++) {
-                innerList = new ArrayList<>();
-
-                for (int j = 0; j < outerList.getJSONArray(i).length(); j++)
-                    innerList.add(outerList.getJSONArray(i).getString(j));
-
-                states.add(innerList);
-
-            }
-
-
-        } else {
-            ArrayList<String> list = new ArrayList<>();
-            list.add("MOVE");
-            list.add("BUILD");
-            states.add(list);
-        }
 
     }
 
@@ -150,14 +117,7 @@ public class GodCard {
     }
 
 
-    //TODO: move the factory method with the json in a special package
-    /**
-     * factory method that parses the json and creates a new GodCard from the right subclass.
-     * If the JSON file is invalid it will automatically create a default GodCard.
-     *
-     * @param player picking the card
-     * @return the GodCard created
-     */
+/*
     public static GodCard createCard(Player player, JSONObject godObject) {
         GodCard cardCreated = null;
 
@@ -188,7 +148,7 @@ public class GodCard {
             throw new RuntimeException("Invalid json");
 
         return cardCreated;
-    }
+    }*/
 
 
     public Player getPlayer() {

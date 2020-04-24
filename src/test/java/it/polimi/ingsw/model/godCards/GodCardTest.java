@@ -5,6 +5,7 @@ import it.polimi.ingsw.model.Cell;
 import it.polimi.ingsw.model.IslandBoard;
 import it.polimi.ingsw.model.Player;
 import it.polimi.ingsw.model.godCards.GodCard;
+import it.polimi.ingsw.parser.GodCardParser;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,7 +42,8 @@ class GodCardTest {
         player.setBuilders(builder1, builder2);
 
         System.out.println("giving player1 a default card...");
-        godCard = new GodCard(player, new JSONObject("{}"));
+        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/parser/cards.json");
+        godCard = parser.createCard(player, "default");
         player.setGodCard(godCard);
 
     }
