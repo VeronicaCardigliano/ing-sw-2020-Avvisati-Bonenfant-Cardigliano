@@ -79,6 +79,14 @@
     "description": "Opponent workers cannot build on spaces neighboring your workers, unless building a dome to create a Complete Tower",
     "alwaysActive": true,
     "limusPower": true
+  },
+
+  "Zeus":
+  {
+    "name": "Zeus",
+    "type": "BUILD",
+    "description": "Your worker may build a block under itself",
+    "blockUnderItself": true
   }
 
 }

@@ -1,17 +1,13 @@
 package it.polimi.ingsw.model;
 
-import it.polimi.ingsw.controller.Controller;
-import org.json.JSONObject;
+import it.polimi.ingsw.parser.GodCardParser;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
  * @author veronica
- * Model class that specifies the single match, containing the list of players, the IslandBoard,
- * the current player and a turnManager which iterates the list of players
+ * Model class that specifies the single match, containing the list of players, the gameMap,
+ * the Set of chosen Cards and Colors and the jsonPath
  */
 
 public class Model {
@@ -19,120 +15,38 @@ public class Model {
 
     private final ArrayList<Player> players = new ArrayList<>();
     private final IslandBoard gameMap;
-    private final int numPlayers;
-    private Player currPlayer;
-    private CyclingIterator<Player> turnManager = new CyclingIterator<>(players);
-    public enum State { SETUP_PLAYERS, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
     //in this class currState refers to the match state, instead currStep refers to the single movement during GAME state
-    private State currState;
-    private String currStep;
-    private JSONObject jsonObject;
-
-    private Controller controller;
+    //private String currStep;
+    private GodCardParser cardsParser;
 
     Set<String> chosenCards = new HashSet<>();
     Set<String> chosenColors = new HashSet<>();
-
-    /**
-     * possibleDst contains the list of Cells in which the player can move or build
-     */
-    protected ArrayList<Cell> possibleDstBuilder1;
-    protected ArrayList<Cell> possibleDstBuilder2;
-    protected ArrayList<Cell> possibleDstBuilder1forDome;
-    protected ArrayList<Cell> possibleDstBuilder2forDome;
 
     /**
      * The constructor initialises the GameMap and assigns it to the GodCard as a static attribute, common to each card.
      * It also sets the currState to SETUP_PLAYERS, which is the first one, and loads the json file
      */
 
-    public Model (int numPlayers) {
+    public Model () {
+
         this.gameMap = new IslandBoard();
-        this.currState = State.SETUP_PLAYERS;
-        this.numPlayers = numPlayers;
+        this.cardsParser = new GodCardParser(jsonPath);
 
-        //loading the json file to have access to all card names
-
-        String JsonString = null;
-        try {
-            //I need to save the file content in a string
-            JsonString = new String(Files.readAllBytes(Paths.get(jsonPath)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (JsonString != null)
-            this.jsonObject = new JSONObject(JsonString);
-        else
-            this.jsonObject = null;
     }
 
     public Set<String> getGodNames() {
-        return this.jsonObject.keySet();
+        return this.cardsParser.getGodNames();
     }
 
-    /**
-     * This method ensures that the players are added in order of birthday, from the youngest to the oldest
-     * @param nickname: unique identifier of a new player
-     * @throws IllegalArgumentException if the nickname has already been added
-     */
+    public String getGodDescription(String godName) { return this.cardsParser.getDescription(godName); }
 
-    public boolean addPlayer (String nickname, String birthday) {
-        boolean younger = false;
-        Player tmp = null;
-
-        if (nickname == null) {
-            System.out.println("ERROR: Nickname can't be null ");
-            return false;
-        }
-
-        for (Player x: players) {
-
-            if (nickname.equals(x.getNickname())) {
-                System.out.println("ERROR: This nickname has already been used");
-                return false;
-            }
-        }
-
-        Player newPlayer = new Player(nickname, birthday);
-        for (Player x: players)
-            //birthday is the distance since the epoch 1970-01-01 00:00:00.0 so the shorter it is, the older is the player
-            if (x.getBirthday() < newPlayer.getBirthday()) {
-                tmp = players.set(players.indexOf(x), newPlayer);
-                younger = true;
-            }
-
-        if (younger)
-            players.add(tmp);
-        else {
-            //newPlayer take the place of x and is returned in tmp
-            players.add(newPlayer);
-        }
-        return true;
+    public Set<String> getChosenCards () {
+        return this.chosenCards;
     }
 
-    /**
-     *
-     * @param nickname Player with a default birthday
-     * @return true if the player has been added
-     */
-    public boolean addPlayer(String nickname) {
-        if (nickname == null) {
-            System.out.println("ERROR: Nickname can't be null ");
-            return false;
-        }
-
-        for (Player x: players) {
-
-            if (nickname.equals(x.getNickname())) {
-                System.out.println("ERROR: This nickname has already been used");
-                return false;
-            }
-        }
-
-        players.add(new Player(nickname));
-        return true;
+    public Set<String> getChosenColors () {
+        return this.chosenColors;
     }
-
 
     /**
      * @return returns a copy of the list of players so that external methods can't modify the ArrayList
@@ -159,22 +73,49 @@ public class Model {
             throw new IllegalArgumentException("Player not found");
     }
 
-    public State getState() {
-        return currState;
+    /**
+     * This method ensures that the players are added in order of birthday, from the youngest to the oldest
+     * @param nickname: unique identifier of a new player
+     * @throws IllegalArgumentException if the nickname has already been added
+     */
+
+    public boolean addPlayer (String nickname, String birthday) {
+        boolean younger = false;
+        Player tmp = null;
+
+        if (nickname == null) {
+            System.out.println("ERROR: Nickname can't be null ");
+            return false;
+        }
+        for (Player x: players) {
+            if (nickname.equals(x.getNickname())) {
+                System.out.println("ERROR: This nickname has already been used");
+                return false;
+            }
+        }
+        Player newPlayer = new Player(nickname, birthday);
+        for (Player x: players)
+            //birthday is the distance since the epoch 1970-01-01 00:00:00.0 so the shorter it is, the older is the player
+            if (x.getBirthday() < newPlayer.getBirthday()) {
+                tmp = players.set(players.indexOf(x), newPlayer);
+                younger = true;
+            }
+
+        if (younger)
+            players.add(tmp);
+        else {
+            //newPlayer take the place of x and is returned in tmp
+            players.add(newPlayer);
+        }
+        return true;
     }
 
-    //TODO: manage properly the interaction Model - Controller
-
-    /*
-
-
-     * This method is used by run() to assign a godCard to a player
+    /** This method is used by game() to assign a godCard to a player
      * @param currPlayer is the player who's currently choosing his GodCard
-     * @param chosenGodCard the name of GodCard the current player has chosen
-     * @throws IllegalArgumentException whether the player choose a different name from the ones printed
+     * @param chosenGodCard the name of the GodCard the current player has chosen
+     * It gives an error whether the player choose a different name from the ones printed (available)*/
 
-
-    private boolean assignCard (Player currPlayer, String chosenGodCard) {
+    public boolean assignCard (Player currPlayer, String chosenGodCard) {
         boolean existing = false;
         for (String s: chosenCards) {
             if (chosenGodCard.equals(s)){
@@ -189,16 +130,21 @@ public class Model {
             }
 
         if (!existing) {
-             System.out.println("ERROR: The name entered is not an existing godCard, choose from the available ones ");
-             return false;
+            System.out.println("ERROR: The name entered is not an existing godCard, choose from the available ones ");
+            return false;
         }
         chosenCards.add(chosenGodCard);
-        currPlayer.setGodCard(GodCard.createCard(currPlayer, jsonObject.getJSONObject(chosenGodCard)));
+        currPlayer.setGodCard(cardsParser.createCard(currPlayer, chosenGodCard));
         currPlayer.getGodCard().setGameMap(gameMap);
         return true;
     }
 
-    private boolean assignColor (Player currPlayer, Builder.BuilderColor chosenColor) {
+    /** This method is used by game() to assign a color to a player
+     * @param currPlayer is the player who's currently choosing his Builders' color
+     * @param chosenColor the name of the chosen color
+     * It gives an error whether the player choose a different name from the ones printed */
+
+    public boolean assignColor (Player currPlayer, Builder.BuilderColor chosenColor) {
         String chosenColorString = chosenColor.toString().toUpperCase();
         boolean existing = false;
         for (String s: chosenColors) {
@@ -224,163 +170,86 @@ public class Model {
         return true;
     }
 
+    /**
+     * Called after every MOVE step to verify if the currPlayer won
+     * @param currPlayer the player who just moved
+     * @return true if the player wins, false if the winCondition didn't occur
+     */
+    public boolean hasWon (Player currPlayer) {
+        return currPlayer.getGodCard().winCondition();
+    }
 
+    public String getCurrStep (Player currPlayer) {
+        return currPlayer.getGodCard().getCurrState();
+    }
 
-     *
-     * the method run has to manage turns, match states and movement steps using iterators
-     * (a simple one for SETUP states and a cycling one for GAME state)
-     *
-     * @param source has to be System.in unless it's a test
+    /**
+     * This method is called to find the possible destinations for both the builders of the currPlayer
+     * @param currPlayer the player that is going to move
+     * @param builder his pawn
+     * @return the possible destination cells for a MOVE
+     */
+    public ArrayList<Cell> getPossibleDstCellsMove (Player currPlayer, Builder builder) {
+        ArrayList<Cell> possibleDstBuilder = new ArrayList<>();
+        Cell src = builder.getCell();
+        int x, y;
+        int i_src = src.getI();
+        int j_src = src.getJ();
+        for (x = 0; x < IslandBoard.dimension; x++)
+            for (y = 0; y < IslandBoard.dimension; y++)
+                if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y))
+                    possibleDstBuilder.add(gameMap.getCell(x, y));
+        return possibleDstBuilder;
+    }
 
-    public void run (InputStream source) {
-        Scanner input = new Scanner(source);
-        Iterator<Player> playersIterator = players.iterator();
-        while (currState != State.ENDGAME) {
-            switch (currState) {
-                case SETUP_PLAYERS:
-                    while (players.isEmpty() || players.size() < numPlayers) {
-                    System.out.println("Insert Player name: ");
-                    String nickname = input.nextLine();
-                    System.out.println("Insert Birthday date in the form \"yyyy.MM.dd\" ");
-                    String birthday = input.nextLine();
-                    addPlayer(nickname, birthday);
-                    }
-                    currPlayer = players.get(0);
-                    currState = State.SETUP_CARDS;
-                    break;
+    /**
+     * This method is called to find the possible destinations for both the builders of the currPlayer
+     * @param currPlayer the player that is going to build
+     * @param builder his pawn
+     * @return the possible destination cells for a BUILD
+     */
+    public ArrayList<Cell> getPossibleDstCellsBuild (Player currPlayer, Builder builder, boolean buildDome) {
+        ArrayList<Cell> possibleDstBuilder = new ArrayList<>();
+        Cell src = builder.getCell();
+        int x, y;
+        int i_src = src.getI();
+        int j_src = src.getJ();
+        for (x = 0; x < IslandBoard.dimension; x++)
+            for (y = 0; y < IslandBoard.dimension; y++)
+                if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
+                        currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome))
+                    possibleDstBuilder.add(gameMap.getCell(x, y));
+        return possibleDstBuilder;
+    }
 
-                case SETUP_CARDS:
-                    while (playersIterator.hasNext()) {
-                        boolean correctValue = false;
-                        while (!correctValue) {
-                            boolean alreadyUsed = false;
-                            //prints the GodNames and their description only of still available cards
-                            for (String s: getGodNames()) {
-                                for (String x: chosenCards) {
-                                    if (s.equals(x)) {
-                                        alreadyUsed = true;
-                                        break;
-                                    }
-                                }
-                                if (!alreadyUsed) {
-                                    System.out.println(s);
-                                    System.out.println(jsonObject.getJSONObject(s).getString("description"));
-                                }
-                            }
-                            System.out.println("Select your GodCard from the available ones");
-                            String godCardName = input.nextLine();
-                            correctValue = assignCard (currPlayer, godCardName);
-                        }
-                        currPlayer = playersIterator.next();
-                    }
-                    currState = State.SETUP_BUILDERS;
-                    break;
-
-                case SETUP_BUILDERS:
-                    while (playersIterator.hasNext()) {
-                        boolean correctValue = false;
-                        while (!correctValue)
-                        {
-                            boolean alreadyUsed = false;
-                            System.out.println("Available builder colors: ");
-                            //prints the colors only if they're still available
-                            for (Builder.BuilderColor color: Builder.BuilderColor.values()) {
-                                for (String alreadyChosen: chosenColors) {
-                                    if (alreadyChosen.equals(color.toString()))
-                                        alreadyUsed = true;
-                                }
-                                if (!alreadyUsed)
-                                    System.out.println(color.name().toUpperCase() + " ");
-                            }
-
-                            System.out.println("Select a color for your Builders ");
-                            Builder.BuilderColor chosenColor = Builder.BuilderColor.valueOf(input.nextLine().toUpperCase());
-                            correctValue = assignColor (currPlayer,chosenColor);
-                        }
-                        currPlayer = playersIterator.next();
-                    }
-                    currState = State.GAME;
-                    break;
-
-                case GAME:
-                    while (!currPlayer.getGodCard().winCondition() && players.size() > 1) {
-
-                        currStep = currPlayer.getGodCard().getCurrState();
-
-                        if (currStep.equals("MOVE")) {
-                            /*
-                             * Finds the possible destinations for both the builders of the currPlayer
-
-                            for (Builder b : currPlayer.getBuilders()) {
-                                Cell src = b.getCell();
-                                int x, y;
-                                int i_src = src.getI();
-                                int j_src = src.getJ();
-                                for (x = 0; x < IslandBoard.dimension; x++)
-                                    for (y = 0; y < IslandBoard.dimension; y++)
-                                        if (x != i_src && y != j_src && IslandBoard.distanceOne(i_src, j_src, x, y) &&
-                                                currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
-                                            if (b.equals(currPlayer.getBuilders().get(0)))
-                                                possibleDstBuilder1.add(gameMap.getCell(x, y));
-                                            else
-                                                possibleDstBuilder2.add(gameMap.getCell(x, y));
-                                        }
-                            }
-                            if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) {
-                                System.out.println("Player " + currPlayer.getNickname() + " lost the game");
-                                deletePlayer(currPlayer);
-                            }
-                            /*Have to get the chosen destination from the controller (between the possible ones) to do the
-                            effective move (if the player hasn't lost)
-                            Builder chosenBuilder = Controller.getChosenBuilder ();
-                            currPlayer.getGodCard().move(cell src, cell dst)
-
-                        } else if (currStep.equals("BUILD")) {
-
-                            boolean buildDome = false; //controller must communicate whether the player wants to build a dome or not
-
-                            for (Builder b : currPlayer.getBuilders()) {
-                                Cell src = b.getCell();
-                                int x, y;
-                                int i_src = src.getI();
-                                int j_src = src.getJ();
-                                for (x = 0; x < IslandBoard.dimension; x++)
-                                    for (y = 0; y < IslandBoard.dimension; y++)
-                                        if (x != i_src && y != j_src && IslandBoard.distanceOne(i_src, j_src, x, y) &&
-                                                currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)) {
-                                            if (b.equals(currPlayer.getBuilders().get(0))) {
-                                                if (buildDome)
-                                                    possibleDstBuilder1forDome.add(gameMap.getCell(x, y));
-                                                else
-                                                    possibleDstBuilder1.add(gameMap.getCell(x, y));
-                                            } else if (buildDome)
-                                                possibleDstBuilder2forDome.add(gameMap.getCell(x, y));
-                                            else
-                                                possibleDstBuilder2.add(gameMap.getCell(x, y));
-                                        }
-                            }
-                            if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty() &&
-                                    possibleDstBuilder1forDome.isEmpty() && possibleDstBuilder2forDome.isEmpty()) {
-
-                                System.out.println("Player " + currPlayer.getNickname() + " lost the game");
-                                deletePlayer(currPlayer);
-
-                            }
-                        }
-                        // if BOTH (I can either move or build) I could ask in advance for a choice
-
-                        currPlayer = turnManager.next();
-                    }
-
-                    currState = State.ENDGAME;
-                    break;
-            }
-//            if (currPlayer.getGodCard().winCondition())
- //               System.out.println("Player " + currPlayer.getNickname() + " won the game!!!");
-            //          else
-     //           System.out.println("Player " + players.get(0).getNickname() + " won the game!!!");
-
+    /**
+     * This method is called after every move, to control whether the currPlayer has lost (he can't move anywhere)
+     * @param currPlayer the player that's going to move
+     * @param possibleDstBuilder1 possible dst cells for builder1
+     * @param possibleDstBuilder2 possible dst cells for builder2
+     */
+    public void hasLostAfterMove (Player currPlayer, ArrayList<Cell> possibleDstBuilder1, ArrayList<Cell> possibleDstBuilder2) {
+        if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) {
+            // notifies the view (?)
+            //System.out.println("Player " + currPlayer.getNickname() + " lost the game");
+            deletePlayer(currPlayer);
         }
-    } */
+    }
+
+    /**
+     * This method is called after every build, to control whether the currPlayer has lost (he can't build anywhere)
+     * @param currPlayer the player that's going to build
+     * @param possibleDstBuilder1 possible dst cells for builder1
+     * @param possibleDstBuilder2 possible dst cells for builder2
+     */
+    public void hasLostAfterBuild (Player currPlayer, ArrayList<Cell> possibleDstBuilder1, ArrayList<Cell> possibleDstBuilder2,
+                                   ArrayList<Cell> possibleDstDome1, ArrayList<Cell> possibleDstDome2) {
+        if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty() &&
+                possibleDstDome1.isEmpty() && possibleDstDome2.isEmpty()) {
+            // notifies the view (?)
+            //System.out.println("Player " + currPlayer.getNickname() + " lost the game");
+            deletePlayer(currPlayer);
+        }
+    }
 
 }

@@ -232,7 +232,7 @@ public class GodCard {
         boolean buildHeightCondition = (dst.getHeight() < 3 && !buildDome) || (dst.getHeight() == 3 && buildDome);
 
         return src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) &&
-                //&& IslandBoard.distanceOne(src, dst)
+                IslandBoard.distanceOne(src, dst) &&
                 !dst.isDomePresent() && !dst.isOccupied() && buildHeightCondition &&
                 gameMap.check(new Event(type, src, dst));
     }

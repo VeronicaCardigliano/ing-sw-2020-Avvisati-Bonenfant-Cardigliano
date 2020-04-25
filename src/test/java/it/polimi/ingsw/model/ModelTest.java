@@ -21,7 +21,7 @@ class ModelTest {
 
     @BeforeEach
     public void clean() {
-        testModel = new Model(3);
+        testModel = new Model();
         playersListTest = new ArrayList<>();
     }
 
@@ -38,6 +38,7 @@ class ModelTest {
         assertEquals("Paolo", playersListTest.get(1).getNickname());
         assertEquals("Marco", playersListTest.get(2).getNickname());
     }
+
     /*
     @Test
     public void runMethodCorrectlyWorking () {

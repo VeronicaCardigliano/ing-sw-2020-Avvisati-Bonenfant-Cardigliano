@@ -17,6 +17,7 @@ class YourBuildGodCardTest {
     static YourBuildGodCard godCardAtlas;
     static YourBuildGodCard godCardDemeter;
     static YourBuildGodCard godCardHephaestus;
+    static YourBuildGodCard godCardZeus;
     static Player player;
     static Player player2;
     static IslandBoard gameMap;
@@ -25,7 +26,6 @@ class YourBuildGodCardTest {
     static Builder builder3;
     static Builder builder4;
     static int maxCoordinate = IslandBoard.dimension - 1;
-
 
     @BeforeAll
     public static void setup() {
@@ -50,9 +50,14 @@ class YourBuildGodCardTest {
         tmp.add("BUILD");
         states.add(tmp);
 
-        godCardAtlas = new YourBuildGodCard(player, "", "", states, 1, true, false, false);
-        godCardDemeter = new YourBuildGodCard(player, "", "", states, 2, false, true, false);
-        godCardHephaestus = new YourBuildGodCard(player2, "", "", states, 2, false, false, true);
+        godCardAtlas = new YourBuildGodCard(player, "", "", states, 1,
+                true, false, false,false );
+        godCardDemeter = new YourBuildGodCard(player, "", "", states, 2,
+                false, true, false, false );
+        godCardHephaestus = new YourBuildGodCard(player2, "", "", states, 2,
+                false, false, true, false );
+        godCardZeus = new YourBuildGodCard(player2, "", "", states, 1,
+                false, false, false, true );
     }
 
     @BeforeEach
@@ -63,6 +68,7 @@ class YourBuildGodCardTest {
         godCardAtlas.setGameMap(gameMap);
         godCardDemeter.setGameMap(gameMap);
         godCardHephaestus.setGameMap(gameMap);
+        godCardZeus.setGameMap(gameMap);
 
         Cell cell1 = gameMap.getCell(maxCoordinate - 1,maxCoordinate - 3);
         Cell cell2 = gameMap.getCell(maxCoordinate,maxCoordinate);
@@ -98,6 +104,32 @@ class YourBuildGodCardTest {
     }
 
     /**
+     * Verify that askBuild gives a positive result if Zeus wants to build under itself
+     */
+    @Test
+    public void zeusTest() {
+        System.out.println("\nTesting Zeus behaviour ");
+        int i_src = builder3.getCell().getI();
+        int j_src = builder3.getCell().getJ();
+        assertTrue(godCardZeus.askBuild(i_src, j_src, i_src +1, j_src +1, false));
+        gameMap.getCell(i_src+1,j_src+1).addBlock();
+        gameMap.getCell(i_src+1,j_src+1).addBlock();
+        gameMap.getCell(i_src+1,j_src+1).addBlock();
+        assertFalse(godCardZeus.askBuild(i_src, j_src, i_src +1, j_src +1, false));
+        assertTrue(godCardZeus.askBuild(i_src, j_src, i_src +1, j_src +1, true));
+
+        assertTrue(godCardZeus.askBuild(i_src, j_src, i_src, j_src, false));
+        assertFalse(godCardAtlas.askBuild(i_src, j_src, i_src, j_src, true));
+
+        gameMap.getCell(i_src,j_src).addBlock();
+        gameMap.getCell(i_src,j_src).addBlock();
+        gameMap.getCell(i_src,j_src).addBlock();
+
+        assertTrue(godCardZeus.askBuild(i_src, j_src, i_src, j_src, true));
+        assertFalse(godCardAtlas.askBuild(i_src, j_src, i_src, j_src, false));
+    }
+
+    /**
      * Ensures that askBuild gives a negative result if Demeter wants to build two times in the same space
      */
     @Test
@@ -108,11 +140,11 @@ class YourBuildGodCardTest {
         int j_src = builder1.getCell().getJ();
 
         gameMap.getCell(i_src+1,j_src+1).addBlock();
-        godCardDemeter.step = 2;
+        godCardDemeter.step = 1;
 
         godCardDemeter.build(i_src, j_src, i_src +1, j_src+1);
 
-        godCardDemeter.step = 3; // it means it's at the second build
+        godCardDemeter.step = 2; // it means it's at the second build
         assertEquals(i_src+1, godCardDemeter.getFirstBuildDst().getI());
         assertEquals(j_src+1, godCardDemeter.getFirstBuildDst().getJ());
 
@@ -131,11 +163,11 @@ class YourBuildGodCardTest {
         int i_src = builder3.getCell().getI();
         int j_src = builder3.getCell().getJ();
 
-        godCardHephaestus.step = 2;
+        godCardHephaestus.step = 1;
 
         godCardHephaestus.build(i_src, j_src, i_src +1, j_src+1);
 
-        godCardHephaestus.step = 3; // it means it's at the second build
+        godCardHephaestus.step = 2; // it means it's at the second build
         assertEquals(i_src+1, godCardHephaestus.getFirstBuildDst().getI());
         assertEquals(j_src+1, godCardHephaestus.getFirstBuildDst().getJ());
 
