@@ -116,41 +116,6 @@ public class GodCard {
 
     }
 
-
-/*
-    public static GodCard createCard(Player player, JSONObject godObject) {
-        GodCard cardCreated = null;
-
-        if (godObject.opt("type") != null) {
-            switch (godObject.getString("type").toUpperCase()) {
-                case "MOVE":
-                    cardCreated = new YourMoveGodCard(player, godObject);
-                    break;
-
-                case "BUILD":
-                    cardCreated = new YourBuildGodCard(player, godObject);
-                    break;
-
-                case "OPPONENT":
-                    cardCreated = new OpponentTurnGodCard(player, godObject);
-                    break;
-
-                case "TURN":
-                    cardCreated = new YourTurnGodCard(player, godObject);
-                    break;
-
-                case "WIN":
-                    cardCreated = new WinConditionGodCard(player, godObject);
-                    break;
-            }
-        }
-        else
-            throw new RuntimeException("Invalid json");
-
-        return cardCreated;
-    }*/
-
-
     public Player getPlayer() {
         return player;
     }
@@ -214,10 +179,11 @@ public class GodCard {
             dst.setOccupant(src.getBuilder());
             src.removeOccupant();
 
+            event = new Event(Event.EventType.MOVE, gameMap.getCell(i_src, j_src), dst);
             setNextState("MOVE");
 
-            event = new Event(Event.EventType.MOVE, gameMap.getCell(i_src, j_src), dst);
         }
+
 
 
         return moved;

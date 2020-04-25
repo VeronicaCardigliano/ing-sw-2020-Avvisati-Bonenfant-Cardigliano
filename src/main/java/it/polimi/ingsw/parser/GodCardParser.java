@@ -72,7 +72,8 @@ public class GodCardParser {
                     break;
 
                 case "TURN":
-                    cardCreated = new YourTurnGodCard(player, name, description, states);
+                    boolean blockMovingUpIfBuilt = godObject.opt("blockMovingUpIfBuilt") != null && godObject.getBoolean("blockMovingUpIfBuilt");
+                    cardCreated = new YourTurnGodCard(player, name, description, states, blockMovingUpIfBuilt);
                     break;
 
                 case "WIN":

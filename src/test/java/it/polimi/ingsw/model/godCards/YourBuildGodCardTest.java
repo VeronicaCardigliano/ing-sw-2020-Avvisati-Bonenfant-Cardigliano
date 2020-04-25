@@ -26,20 +26,6 @@ class YourBuildGodCardTest {
     static Builder builder4;
     static int maxCoordinate = IslandBoard.dimension - 1;
 
-    final static String atlasJSONString = "{" +
-            "\"type\": \"BUILD\"," +
-            "\"canBuildDomeEverywhere\": true }";
-
-    final static String demeterJSONString = "{" +
-            "\"type\": \"BUILD\"," +
-            "\"secondBuildDiffDest\": true," +
-            "\"numberOfBuilds\": 2 }";
-
-    final static String hephaestusJSONString = "{" +
-            "\"type\": \"BUILD\"," +
-            "\"secondBuildDiffDest\": false," +
-            "\"secondBuildNotDome\": true," +
-            "\"numberOfBuilds\": 2 }";
 
     @BeforeAll
     public static void setup() {

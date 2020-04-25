@@ -17,11 +17,6 @@ public class OpponentTurnGodCardTest {
     static GodCard athena;
     static GodCard defaultCard;
 
-    static String athenaJSONString = "{" +
-                                    "\"type\": \"OPPONENT\"," +
-                                    "\"activeOnMoveUp\": true," +
-                                    "\"blockMoveUp\": true}";
-
     static IslandBoard gameMap;
     static Player player1;
     static Player player2;

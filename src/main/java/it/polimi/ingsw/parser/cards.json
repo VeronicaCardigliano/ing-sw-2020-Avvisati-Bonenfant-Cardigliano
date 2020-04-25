@@ -70,7 +70,7 @@
     "description": "If your worker does not move up, it may build both before and after moving",
     "states": [["MOVE", "BUILD"],
                 ["BUILD", "MOVE", "BUILD"]],
-    "canBuildBefore": true},
+    "blockMovingUpIfBuilt": true},
 
   "Limus":
   {

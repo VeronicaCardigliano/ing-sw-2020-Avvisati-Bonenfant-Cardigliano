@@ -48,11 +48,6 @@ public class  YourMoveGodCardTest {
 
         testBoard.getCell(3, 3).addDome();
 
-        mino = new JSONObject("{\"name\": \"Minotaur\", \"type\": \"MOVE\", \"description\": \"simple description\", " +
-                "\"pushForce\": 1, \"numberOfMoves\": 2}");
-
-        arte = new JSONObject("{\"name\": \"Artemis\", \"type\": \"MOVE\", \"description\": \"simple " +
-                "description\", \"secondMoveDiffDest\": true, \"states\": [[\"MOVE\", \"MOVE\", \"BUILD\"]]}");
 
         parser = new GodCardParser("src/main/java/it/polimi/ingsw/parser/cards.json");
 

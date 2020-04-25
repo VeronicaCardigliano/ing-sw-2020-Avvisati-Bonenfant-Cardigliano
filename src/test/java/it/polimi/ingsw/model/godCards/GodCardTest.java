@@ -73,20 +73,6 @@ class GodCardTest {
         assertThrows(IllegalArgumentException.class, () -> godCard.setGameMap(null));
     }
 
-    //The test below seems not required because askMove and move are designed to work only with valid coordinates
-    /*@Test
-    public void cantMoveOutOfMap() {
-        System.out.println("Testing boundaries...");
-        assertFalse(godCard.askMove(maxCoordinate, maxCoordinate, maxCoordinate + 1, maxCoordinate + 1));
-
-        //positioning builder2 on (0,0) to test negative values
-        builder2.getCell().removeOccupant();
-        gameMap.getCell(0,0).setOccupant(builder2);
-
-        assertFalse(godCard.askMove(0,0, -1, -1));
-
-
-    }*/
 
     @Test
     public void canMoveOnlyOwnBuilder() {
