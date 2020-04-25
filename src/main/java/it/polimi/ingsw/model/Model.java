@@ -62,8 +62,8 @@ public class Model {
      * @exception IllegalArgumentException is thrown if the player isn't in the list of players of the match
      */
 
-    public void deletePlayer (Player player) {
-        boolean found = players.remove (player);
+    public void deletePlayer (Player player) throws IllegalArgumentException {
+        boolean found = players.remove(player);
 
         for (Builder x: player.getBuilders()) {
             x.getCell().removeOccupant();
@@ -144,29 +144,31 @@ public class Model {
      * @param chosenColor the name of the chosen color
      * It gives an error whether the player choose a different name from the ones printed */
 
-    public boolean assignColor (Player currPlayer, Builder.BuilderColor chosenColor) {
-        String chosenColorString = chosenColor.toString().toUpperCase();
+    public boolean assignColor (Player currPlayer, String chosenColor) {
+
         boolean existing = false;
         for (String s: chosenColors) {
-            if (chosenColorString.equals(s)){
+            if (chosenColor.equals(s)){
                 System.out.println("ERROR: Color already used, choose from the available ones ");
                 return false;
             }
         }
 
         for (Builder.BuilderColor color: Builder.BuilderColor.values()) {
-            if (color.equals(chosenColor)) {
+            if (color.toString().equals(chosenColor)) {
                 existing = true;
                 break;
             }
         }
+
         if (!existing) {
             System.out.println("ERROR: The name entered is not an existing color, choose from the available ones ");
             return false;
         }
 
-        chosenColors.add(chosenColorString);
-        currPlayer.setBuilders(new Builder(currPlayer, chosenColor), new Builder(currPlayer, chosenColor));
+        chosenColors.add(chosenColor);
+        currPlayer.setBuilders(new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)),
+                new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)));
         return true;
     }
 
@@ -229,6 +231,8 @@ public class Model {
      * @param possibleDstBuilder2 possible dst cells for builder2
      */
     public void hasLostAfterMove (Player currPlayer, ArrayList<Cell> possibleDstBuilder1, ArrayList<Cell> possibleDstBuilder2) {
+        if (possibleDstBuilder1 == null || possibleDstBuilder2 == null)
+            throw new IllegalArgumentException("Possible destinations arrays can't be null ");
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) {
             // notifies the view (?)
             //System.out.println("Player " + currPlayer.getNickname() + " lost the game");

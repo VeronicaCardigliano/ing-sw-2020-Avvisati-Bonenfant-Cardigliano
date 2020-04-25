@@ -23,8 +23,8 @@ public class Controller implements Observer, BuilderListener {
      * possibleDst contains the list of Cells in which the player can move or build
      */
 
-    private ArrayList<Cell> possibleDstBuilder1;
-    private ArrayList<Cell> possibleDstBuilder2;
+    protected ArrayList<Cell> possibleDstBuilder1;
+    protected ArrayList<Cell> possibleDstBuilder2;
     protected ArrayList<Cell> possibleDstBuilder1forDome;
     protected ArrayList<Cell> possibleDstBuilder2forDome;
 
@@ -102,7 +102,7 @@ public class Controller implements Observer, BuilderListener {
                 }
 
                 System.out.println("Select a color for your Builders ");
-                Builder.BuilderColor chosenColor = Builder.BuilderColor.valueOf(input.nextLine().toUpperCase());
+                String chosenColor = input.nextLine().toUpperCase();
                 correctValue = model.assignColor(player, chosenColor);
             }
         }
