@@ -259,10 +259,8 @@ public class GodCard {
 
         GodCard godCard = (GodCard) o;
 
-        if (!Objects.equals(name, godCard.name)) return false;
-        if (!Objects.equals(description, godCard.description)) return false;
-        if (!Objects.equals(player, godCard.player)) return false;
-        return Objects.equals(gameMap, godCard.gameMap);
+        if(godCard.name.equals("default")) return false;
+        return godCard.name.equals(this.name);
     }
 
 }
