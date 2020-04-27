@@ -1,6 +1,7 @@
 package it.polimi.ingsw.model;
 
 import it.polimi.ingsw.parser.GodCardParser;
+import it.polimi.ingsw.Observable;
 
 import java.util.*;
 
@@ -10,17 +11,32 @@ import java.util.*;
  * the Set of chosen Cards and Colors and the jsonPath
  */
 
-public class Model {
+public class Model extends Observable {
     private final static String jsonPath = "src/main/java/it/polimi/ingsw/parser/cards.json";
 
     private final ArrayList<Player> players = new ArrayList<>();
     private final IslandBoard gameMap;
+    private final CyclingIterator<Player> turnManager = new CyclingIterator<>(players);
+
     //in this class currState refers to the match state, instead currStep refers to the single movement during GAME state
-    //private String currStep;
+    public enum State { SETUP_PLAYERS, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
+    private State currState;
+    private String currStep;
     private GodCardParser cardsParser;
+
+
+    private Player currPlayer;
 
     Set<String> chosenCards = new HashSet<>();
     Set<String> chosenColors = new HashSet<>();
+
+    /**
+     * PossibleDst Arrays contains the list of Cells in which the player can move or build
+     */
+    protected ArrayList<Cell> possibleDstBuilder1;
+    protected ArrayList<Cell> possibleDstBuilder2;
+    protected ArrayList<Cell> possibleDstBuilder1forDome;
+    protected ArrayList<Cell> possibleDstBuilder2forDome;
 
     /**
      * The constructor initialises the GameMap and assigns it to the GodCard as a static attribute, common to each card.
@@ -31,7 +47,30 @@ public class Model {
 
         this.gameMap = new IslandBoard();
         this.cardsParser = new GodCardParser(jsonPath);
+        this.currState = State.SETUP_PLAYERS;
+    }
 
+    /**
+     * This method is called by Controller in the end of every state to go in the next one
+     */
+
+    public void setNextState() {
+        switch (currState) {
+
+            case SETUP_PLAYERS:
+                currState = State.SETUP_CARDS;
+            case SETUP_CARDS:
+                currState = State.SETUP_BUILDERS;
+            case SETUP_BUILDERS:
+                currState = State.GAME;
+            case GAME:
+                currState = State.ENDGAME;
+        }
+        notifyState(currState);
+    }
+
+    public State getCurrState () {
+        return this.currState;
     }
 
     public Set<String> getGodNames() {
@@ -46,6 +85,12 @@ public class Model {
 
     public Set<String> getChosenColors () {
         return this.chosenColors;
+    }
+
+    public void setNextPlayer () {
+        currPlayer = turnManager.next();
+        currStep = getCurrStep(currPlayer);
+        findPossibleDestinations();
     }
 
     /**
@@ -174,85 +219,116 @@ public class Model {
 
     /**
      * Called after every MOVE step to verify if the currPlayer won
-     * @param currPlayer the player who just moved
      * @return true if the player wins, false if the winCondition didn't occur
      */
-    public boolean hasWon (Player currPlayer) {
+    public boolean hasWon () {
         return currPlayer.getGodCard().winCondition();
     }
 
     public String getCurrStep (Player currPlayer) {
-        return currPlayer.getGodCard().getCurrState();
+        return currPlayer.getGodCard().getCurrState().toUpperCase();
     }
 
     /**
      * This method is called to find the possible destinations for both the builders of the currPlayer
-     * @param currPlayer the player that is going to move
-     * @param builder his pawn
+     * @param builderIndex index of the Builder x of the currentPlayer
      * @return the possible destination cells for a MOVE
      */
-    public ArrayList<Cell> getPossibleDstCellsMove (Player currPlayer, Builder builder) {
+    public ArrayList<Cell> possibleDstCells (int builderIndex, boolean buildDome) {
         ArrayList<Cell> possibleDstBuilder = new ArrayList<>();
+        Builder builder = currPlayer.getBuilders().get(builderIndex);
         Cell src = builder.getCell();
         int x, y;
         int i_src = src.getI();
         int j_src = src.getJ();
         for (x = 0; x < IslandBoard.dimension; x++)
-            for (y = 0; y < IslandBoard.dimension; y++)
-                if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y))
-                    possibleDstBuilder.add(gameMap.getCell(x, y));
-        return possibleDstBuilder;
-    }
+            for (y = 0; y < IslandBoard.dimension; y++){
 
-    /**
-     * This method is called to find the possible destinations for both the builders of the currPlayer
-     * @param currPlayer the player that is going to build
-     * @param builder his pawn
-     * @return the possible destination cells for a BUILD
-     */
-    public ArrayList<Cell> getPossibleDstCellsBuild (Player currPlayer, Builder builder, boolean buildDome) {
-        ArrayList<Cell> possibleDstBuilder = new ArrayList<>();
-        Cell src = builder.getCell();
-        int x, y;
-        int i_src = src.getI();
-        int j_src = src.getJ();
-        for (x = 0; x < IslandBoard.dimension; x++)
-            for (y = 0; y < IslandBoard.dimension; y++)
-                if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
-                        currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome))
-                    possibleDstBuilder.add(gameMap.getCell(x, y));
+                switch (currStep) {
+                    case "MOVE":
+                        if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y))
+                            possibleDstBuilder.add(gameMap.getCell(x, y));
+
+                    case "BUILD":
+                        if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
+                                currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome))
+                            possibleDstBuilder.add(gameMap.getCell(x, y));
+                }
+            }
         return possibleDstBuilder;
     }
 
     /**
      * This method is called after every move, to control whether the currPlayer has lost (he can't move anywhere)
-     * @param currPlayer the player that's going to move
-     * @param possibleDstBuilder1 possible dst cells for builder1
-     * @param possibleDstBuilder2 possible dst cells for builder2
      */
-    public void hasLostAfterMove (Player currPlayer, ArrayList<Cell> possibleDstBuilder1, ArrayList<Cell> possibleDstBuilder2) {
+    public boolean hasLostDuringMove () {
         if (possibleDstBuilder1 == null || possibleDstBuilder2 == null)
             throw new IllegalArgumentException("Possible destinations arrays can't be null ");
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) {
-            // notifies the view (?)
             //System.out.println("Player " + currPlayer.getNickname() + " lost the game");
+            notifyLoss();
             deletePlayer(currPlayer);
+            return true;
         }
+        return false;
     }
 
     /**
      * This method is called after every build, to control whether the currPlayer has lost (he can't build anywhere)
-     * @param currPlayer the player that's going to build
-     * @param possibleDstBuilder1 possible dst cells for builder1
-     * @param possibleDstBuilder2 possible dst cells for builder2
      */
-    public void hasLostAfterBuild (Player currPlayer, ArrayList<Cell> possibleDstBuilder1, ArrayList<Cell> possibleDstBuilder2,
-                                   ArrayList<Cell> possibleDstDome1, ArrayList<Cell> possibleDstDome2) {
+    public boolean hasLostDuringBuild () {
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty() &&
-                possibleDstDome1.isEmpty() && possibleDstDome2.isEmpty()) {
-            // notifies the view (?)
+                possibleDstBuilder1forDome.isEmpty() && possibleDstBuilder2forDome.isEmpty()) {
+            notifyLoss();
             //System.out.println("Player " + currPlayer.getNickname() + " lost the game");
             deletePlayer(currPlayer);
+            return true;
+        }
+        return false;
+    }
+
+    public void effectiveBuild (Cell src, Cell dst, boolean buildDome) {
+        currPlayer.getGodCard().build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
+
+        //build method increase the currStep of the player
+        currStep = getCurrStep(currPlayer);
+        if (!currStep.equals("END"))
+            findPossibleDestinations();
+        else
+            setNextPlayer();
+    }
+
+    public void effectiveMove (Cell src, Cell dst) {
+        currPlayer.getGodCard().move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
+
+        //move method increases the currStep of the player
+        currStep = getCurrStep(currPlayer);
+        if (!currStep.equals("END"))
+            findPossibleDestinations();
+        else
+            setNextPlayer();
+    }
+
+    public void findPossibleDestinations () {
+        switch (currStep) {
+            case "MOVE":
+                //View has to obtain the list of the possible moves for both builders
+                possibleDstBuilder1 = possibleDstCells(0, false);
+                possibleDstBuilder2 = possibleDstCells(1, false);
+                if (!hasLostDuringMove())
+                    notifyPossibleMoves(possibleDstBuilder1, possibleDstBuilder2);
+                break;
+
+            case "BUILD":
+                //View has to obtain the list of the possible build destinations for both builders and for the possible build of a dome
+                possibleDstBuilder1 = possibleDstCells(0, false);
+                possibleDstBuilder2 = possibleDstCells(0,true);
+                possibleDstBuilder1forDome = possibleDstCells(0,true);
+                possibleDstBuilder2forDome = possibleDstCells(1,true);
+                if (!hasLostDuringBuild())
+                    notifyPossibleBuilds(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
+                break;
+                //case END exception
         }
     }
 
