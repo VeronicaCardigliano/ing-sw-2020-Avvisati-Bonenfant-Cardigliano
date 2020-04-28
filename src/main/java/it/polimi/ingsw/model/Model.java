@@ -1,7 +1,6 @@
 package it.polimi.ingsw.model;
 
 import it.polimi.ingsw.parser.GodCardParser;
-import it.polimi.ingsw.Observable;
 
 import java.util.*;
 
@@ -11,15 +10,16 @@ import java.util.*;
  * the Set of chosen Cards and Colors and the jsonPath
  */
 
-public class Model extends Observable {
+public class Model extends ModelObservable {
     private final static String jsonPath = "src/main/java/it/polimi/ingsw/parser/cards.json";
 
     private final ArrayList<Player> players = new ArrayList<>();
+    private int numPlayers;
     private final IslandBoard gameMap;
     private final CyclingIterator<Player> turnManager = new CyclingIterator<>(players);
 
     //in this class currState refers to the match state, instead currStep refers to the single movement during GAME state
-    public enum State { SETUP_PLAYERS, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
+    public enum State { SETUP_NUMOFPLAYERS, SETUP_PLAYERS, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
     private State currState;
     private String currStep;
     private GodCardParser cardsParser;
@@ -56,21 +56,37 @@ public class Model extends Observable {
 
     public void setNextState() {
         switch (currState) {
-
+            case SETUP_NUMOFPLAYERS:
+                currState = State.SETUP_PLAYERS;
+                break;
             case SETUP_PLAYERS:
                 currState = State.SETUP_CARDS;
+                break;
             case SETUP_CARDS:
                 currState = State.SETUP_BUILDERS;
+                break;
             case SETUP_BUILDERS:
                 currState = State.GAME;
+                break;
             case GAME:
                 currState = State.ENDGAME;
+                break;
         }
         notifyState(currState);
     }
 
+
+
+    public int getNumPlayers(){
+        return this.numPlayers;
+    }
+
     public State getCurrState () {
         return this.currState;
+    }
+
+    public Player getCurrPlayer () {
+        return currPlayer;
     }
 
     public Set<String> getGodNames() {
@@ -88,9 +104,10 @@ public class Model extends Observable {
     }
 
     public void setNextPlayer () {
-        currPlayer = turnManager.next();
-        currStep = getCurrStep(currPlayer);
-        findPossibleDestinations();
+        if (currState == State.SETUP_PLAYERS)
+            currPlayer = players.get(0);
+        else
+            currPlayer = turnManager.next();
     }
 
     /**
@@ -118,23 +135,33 @@ public class Model extends Observable {
             throw new IllegalArgumentException("Player not found");
     }
 
+    public boolean setNumberOfPlayers(int num){
+        if (num == 2 || num == 3) {
+            numPlayers = num;
+            return true;
+        }
+        else
+            notifyWrongInsertion("ERROR: number of player not valid, choose '2' or '3'");
+        return false;
+    }
+
     /**
      * This method ensures that the players are added in order of birthday, from the youngest to the oldest
      * @param nickname: unique identifier of a new player
      * @throws IllegalArgumentException if the nickname has already been added
      */
-
+    //TODO: controls on correct date
     public boolean addPlayer (String nickname, String birthday) {
         boolean younger = false;
         Player tmp = null;
 
         if (nickname == null) {
-            System.out.println("ERROR: Nickname can't be null ");
+            notifyWrongInsertion("ERROR: Nickname can't be null ");
             return false;
         }
         for (Player x: players) {
             if (nickname.equals(x.getNickname())) {
-                System.out.println("ERROR: This nickname has already been used");
+                notifyWrongInsertion("ERROR: This nickname has already been used");
                 return false;
             }
         }
@@ -156,15 +183,14 @@ public class Model extends Observable {
     }
 
     /** This method is used by game() to assign a godCard to a player
-     * @param currPlayer is the player who's currently choosing his GodCard
      * @param chosenGodCard the name of the GodCard the current player has chosen
      * It gives an error whether the player choose a different name from the ones printed (available)*/
 
-    public boolean assignCard (Player currPlayer, String chosenGodCard) {
+    public boolean assignCard (String chosenGodCard) {
         boolean existing = false;
         for (String s: chosenCards) {
             if (chosenGodCard.equals(s)){
-                System.out.println("ERROR: GodCard name already used ");
+                notifyWrongInsertion("ERROR: GodCard name already used ");
                 return false;
             }
         }
@@ -175,7 +201,7 @@ public class Model extends Observable {
             }
 
         if (!existing) {
-            System.out.println("ERROR: The name entered is not an existing godCard, choose from the available ones ");
+            notifyWrongInsertion("ERROR: The name entered is not an existing godCard, choose from the available ones ");
             return false;
         }
         chosenCards.add(chosenGodCard);
@@ -185,16 +211,15 @@ public class Model extends Observable {
     }
 
     /** This method is used by game() to assign a color to a player
-     * @param currPlayer is the player who's currently choosing his Builders' color
      * @param chosenColor the name of the chosen color
      * It gives an error whether the player choose a different name from the ones printed */
 
-    public boolean assignColor (Player currPlayer, String chosenColor) {
+    public boolean assignColor (String chosenColor) {
 
         boolean existing = false;
         for (String s: chosenColors) {
             if (chosenColor.equals(s)){
-                System.out.println("ERROR: Color already used, choose from the available ones ");
+                notifyWrongInsertion("ERROR: Color already used, choose from the available ones ");
                 return false;
             }
         }
@@ -207,7 +232,7 @@ public class Model extends Observable {
         }
 
         if (!existing) {
-            System.out.println("ERROR: The name entered is not an existing color, choose from the available ones ");
+            notifyWrongInsertion("ERROR: The name entered is not an existing color, choose from the available ones ");
             return false;
         }
 
@@ -310,6 +335,7 @@ public class Model extends Observable {
     }
 
     public void findPossibleDestinations () {
+        currStep = getCurrStep(currPlayer);
         switch (currStep) {
             case "MOVE":
                 //View has to obtain the list of the possible moves for both builders
@@ -330,6 +356,14 @@ public class Model extends Observable {
                 break;
                 //case END exception
         }
+    }
+
+    //Step in currPlayer.GodCard is BOTH, then I set the step in function of what user decides to do
+    public void setStepChoice (String step) {
+        if (step.equals("MOVE") || step.equals("BUILD"))
+            this.currStep = step;
+        else
+            notifyWrongInsertion("ERROR: The step entered is not a valid value ");
     }
 
 }

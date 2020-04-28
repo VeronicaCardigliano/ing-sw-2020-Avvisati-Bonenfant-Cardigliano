@@ -1,22 +1,19 @@
-package it.polimi.ingsw;
+package it.polimi.ingsw.model;
 
 import it.polimi.ingsw.model.Model;
-import it.polimi.ingsw.view.BuilderPossibleBuildObserver;
-import it.polimi.ingsw.view.BuilderPossibleMoveObserver;
-import it.polimi.ingsw.view.PlayerLoseObserver;
-import it.polimi.ingsw.view.StateObserver;
+import it.polimi.ingsw.view.*;
 
 import java.util.List;
 
 /**
  * has a list of observers and each of them is updated calling the notify method
- *
  */
-public class Observable {
+public class ModelObservable {
     private StateObserver stateObserver;
     private BuilderPossibleMoveObserver possibleMoveObserver;
     private BuilderPossibleBuildObserver possibleBuildObserver;
     private PlayerLoseObserver playerLoseObserver;
+    private ErrorsObserver errorsObserver;
 
     //private List<Observer<T>> observers = new ArrayList<>();
 
@@ -41,6 +38,10 @@ public class Observable {
 
     public void notifyLoss() {
         playerLoseObserver.onLossUpdate();
+    }
+
+    public void notifyWrongInsertion (String error){
+        errorsObserver.onWrongInsertionUpdate(error);
     }
 
 }

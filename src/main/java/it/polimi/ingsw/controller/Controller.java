@@ -1,13 +1,14 @@
 package it.polimi.ingsw.controller;
 
-import it.polimi.ingsw.model.*;
+import it.polimi.ingsw.model.Cell;
+import it.polimi.ingsw.model.Model;
+import it.polimi.ingsw.model.Player;
 import it.polimi.ingsw.view.View;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Scanner;
+//TODO: make sure of not passing editable objects
 
-public class Controller implements BuilderBuildObserver, BuilderMoveObserver, NewPlayerObserver {
+public class Controller implements BuilderBuildObserver, BuilderMoveObserver, NewPlayerObserver, NumberOfPlayersObserver,
+            GodCardChoiceObserver, ColorChoiceObserver, StepChoiceObserver {
 
     private Model model;
     private View view;
@@ -16,114 +17,85 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
 
     private Model.State currState;
 
-    public Controller (Model model, View view)
-
-    {
+    public Controller (Model model, View view) {
 
         this.model = model;
         this.view = view;
 
     }
 
-    /*
-    private void setupPlayers (Scanner input) {
-        boolean correctNumPlayers = false;
-
-        while (!correctNumPlayers) {
-            System.out.println("Insert the number of players ");
-            numPlayers = Integer.parseInt(input.nextLine());
-            if (numPlayers == 2 || numPlayers == 3)
-                correctNumPlayers = true;
-            else
-                System.out.println("ERROR: Number of players is wrong. Insert 2 or 3 ");
-        }
-
+    /**
+     * SetupPlayers manages the adding of numPlayers player, when it quits the while, all players have been added
+     * and it sets the current Player to the younger one who'll chose for first his GodCard
+     */
+    private void setupPlayers () {
         while (model.getPlayers().isEmpty() || model.getPlayers().size() < numPlayers) {
-            System.out.println("Insert Player name: ");
-            String nickname = input.nextLine();
-            System.out.println("Insert Birthday date in the form \"yyyy.MM.dd\" ");
-            String birthday = input.nextLine();
-            model.addPlayer(nickname, birthday);
+
+            view.askForNewPlayer();
         }
-        currPlayer = model.getPlayers().get(0);
+        //when I get out of the while, it means I've added all the players
+
+        model.setNextPlayer();
+        currPlayer = model.getCurrPlayer();
     }
 
-    private void setupCards (Scanner input) {
-        ArrayList<Player> players = model.getPlayers();
-        for (Player player : players) {
-            boolean correctValue = false;
-            while (!correctValue) {
-                boolean alreadyUsed = false;
-                //prints the GodNames and their description only of still available cards
-                for (String s : model.getGodNames()) {
-                    for (String x : model.getChosenCards()) {
-                        if (s.equals(x)) {
-                            alreadyUsed = true;
-                            break;
-                        }
-                    }
-                    if (!alreadyUsed) {
-                        System.out.println(s);
-                        System.out.println(model.getGodDescription(s));
-                    }
-                }
-                System.out.println("Select your GodCard from the available ones");
-                String godCardName = input.nextLine();
-                correctValue = model.assignCard(player, godCardName);
+    private void setupCards () {
+        int i = 0;
+        while (i < numPlayers) {
+            //prints the GodNames and their description only of still available cards
+            view.chooseGodCard(model.getGodNames(), model.getChosenCards());
+
+            if (!currPlayer.getGodCard().equals(null)) {
+                i++;
+                model.setNextPlayer();
+                currPlayer = model.getCurrPlayer();
             }
         }
+        //returns to the first player
+        model.setNextPlayer();
+        currPlayer = model.getCurrPlayer();
     }
 
-    private void setupBuilders (Scanner input) {
-        ArrayList<Player> players = model.getPlayers();
-        for (Player player : players) {
-            boolean correctValue = false;
-            while (!correctValue) {
-                boolean alreadyUsed = false;
-                System.out.println("Available builder colors: ");
-                //prints the colors only if they're still available
-                for (Builder.BuilderColor color : Builder.BuilderColor.values()) {
-                    for (String alreadyChosen : model.getChosenColors()) {
-                        if (alreadyChosen.equals(color.toString()))
-                            alreadyUsed = true;
-                    }
-                    if (!alreadyUsed)
-                        System.out.println(color.name().toUpperCase() + " ");
-                }
+    private void setupBuilders () {
+        int i = 0;
+        while (i < numPlayers) {
 
-                System.out.println("Select a color for your Builders ");
-                String chosenColor = input.nextLine().toUpperCase();
-                correctValue = model.assignColor(player, chosenColor);
+            view.chooseBuilderColor(model.getChosenColors());
+
+            if(!currPlayer.getBuilders().equals(null)) {
+                i++;
+                model.setNextPlayer();
+                currPlayer = model.getCurrPlayer();
             }
         }
+        model.setNextPlayer();
+        currPlayer = model.getCurrPlayer();
     }
 
-    private void gameMoves (Scanner input) {
-        ArrayList<Player> players = model.getPlayers();
-        currState = model.getCurrState();
+    private void gameMoves () {
         boolean win = false;
 
-        //I need to take Players Array everytime since it's a copy and doesn't refresh
-        //while (!win && model.getPlayers().size() > 1) {
-
+        while (!win && model.getPlayers().size() > 1) {
+            //the Step is updated after every effective move or build from the methods themselves (move and build)
             switch (model.getCurrStep(currPlayer)) {
                 case "MOVE":
-                    //hasLost deletes the player in case he lost and notifies the view
+                    //I send through a Model notify the possible destinations, then I set the chosen one in the update method
+                    model.findPossibleDestinations();
+                    //I verify if the currPlayer won
                     win = model.hasWon();
                     break;
                 case "BUILD":
-
+                    model.findPossibleDestinations();
                     break;
                 case "BOTH":
-                    //wait for a choice from the view
+                    view.chooseNextStep();
                     break;
                 case "END":
-
+                    model.setNextPlayer();
+                    currPlayer = model.getCurrPlayer();
                     break;
             }
-
-            model.setNextPlayer();
-            //a special notify of view have to pass buildDome flag, src Cell and dst Cell
+        }
     }
 
 
@@ -131,44 +103,47 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
      * the method game has to manage turns, match states and movement steps
      * cycling once for each setup phases and using a cycling iterator for the game one
      *
-     * @param source has to be System.in unless it's a test
      */
-    /*
-    private void game(InputStream source) {
-        Scanner input = new Scanner(source);
+
+    public void game() {
+        String winner;
+        while (currState != Model.State.ENDGAME) {
             switch (currState) {
+                case SETUP_NUMOFPLAYERS:
+                    view.askNumberOfPlayers();
+                    break;
+
                 case SETUP_PLAYERS:
-                    setupPlayers(input);
+                    setupPlayers();
                     model.setNextState();
                     currState = model.getCurrState();
                     break;
 
                 case SETUP_CARDS:
-                    setupCards(input);
+                    setupCards();
                     model.setNextState();
                     currState = model.getCurrState();
                     break;
 
                 case SETUP_BUILDERS:
-                    setupBuilders(input);
+                    setupBuilders();
                     model.setNextState();
                     currState = model.getCurrState();
                     break;
 
                 case GAME:
-                    gameMoves(input);
+                    gameMoves();
                     model.setNextState();
                     currState = model.getCurrState();
                     break;
             }
-        //notify to the view about the end of the game and the view'll se who won
-        /*
-        if (model.hasWon(currPlayer))
-            System.out.println("Player " + currPlayer.getNickname() + " won the game!!!");
+        }
+        if (model.hasWon())
+            winner = currPlayer.getNickname();
         else
-            System.out.println("Player " + model.getPlayers().get(0).getNickname() + " won the game!!!");
-
-    } */
+            winner = model.getPlayers().get(0).getNickname();
+        view.showWhoWon(winner);
+    }
 
 
     @Override
@@ -182,7 +157,35 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
     }
 
     @Override
-    public void onNicknameAndDateEntered(String nickname, String birthday) {
+    public void onNicknameAndDateInsertion(String nickname, String birthday) {
         model.addPlayer(nickname, birthday);
+    }
+
+    /**
+     * This update of Controller is called by a specific View's notify when the user insert a number
+     * @param num is the number entered bu the user
+     */
+    @Override
+    public void onNumberInsertion(int num) {
+        if (model.setNumberOfPlayers(num)) {
+            numPlayers = model.getNumPlayers();
+            model.setNextState();
+            currState = model.getCurrState();
+        }
+    }
+
+    @Override
+    public void onGodCardChoice(String godCardName) {
+        model.assignCard(godCardName);
+    }
+
+    @Override
+    public void onColorChoice(String chosenColor) {
+        model.assignColor(chosenColor);
+    }
+
+    @Override
+    public void onStepChoice(String chosenStep) {
+        model.setStepChoice(chosenStep);
     }
 }

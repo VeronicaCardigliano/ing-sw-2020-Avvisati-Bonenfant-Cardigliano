@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 public class Player {
-    private GodCard godCard;
+    private GodCard godCard = null;
     private final List<Builder> builders = new ArrayList<>();
     private final String nickname;
     private final long birthday;
