@@ -6,6 +6,7 @@ import it.polimi.ingsw.model.Player;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import static java.lang.Math.max;
 
@@ -24,12 +25,12 @@ public class YourMoveGodCard extends GodCard {
 
 
     public YourMoveGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
-                           int pushForce, boolean secondMoveDiffDest) {
+                           Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
 
         super(player, name, description, states);
 
-        this.pushForce = pushForce;
-        this.secondMoveDiffDst = secondMoveDiffDest;
+        this.pushForce = intParameters.get("pushForce");
+        this.secondMoveDiffDst = flagParameters.get("secondMoveDiffDst");
 
     }
 

@@ -13,7 +13,7 @@
     "numberOfMoves": 2,
     "states": [["MOVE", "BUILD"],
                 ["MOVE", "MOVE", "BUILD"]],
-    "secondMoveDiffDest": true},
+    "secondMoveDiffDst": true},
 
   "Athena":
   {"name": "Athena",

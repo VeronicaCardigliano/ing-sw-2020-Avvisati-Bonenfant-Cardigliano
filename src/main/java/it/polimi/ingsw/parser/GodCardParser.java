@@ -10,11 +10,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+/**
+ * Parses a json file with GodCard properties.
+ * GodCardParser offers one factory method to create GodCards given the player's name and the god's name.
+ */
 public class GodCardParser {
     private final JSONObject jsonObject;
     private final Set<String> godNames;
+
 
     public GodCardParser(String path) {
         String jsonString = null;
@@ -44,6 +51,9 @@ public class GodCardParser {
         JSONObject godObject;
         ArrayList<ArrayList<String>> states;
 
+        Map<String, Boolean> flagParameters = new HashMap<>();
+        Map<String, Integer> intParameters = new HashMap<>();
+
         if(godNames.contains(godName)) {
             godObject = jsonObject.getJSONObject(godName);
 
@@ -56,47 +66,46 @@ public class GodCardParser {
 
             switch (godObject.getString("type").toUpperCase()) {
                 case "MOVE":
-                    int pushForce = godObject.opt("pushForce") != null ? godObject.getInt("pushForce") : 0;
-                    boolean secondMoveDiffDest = godObject.opt("secondMoveDiffDest") != null &&
-                            godObject.getBoolean("secondMoveDiffDest");
+                    intParameters.put("pushForce", godObject.opt("pushForce") != null ? godObject.getInt("pushForce") : 0);
+                    flagParameters.put("secondMoveDiffDst", godObject.opt("secondMoveDiffDst") != null &&
+                            godObject.getBoolean("secondMoveDiffDst"));
 
-                    cardCreated = new YourMoveGodCard(player, name, description, states, pushForce, secondMoveDiffDest);
+                    cardCreated = new YourMoveGodCard(player, name, description, states, flagParameters, intParameters);
                     break;
 
                 case "BUILD":
-                    boolean canBuildDomeEverywhere = godObject.opt("canBuildDomeEverywhere") != null &&
-                            godObject.getBoolean("canBuildDomeEverywhere");
-                    boolean secondBuildNotDome = godObject.opt("secondBuildNotDome") != null &&
-                            godObject.getBoolean("secondBuildNotDome");
-                    boolean secondBuildDiffDest = godObject.opt("secondBuildDiffDest") != null &&
-                            godObject.getBoolean("secondBuildDiffDest");
-                    boolean blockUnderItself = godObject.opt("blockUnderItself") != null &&
-                            godObject.getBoolean("blockUnderItself");
-                    int numberOfBuilds = godObject.opt("numberOfBuilds") != null ? godObject.getInt("numberOfBuilds") : 1;
+                    flagParameters.put("canBuildDomeEverywhere", godObject.opt("canBuildDomeEverywhere") != null &&
+                            godObject.getBoolean("canBuildDomeEverywhere"));
+                    flagParameters.put("secondBuildNotDome", godObject.opt("secondBuildNotDome") != null &&
+                            godObject.getBoolean("secondBuildNotDome"));
+                    flagParameters.put("secondBuildDiffDest", godObject.opt("secondBuildDiffDest") != null &&
+                            godObject.getBoolean("secondBuildDiffDest"));
+                    flagParameters.put("blockUnderItself", godObject.opt("blockUnderItself") != null &&
+                            godObject.getBoolean("blockUnderItself"));
+                    intParameters.put("numberOfBuilds", godObject.opt("numberOfBuilds") != null ? godObject.getInt("numberOfBuilds") : 1);
 
-                    cardCreated = new YourBuildGodCard(player, name, description, states, numberOfBuilds,
-                            canBuildDomeEverywhere, secondBuildDiffDest, secondBuildNotDome, blockUnderItself);
+                    cardCreated = new YourBuildGodCard(player, name, description, states, flagParameters, intParameters);
                     break;
 
                 case "OPPONENT":
-                    boolean activeOnMoveUp = godObject.opt("activeOnMoveUp") != null && godObject.getBoolean("activeOnMoveUp");
-                    boolean blockMoveUp = godObject.opt("blockMoveUp") != null && godObject.getBoolean("blockMoveUp");
-                    cardCreated = new OpponentTurnGodCard(player, name, description, states, activeOnMoveUp, blockMoveUp);
+                    flagParameters.put("activeOnMoveUp", godObject.opt("activeOnMoveUp") != null && godObject.getBoolean("activeOnMoveUp"));
+                    flagParameters.put("blockMoveUp", godObject.opt("blockMoveUp") != null && godObject.getBoolean("blockMoveUp"));
+                    cardCreated = new OpponentTurnGodCard(player, name, description, states, flagParameters, intParameters);
                     break;
 
                 case "TURN":
-                    boolean blockMovingUpIfBuilt = godObject.opt("blockMovingUpIfBuilt") != null &&
-                            godObject.getBoolean("blockMovingUpIfBuilt");
-                    cardCreated = new YourTurnGodCard(player, name, description, states, blockMovingUpIfBuilt);
+                    flagParameters.put("blockMovingUpIfBuilt", godObject.opt("blockMovingUpIfBuilt") != null &&
+                            godObject.getBoolean("blockMovingUpIfBuilt"));
+                    cardCreated = new YourTurnGodCard(player, name, description, states, flagParameters, intParameters);
                     break;
 
                 case "WIN":
-                    int minimumDownStepsToWin = godObject.opt("minimumDownStepsToWin") != null ?
-                            godObject.getInt("minimumDownStepsToWin") : 3;
-                    int completeTowersToWin = godObject.opt("completeTowersToWin") != null ?
-                            godObject.getInt("completeTowersToWin") : IslandBoard.dimension * IslandBoard.dimension + 1;
+                    intParameters.put("minimumDownStepsToWin", godObject.opt("minimumDownStepsToWin") != null ?
+                            godObject.getInt("minimumDownStepsToWin") : 3);
+                    intParameters.put("completeTowersToWin", godObject.opt("completeTowersToWin") != null ?
+                            godObject.getInt("completeTowersToWin") : IslandBoard.dimension * IslandBoard.dimension + 1);
 
-                    cardCreated = new WinConditionGodCard(player, name, description, states, minimumDownStepsToWin, completeTowersToWin);
+                    cardCreated = new WinConditionGodCard(player, name, description, states, flagParameters, intParameters);
                     break;
 
                 default:
@@ -110,7 +119,7 @@ public class GodCardParser {
         return cardCreated;
     }
 
-    public ArrayList<ArrayList<String>> parseStates(JSONObject jsonObject) {
+    private ArrayList<ArrayList<String>> parseStates(JSONObject jsonObject) {
 
         //initialize states attribute which contains all possible states configurations
 

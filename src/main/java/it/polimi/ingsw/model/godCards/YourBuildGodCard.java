@@ -5,6 +5,7 @@ import it.polimi.ingsw.model.IslandBoard;
 import it.polimi.ingsw.model.Player;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class YourBuildGodCard extends GodCard {
 
@@ -21,15 +22,14 @@ public class YourBuildGodCard extends GodCard {
      */
 
     public YourBuildGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
-                            int numberOfBuilds, boolean canBuildDomeEverywhere, boolean secondBuildDiffDest,
-                            boolean secondBuildNotDome, boolean blockUnderItself) {
+                            Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
         super(player, name, description, states);
 
-        this.numberOfBuilds = numberOfBuilds;
-        this.canBuildDomeEverywhere = canBuildDomeEverywhere;
-        this.secondBuildDiffDest = secondBuildDiffDest;
-        this.secondBuildNotDome = secondBuildNotDome;
-        this.blockUnderItself = blockUnderItself;
+        this.numberOfBuilds = intParameters.get("numberOfBuilds");
+        this.canBuildDomeEverywhere = flagParameters.get("canBuildDomeEverywhere");
+        this.secondBuildDiffDest = flagParameters.get("secondBuildDiffDest");
+        this.secondBuildNotDome = flagParameters.get("secondBuildNotDome");
+        this.blockUnderItself = flagParameters.get("blockUnderItself");
 
     }
 

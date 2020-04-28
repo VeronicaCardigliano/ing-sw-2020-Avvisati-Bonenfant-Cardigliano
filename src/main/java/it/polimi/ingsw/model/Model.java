@@ -148,7 +148,7 @@ public class Model extends ModelObservable {
     /**
      * This method ensures that the players are added in order of birthday, from the youngest to the oldest
      * @param nickname: unique identifier of a new player
-     * @throws IllegalArgumentException if the nickname has already been added
+     * @param birthday: String that represents a birthday (yyyy.mm.dd)
      */
     //TODO: controls on correct date
     public boolean addPlayer (String nickname, String birthday) {
@@ -270,6 +270,7 @@ public class Model extends ModelObservable {
             for (y = 0; y < IslandBoard.dimension; y++){
 
                 switch (currStep) {
+                    //TODO caso BOTH?
                     case "MOVE":
                         if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y))
                             possibleDstBuilder.add(gameMap.getCell(x, y));

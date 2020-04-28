@@ -6,6 +6,7 @@ import it.polimi.ingsw.model.Player;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /*
  * GODS WITH WINCONDITION PROPERTY:
@@ -28,11 +29,11 @@ public class WinConditionGodCard extends GodCard {
      *
      */
     public WinConditionGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
-                               int minimumDownStepsToWin, int completeTowersToWin) {
+                               Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
         super(player, name, description, states);
 
-        this.minimumDownStepsToWin = minimumDownStepsToWin;
-        this.completeTowersToWin = completeTowersToWin;
+        this.minimumDownStepsToWin = intParameters.get("minimumDownStepsToWin");
+        this.completeTowersToWin = intParameters.get("completeTowersToWin");
     }
 
     @Override

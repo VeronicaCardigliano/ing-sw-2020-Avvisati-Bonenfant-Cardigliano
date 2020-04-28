@@ -2,9 +2,9 @@ package it.polimi.ingsw.model.godCards;
 
 import it.polimi.ingsw.model.Event;
 import it.polimi.ingsw.model.Player;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * @author thomas
@@ -26,11 +26,11 @@ public class OpponentTurnGodCard extends GodCard {
      *
      */
     public OpponentTurnGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
-                               boolean activeOnMoveUp, boolean blockMoveUp) {
+                               Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
         super(player, name, description, states);
 
-        this.activeOnMoveUp = activeOnMoveUp;
-        this.blockMoveUp = blockMoveUp;
+        this.activeOnMoveUp = flagParameters.get("activeOnMoveUp");
+        this.blockMoveUp = flagParameters.get("blockMoveUp");
     }
 
     @Override

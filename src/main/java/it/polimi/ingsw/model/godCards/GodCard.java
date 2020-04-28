@@ -2,7 +2,6 @@ package it.polimi.ingsw.model.godCards;
 
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 import it.polimi.ingsw.model.Cell;
 import it.polimi.ingsw.model.Event;

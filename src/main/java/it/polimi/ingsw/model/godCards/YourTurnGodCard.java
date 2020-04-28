@@ -3,6 +3,7 @@ package it.polimi.ingsw.model.godCards;
 import it.polimi.ingsw.model.Player;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class YourTurnGodCard extends GodCard {
 
@@ -15,10 +16,10 @@ public class YourTurnGodCard extends GodCard {
      * @param player     whose card is
      */
     public YourTurnGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
-                           boolean blockMovingUpIfBuilt) {
+                           Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
         super(player, name, description, states);
 
-        this.blockMovingUpIfBuilt = blockMovingUpIfBuilt;
+        this.blockMovingUpIfBuilt = flagParameters.get("blockMovingUpIfBuilt");
 
     }
 
