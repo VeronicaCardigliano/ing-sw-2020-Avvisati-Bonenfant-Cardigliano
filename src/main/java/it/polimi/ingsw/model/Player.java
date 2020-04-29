@@ -25,25 +25,16 @@ public class Player {
      */
 
     public Player(String nickname) throws IllegalArgumentException {
-        this (nickname, "1970.02.14");
+        this (nickname, 0);
     }
 
-    public Player(String nickname, String birthday) throws IllegalArgumentException {
-        long epoch = 0;
-
+    public Player(String nickname, long birthday) {
         if (nickname == null)
             throw new IllegalArgumentException ("Nickname can't be null");
         this.nickname = nickname;
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
-        try {
-            epoch = df.parse(birthday).getTime();
-        }
-        catch (ParseException e) {
-            e.printStackTrace();
-        }
+        this.birthday = birthday;
 
-        this.birthday = epoch;
     }
 
     public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {

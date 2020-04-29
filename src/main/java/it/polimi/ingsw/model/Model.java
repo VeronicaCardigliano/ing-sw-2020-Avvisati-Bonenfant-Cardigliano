@@ -2,6 +2,11 @@ package it.polimi.ingsw.model;
 
 import it.polimi.ingsw.parser.GodCardParser;
 
+import java.sql.Time;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -161,34 +166,47 @@ public class Model extends ModelObservable {
      */
     //TODO: controls on correct date
     public boolean addPlayer (String nickname, String birthday) {
+        boolean added = true;
         boolean younger = false;
+        Player newPlayer;
         Player tmp = null;
 
         if (nickname == null) {
             notifyWrongInsertion("ERROR: Nickname can't be null ");
-            return false;
-        }
-        for (Player x: players) {
-            if (nickname.equals(x.getNickname())) {
-                notifyWrongInsertion("ERROR: This nickname has already been used");
-                return false;
-            }
+            added = false;
         }
 
-        Player newPlayer = new Player(nickname, birthday);
-        for (Player x: players)
-            //birthday is the distance since the epoch 1970-01-01 00:00:00.0 so the shorter it is, the older is the player
-            if (x.getBirthday() < newPlayer.getBirthday()) {
-                //newPlayer take the place of x and is returned in tmp
-                tmp = players.set(players.indexOf(x), newPlayer);
-                younger = true;
+        if(players.contains(nickname)) {
+            notifyWrongInsertion("Nickname: " + nickname + " is already in use.");
+            added = false;
+        }
+
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
+        long epoch = 0;
+
+        try {
+            epoch = df.parse(birthday).getTime();
+
+            if(epoch > LocalDate.now().toEpochDay()) {
+                notifyWrongInsertion("Invalid birth date");
+                added = false;
             }
 
-        if (younger)
-            players.add(tmp);
-        else
-            players.add(newPlayer);
-        return true;
+        } catch (ParseException e) {
+            notifyWrongInsertion("Invalid birth date format");
+            added = false;
+        }
+
+        if(added) {
+            newPlayer = new Player(nickname, epoch);
+
+            for(Player p : players)
+                if(p.getBirthday() > newPlayer.getBirthday())
+                    players.add(players.indexOf(p), newPlayer);
+        }
+
+        return added;
     }
 
     /** This method is used by game() to assign a godCard to a player
