@@ -9,10 +9,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Parses a json file with GodCard properties.
@@ -20,11 +17,13 @@ import java.util.Set;
  */
 public class GodCardParser {
     private final JSONObject jsonObject;
-    private final Set<String> godNames;
+    private final Map<String, String> godDescriptions = new HashMap<>();
 
 
     public GodCardParser(String path) {
         String jsonString = null;
+        Set<String> godNames = new HashSet<>();
+
         try {
             //I need to save the file content in a string
             jsonString = new String(Files.readAllBytes(Paths.get(path)));
@@ -35,14 +34,20 @@ public class GodCardParser {
             this.jsonObject = new JSONObject(jsonString);
         else
             this.jsonObject = new JSONObject("{}");
+
         godNames = jsonObject.keySet();
+
+        for(String godName : godNames)
+            godDescriptions.put(godName, getDescription(jsonObject, godName));
+
     }
 
-    public Set<String> getGodNames() {
-        return godNames;
+    public Map<String, String> getGodDescriptions() {
+        return godDescriptions;
     }
 
-    public String getDescription (String godCardName) {
+
+    private static String getDescription (JSONObject jsonObject, String godCardName) {
             return jsonObject.getJSONObject(godCardName).getString("description");
     }
 
@@ -54,7 +59,7 @@ public class GodCardParser {
         Map<String, Boolean> flagParameters = new HashMap<>();
         Map<String, Integer> intParameters = new HashMap<>();
 
-        if(godNames.contains(godName)) {
+        if(godDescriptions.keySet().contains(godName)) {
             godObject = jsonObject.getJSONObject(godName);
 
             //possible attributes

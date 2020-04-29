@@ -1,11 +1,10 @@
 package it.polimi.ingsw.view;
 
 import it.polimi.ingsw.model.Builder;
-import it.polimi.ingsw.model.Model;
-import it.polimi.ingsw.model.Player;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -36,7 +35,7 @@ public class View extends ViewObservable implements BuilderPossibleMoveObserver,
         notifyNewPlayer(nickname, birthday);
     }
 
-    public void chooseGodCard (Set<String> godNames, Set<String> chosenGodCards) {
+    public void chooseGodCard (Map<String, String> godDescriptions, Set<String> chosenGodCards) {
  /*       boolean alreadyUsed = false;
         for (String s : godNames) {
             for (String x : chosenGodCards) {

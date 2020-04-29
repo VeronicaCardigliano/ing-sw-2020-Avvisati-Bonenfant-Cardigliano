@@ -89,11 +89,17 @@ public class Model extends ModelObservable {
         return currPlayer;
     }
 
-    public Set<String> getGodNames() {
-        return this.cardsParser.getGodNames();
+    public String getCurrPlayerName() {
+        return currPlayer.getNickname();
     }
 
-    public String getGodDescription(String godName) { return this.cardsParser.getDescription(godName); }
+    public Set<String> getGodNames() {
+        return this.cardsParser.getGodDescriptions().keySet();
+    }
+
+    public Map<String, String> getGodDescriptions() {
+        return this.cardsParser.getGodDescriptions();
+    }
 
     public Set<String> getChosenCards () {
         return this.chosenCards;
@@ -213,7 +219,7 @@ public class Model extends ModelObservable {
         return true;
     }
 
-    /** This method is used by game() to assign a color to a player
+    /** This method is used by game() to create 2 builders for current player and assign the chosen color to them
      * @param chosenColor the name of the chosen color
      * It gives an error whether the player choose a different name from the ones printed */
 
@@ -243,6 +249,16 @@ public class Model extends ModelObservable {
         currPlayer.setBuilders(new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)),
                 new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)));
         return true;
+    }
+
+    public boolean setCurrPlayerBuilders(int builder1I, int builder1J, int builder2I, int builder2J) {
+        boolean set = true;
+
+        Cell cell1 = gameMap.getCell(builder1I, builder1J);
+        Cell cell2 = gameMap.getCell(builder2I, builder2J);
+
+        return cell1.isOccupied() && cell2.isOccupied() &&
+                cell1.setOccupant(currPlayer.getBuilders().get(0)) && cell2.setOccupant(currPlayer.getBuilders().get(1));
     }
 
     /**

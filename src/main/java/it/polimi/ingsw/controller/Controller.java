@@ -28,7 +28,7 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
         int i = 0;
         while (i < numPlayers) {
             //prints the GodNames and their description only of still available cards
-            view.chooseGodCard(model.getGodNames(), model.getChosenCards());
+            view.chooseGodCard(model.getGodDescriptions(), model.getChosenCards());
 
             if (!(currPlayer.getGodCard() == null)) {
                 i++;
@@ -62,7 +62,7 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                     //I send through a Model notify the possible destinations, then I set the chosen one in the update method
                     model.findPossibleDestinations();
                     //I verify if the currPlayer won
-                    win = model.hasWon();
+                    win = model.hasWon(); //TODO decidere se spostarlo fuori dallo switch
                     break;
                 case "BUILD":
                     model.findPossibleDestinations();

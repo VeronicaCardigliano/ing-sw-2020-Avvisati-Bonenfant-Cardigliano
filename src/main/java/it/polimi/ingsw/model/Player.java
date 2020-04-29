@@ -46,6 +46,22 @@ public class Player {
         this.birthday = epoch;
     }
 
+    public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
+        return godCard.askMove(i_src, j_src, i_dst, j_dst);
+    }
+
+    public boolean askBuild(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
+        return godCard.askBuild(i_src, j_src, i_dst, j_dst, buildDome);
+    }
+
+    public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
+        return godCard.move(i_src, j_src, i_dst, j_dst);
+    }
+
+    public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
+        return godCard.build(i_src, j_src, i_dst, j_dst);
+    }
+
     public void setBuilders (Builder builder1, Builder builder2) {
         if (builder1 == null || builder2 == null)
             throw new IllegalArgumentException ("Nickname can't be null");
