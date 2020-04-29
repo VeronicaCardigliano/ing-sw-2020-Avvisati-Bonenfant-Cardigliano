@@ -65,13 +65,16 @@ class ModelTest {
         assertTrue(testModel.addPlayer("Anna","2006.10.11"));
         playersListTest = testModel.getPlayers();
 
-        assertTrue(testModel.assignCard(playersListTest.get(0), "Zeus"));
-        System.out.println("\nExpected error for GodCard name already used...");
-        assertFalse(testModel.assignCard(playersListTest.get(1), "Zeus"));
-        assertTrue(testModel.assignCard(playersListTest.get(1), "Atlas"));
-        System.out.println("\nExpected error for non-existent GodCard name...");
-        assertFalse(testModel.assignCard(playersListTest.get(2), "Ciao"));
-        assertTrue(testModel.assignCard(playersListTest.get(2), "Limus"));
+        testModel.setNextPlayer();
+        assertTrue(testModel.assignCard("Zeus"));
+        //System.out.println("\nExpected error for GodCard name already used...");
+        testModel.setNextPlayer();
+        assertFalse(testModel.assignCard( "Zeus"));
+        assertTrue(testModel.assignCard("Atlas"));
+        //System.out.println("\nExpected error for non-existent GodCard name...");
+        testModel.setNextPlayer();
+        assertFalse(testModel.assignCard("Ciao"));
+        assertTrue(testModel.assignCard("Limus"));
     }
 
     @Test
@@ -80,37 +83,14 @@ class ModelTest {
         testModel.addPlayer("Luigi", "1999.02.01");
         playersListTest = testModel.getPlayers();
 
-        assertTrue(testModel.assignColor(playersListTest.get(0), "GREY"));
-        System.out.println("\nExpected error for color already used...");
-        assertFalse(testModel.assignColor(playersListTest.get(1), ("GREY")));
-        System.out.println("\nExpected error for non-existent color name...");
-        assertFalse(testModel.assignColor(playersListTest.get(1), ("YELLOW")));
-        assertTrue(testModel.assignColor(playersListTest.get(1), ("LIGHT_BLUE")));
-    }
-
-    @Test
-    public void correctlyDeletedIfLoser() {
-        testModel.addPlayer("Luigi", "1999.02.01");
-        playersListTest = testModel.getPlayers();
-        ArrayList<Cell> possibleDstBuilder1 = new ArrayList<>();
-        ArrayList<Cell> possibleDstBuilder2 = new ArrayList<>();
-        ArrayList<Cell> possibleDstBuilder1forDome = new ArrayList<>();
-        ArrayList<Cell> possibleDstBuilder2forDome = new ArrayList<>();
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> testModel.hasLostAfterMove(playersListTest.get(0), null, null));
-
-        testModel.hasLostAfterMove(playersListTest.get(0), possibleDstBuilder1, possibleDstBuilder2);
-        playersListTest = testModel.getPlayers();
-
-        System.out.println("\nAssuring that players are correctly deleted after they've lost..");
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> playersListTest.get(0));
-
-        testModel.addPlayer("Carlo", "1998.04.20");
-        playersListTest = testModel.getPlayers();
-        testModel.hasLostAfterBuild(playersListTest.get(0), possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
-        playersListTest = testModel.getPlayers();
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> playersListTest.get(0));
-
+        testModel.setNextPlayer();
+        assertTrue(testModel.assignColor("GREY"));
+        //System.out.println("\nExpected error for color already used...");
+        testModel.setNextPlayer();
+        assertFalse(testModel.assignColor( "GREY"));
+        //System.out.println("\nExpected error for non-existent color name...");
+        assertFalse(testModel.assignColor("YELLOW"));
+        assertTrue(testModel.assignColor("LIGHT_BLUE"));
     }
 
 }

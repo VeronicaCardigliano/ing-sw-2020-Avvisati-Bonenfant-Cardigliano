@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 public class Player {
-    private GodCard godCard = null;
+    private GodCard godCard;
     private final List<Builder> builders = new ArrayList<>();
     private final String nickname;
     private final long birthday;
@@ -25,7 +25,7 @@ public class Player {
      */
 
     public Player(String nickname) throws IllegalArgumentException {
-        this(nickname, "1970.02.14");
+        this (nickname, "1970.02.14");
     }
 
     public Player(String nickname, String birthday) throws IllegalArgumentException {
@@ -38,7 +38,8 @@ public class Player {
         SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
         try {
             epoch = df.parse(birthday).getTime();
-        } catch (ParseException e) {
+        }
+        catch (ParseException e) {
             e.printStackTrace();
         }
 
@@ -74,5 +75,9 @@ public class Player {
 
     public long getBirthday () {
         return birthday;
+    }
+
+    public void startTurn() {
+        godCard.startTurn();
     }
 }

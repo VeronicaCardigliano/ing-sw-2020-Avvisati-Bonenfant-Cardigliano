@@ -47,7 +47,7 @@ public class Model extends ModelObservable {
 
         this.gameMap = new IslandBoard();
         this.cardsParser = new GodCardParser(jsonPath);
-        this.currState = State.SETUP_PLAYERS;
+        this.currState = State.SETUP_NUMOFPLAYERS;
     }
 
     /**
@@ -72,7 +72,7 @@ public class Model extends ModelObservable {
                 currState = State.ENDGAME;
                 break;
         }
-        notifyState(currState);
+        //notifyState(currState);
     }
 
 
@@ -106,8 +106,11 @@ public class Model extends ModelObservable {
     public void setNextPlayer () {
         if (currState == State.SETUP_PLAYERS)
             currPlayer = players.get(0);
-        else
+        else {
             currPlayer = turnManager.next();
+            if (currState == State.GAME)
+                currPlayer.startTurn();
+        }
     }
 
     /**
@@ -165,20 +168,20 @@ public class Model extends ModelObservable {
                 return false;
             }
         }
+
         Player newPlayer = new Player(nickname, birthday);
         for (Player x: players)
             //birthday is the distance since the epoch 1970-01-01 00:00:00.0 so the shorter it is, the older is the player
             if (x.getBirthday() < newPlayer.getBirthday()) {
+                //newPlayer take the place of x and is returned in tmp
                 tmp = players.set(players.indexOf(x), newPlayer);
                 younger = true;
             }
 
         if (younger)
             players.add(tmp);
-        else {
-            //newPlayer take the place of x and is returned in tmp
+        else
             players.add(newPlayer);
-        }
         return true;
     }
 
@@ -270,7 +273,6 @@ public class Model extends ModelObservable {
             for (y = 0; y < IslandBoard.dimension; y++){
 
                 switch (currStep) {
-                    //TODO caso BOTH?
                     case "MOVE":
                         if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y))
                             possibleDstBuilder.add(gameMap.getCell(x, y));
@@ -279,6 +281,7 @@ public class Model extends ModelObservable {
                         if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
                                 currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome))
                             possibleDstBuilder.add(gameMap.getCell(x, y));
+                        //case BOTH exception
                 }
             }
         return possibleDstBuilder;
@@ -291,8 +294,8 @@ public class Model extends ModelObservable {
         if (possibleDstBuilder1 == null || possibleDstBuilder2 == null)
             throw new IllegalArgumentException("Possible destinations arrays can't be null ");
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) {
-            //System.out.println("Player " + currPlayer.getNickname() + " lost the game");
-            notifyLoss();
+
+            notifyLoss(currPlayer.getNickname());
             deletePlayer(currPlayer);
             return true;
         }
@@ -305,8 +308,8 @@ public class Model extends ModelObservable {
     public boolean hasLostDuringBuild () {
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty() &&
                 possibleDstBuilder1forDome.isEmpty() && possibleDstBuilder2forDome.isEmpty()) {
-            notifyLoss();
-            //System.out.println("Player " + currPlayer.getNickname() + " lost the game");
+
+            notifyLoss(currPlayer.getNickname());
             deletePlayer(currPlayer);
             return true;
         }
@@ -365,6 +368,10 @@ public class Model extends ModelObservable {
             this.currStep = step;
         else
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
+    }
+
+    protected IslandBoard getGameMap () {
+        return gameMap;
     }
 
 }

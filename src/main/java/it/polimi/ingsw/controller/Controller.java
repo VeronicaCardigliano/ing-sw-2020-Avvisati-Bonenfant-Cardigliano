@@ -24,36 +24,18 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
 
     }
 
-    /**
-     * SetupPlayers manages the adding of numPlayers player, when it quits the while, all players have been added
-     * and it sets the current Player to the younger one who'll chose for first his GodCard
-     */
-    private void setupPlayers () {
-        while (model.getPlayers().isEmpty() || model.getPlayers().size() < numPlayers) {
-
-            view.askForNewPlayer();
-        }
-        //when I get out of the while, it means I've added all the players
-
-        model.setNextPlayer();
-        currPlayer = model.getCurrPlayer();
-    }
-
     private void setupCards () {
         int i = 0;
         while (i < numPlayers) {
             //prints the GodNames and their description only of still available cards
             view.chooseGodCard(model.getGodNames(), model.getChosenCards());
 
-            if (!currPlayer.getGodCard().equals(null)) {
+            if (!(currPlayer.getGodCard() == null)) {
                 i++;
                 model.setNextPlayer();
                 currPlayer = model.getCurrPlayer();
             }
         }
-        //returns to the first player
-        model.setNextPlayer();
-        currPlayer = model.getCurrPlayer();
     }
 
     private void setupBuilders () {
@@ -62,14 +44,12 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
 
             view.chooseBuilderColor(model.getChosenColors());
 
-            if(!currPlayer.getBuilders().equals(null)) {
+            if(!(currPlayer.getBuilders() == null)) {
                 i++;
                 model.setNextPlayer();
                 currPlayer = model.getCurrPlayer();
             }
         }
-        model.setNextPlayer();
-        currPlayer = model.getCurrPlayer();
     }
 
     private void gameMoves () {
@@ -114,24 +94,37 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                     break;
 
                 case SETUP_PLAYERS:
-                    setupPlayers();
+                    while (model.getPlayers().isEmpty() || model.getPlayers().size() < numPlayers)
+                        view.askForNewPlayer();
                     model.setNextState();
                     currState = model.getCurrState();
                     break;
 
                 case SETUP_CARDS:
+                    //returns to the first player
+                    model.setNextPlayer();
+                    currPlayer = model.getCurrPlayer();
+
                     setupCards();
                     model.setNextState();
                     currState = model.getCurrState();
                     break;
 
                 case SETUP_BUILDERS:
+                    //returns to the first player
+                    model.setNextPlayer();
+                    currPlayer = model.getCurrPlayer();
+
                     setupBuilders();
                     model.setNextState();
                     currState = model.getCurrState();
                     break;
 
                 case GAME:
+                    //returns to the first player
+                    model.setNextPlayer();
+                    currPlayer = model.getCurrPlayer();
+
                     gameMoves();
                     model.setNextState();
                     currState = model.getCurrState();

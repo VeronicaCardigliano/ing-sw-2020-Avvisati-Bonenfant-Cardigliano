@@ -13,7 +13,7 @@ import java.util.Set;
  * view class notifies Controller (as an Observable) and is notified by Model (as an observer)
  */
 public class View extends ViewObservable implements BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
-                            ErrorsObserver {
+                            ErrorsObserver, PlayerLoseObserver {
 
     private Scanner input;
 
@@ -98,4 +98,8 @@ public class View extends ViewObservable implements BuilderPossibleMoveObserver,
         System.out.println(error);
     }
 
+    @Override
+    public void onLossUpdate(String currPlayer) {
+        System.out.println("Player " + currPlayer + " lost the game");
+    }
 }
