@@ -1,7 +1,8 @@
 package it.polimi.ingsw.view;
 
 import java.util.List;
+import java.util.Set;
 
 public interface BuilderPossibleMoveObserver {
-    void updatePossibleMoveDst (List possibleDstBuilder1, List possibleDstBuilder2);
+    void updatePossibleMoveDst (Set possibleDstBuilder1, Set possibleDstBuilder2);
 }

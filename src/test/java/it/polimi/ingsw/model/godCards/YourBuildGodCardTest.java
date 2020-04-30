@@ -1,8 +1,8 @@
 package it.polimi.ingsw.model.godCards;
 
-import it.polimi.ingsw.model.Builder;
-import it.polimi.ingsw.model.Cell;
-import it.polimi.ingsw.model.IslandBoard;
+import it.polimi.ingsw.model.gameMap.Builder;
+import it.polimi.ingsw.model.gameMap.Cell;
+import it.polimi.ingsw.model.gameMap.IslandBoard;
 import it.polimi.ingsw.model.Player;
 import it.polimi.ingsw.parser.GodCardParser;
 import org.junit.jupiter.api.BeforeAll;

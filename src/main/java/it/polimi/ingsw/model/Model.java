@@ -1,11 +1,13 @@
 package it.polimi.ingsw.model;
 
+import it.polimi.ingsw.model.gameMap.Builder;
+import it.polimi.ingsw.model.gameMap.Cell;
+import it.polimi.ingsw.model.gameMap.Coordinates;
+import it.polimi.ingsw.model.gameMap.IslandBoard;
 import it.polimi.ingsw.parser.GodCardParser;
 
-import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -38,10 +40,10 @@ public class Model extends ModelObservable {
     /**
      * PossibleDst Arrays contains the list of Cells in which the player can move or build
      */
-    protected ArrayList<Cell> possibleDstBuilder1;
-    protected ArrayList<Cell> possibleDstBuilder2;
-    protected ArrayList<Cell> possibleDstBuilder1forDome;
-    protected ArrayList<Cell> possibleDstBuilder2forDome;
+    protected Set<Coordinates> possibleDstBuilder1;
+    protected Set<Coordinates> possibleDstBuilder2;
+    protected Set<Coordinates> possibleDstBuilder1forDome;
+    protected Set<Coordinates> possibleDstBuilder2forDome;
 
     /**
      * The constructor initialises the GameMap and assigns it to the GodCard as a static attribute, common to each card.
@@ -115,6 +117,9 @@ public class Model extends ModelObservable {
     }
 
     public void setNextPlayer () {
+        if(players.isEmpty())
+            throw new RuntimeException("there are no players in this lobby");
+
         if (currState == State.SETUP_PLAYERS)
             currPlayer = players.get(0);
         else {
@@ -164,21 +169,23 @@ public class Model extends ModelObservable {
      * @param nickname: unique identifier of a new player
      * @param birthday: String that represents a birthday (yyyy.mm.dd)
      */
-    //TODO: controls on correct date
     public boolean addPlayer (String nickname, String birthday) {
-        boolean added = true;
-        boolean younger = false;
+        boolean canAdd = true;
         Player newPlayer;
-        Player tmp = null;
 
         if (nickname == null) {
             notifyWrongInsertion("ERROR: Nickname can't be null ");
-            added = false;
+            canAdd = false;
+        }
+
+        if(players.size() >= numPlayers) {
+            notifyWrongInsertion("The lobby is full");
+            canAdd = false;
         }
 
         if(players.contains(nickname)) {
             notifyWrongInsertion("Nickname: " + nickname + " is already in use.");
-            added = false;
+            canAdd = false;
         }
 
 
@@ -188,25 +195,28 @@ public class Model extends ModelObservable {
         try {
             epoch = df.parse(birthday).getTime();
 
-            if(epoch > LocalDate.now().toEpochDay()) {
+            if(epoch > System.currentTimeMillis()) {
                 notifyWrongInsertion("Invalid birth date");
-                added = false;
+                canAdd = false;
             }
 
         } catch (ParseException e) {
             notifyWrongInsertion("Invalid birth date format");
-            added = false;
+            canAdd = false;
         }
 
-        if(added) {
-            newPlayer = new Player(nickname, epoch);
-
-            for(Player p : players)
-                if(p.getBirthday() > newPlayer.getBirthday())
-                    players.add(players.indexOf(p), newPlayer);
+        if(canAdd) {
+            players.add(new Player(nickname, epoch));
+            players.sort((a, b) -> {
+                long difference = b.getBirthday() - a.getBirthday();
+                if(difference < 0) return -1;
+                if(difference > 0) return 1;
+                return 0;
+            });
         }
 
-        return added;
+
+        return canAdd;
     }
 
     /** This method is used by game() to assign a godCard to a player
@@ -269,13 +279,14 @@ public class Model extends ModelObservable {
         return true;
     }
 
-    public boolean setCurrPlayerBuilders(int builder1I, int builder1J, int builder2I, int builder2J) {
+    //TODO aggiungere la notifica del piazzamento dei builder
+    public boolean setCurrPlayerBuilders(Coordinates builder1Coord, Coordinates builder2Coord) {
         boolean set = true;
 
-        Cell cell1 = gameMap.getCell(builder1I, builder1J);
-        Cell cell2 = gameMap.getCell(builder2I, builder2J);
+        Cell cell1 = gameMap.getCell(builder1Coord);
+        Cell cell2 = gameMap.getCell(builder2Coord);
 
-        return cell1.isOccupied() && cell2.isOccupied() &&
+        return !cell1.isOccupied() && !cell2.isOccupied() &&
                 cell1.setOccupant(currPlayer.getBuilders().get(0)) && cell2.setOccupant(currPlayer.getBuilders().get(1));
     }
 
@@ -296,10 +307,10 @@ public class Model extends ModelObservable {
      * @param builderIndex index of the Builder x of the currentPlayer
      * @return the possible destination cells for a MOVE
      */
-    public ArrayList<Cell> possibleDstCells (int builderIndex, boolean buildDome) {
-        ArrayList<Cell> possibleDstBuilder = new ArrayList<>();
+    public Set<Coordinates> possibleDstCells (int builderIndex, boolean buildDome) {
+        Set<Coordinates> possibleDstBuilder = new HashSet<>();
         Builder builder = currPlayer.getBuilders().get(builderIndex);
-        Cell src = builder.getCell();
+        Coordinates src = builder.getCell();
         int x, y;
         int i_src = src.getI();
         int j_src = src.getJ();
@@ -309,12 +320,14 @@ public class Model extends ModelObservable {
                 switch (currStep) {
                     case "MOVE":
                         if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y))
-                            possibleDstBuilder.add(gameMap.getCell(x, y));
+                            possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
+                            break;
 
                     case "BUILD":
                         if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
                                 currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome))
-                            possibleDstBuilder.add(gameMap.getCell(x, y));
+                            possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
+                            break;
                         //case BOTH exception
                 }
             }
@@ -350,7 +363,7 @@ public class Model extends ModelObservable {
         return false;
     }
 
-    public void effectiveBuild (Cell src, Cell dst, boolean buildDome) {
+    public void effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
         currPlayer.getGodCard().build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
 
         //build method increase the currStep of the player
@@ -361,7 +374,7 @@ public class Model extends ModelObservable {
             setNextPlayer();
     }
 
-    public void effectiveMove (Cell src, Cell dst) {
+    public void effectiveMove (Coordinates src, Coordinates dst) {
         currPlayer.getGodCard().move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
 
         //move method increases the currStep of the player
@@ -399,7 +412,7 @@ public class Model extends ModelObservable {
     //Step in currPlayer.GodCard is BOTH, then I set the step in function of what user decides to do
     public void setStepChoice (String step) {
         if (step.equals("MOVE") || step.equals("BUILD"))
-            this.currStep = step;
+            currPlayer.forceStep(step);
         else
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
     }

@@ -1,8 +1,6 @@
 package it.polimi.ingsw.model;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
+import it.polimi.ingsw.model.gameMap.Cell;
 
 
 public class EventTest {

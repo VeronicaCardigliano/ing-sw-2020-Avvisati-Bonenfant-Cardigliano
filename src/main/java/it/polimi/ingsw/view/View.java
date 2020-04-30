@@ -1,9 +1,8 @@
 package it.polimi.ingsw.view;
 
-import it.polimi.ingsw.model.Builder;
+import it.polimi.ingsw.model.gameMap.Builder;
 
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -81,13 +80,13 @@ public class View extends ViewObservable implements BuilderPossibleMoveObserver,
     }
 
     @Override
-    public void updatePossibleBuildDst(List possibleDstBuilder1, List possibleDstBuilder2, List possibleDstBuilder1forDome, List possibleDstBuilder2forDome) {
+    public void updatePossibleBuildDst(Set possibleDstBuilder1, Set possibleDstBuilder2, Set possibleDstBuilder1forDome, Set possibleDstBuilder2forDome) {
         //show the possible destinations received, and take the choice notifying it to controller
         //notifyBuildChoice(src, dst, buildDome);
     }
 
     @Override
-    public void updatePossibleMoveDst(List possibleDstBuilder1, List possibleDstBuilder2) {
+    public void updatePossibleMoveDst(Set possibleDstBuilder1, Set possibleDstBuilder2) {
         //show the possible destinations received
         //notifyMoveChoice(src, dst);
     }

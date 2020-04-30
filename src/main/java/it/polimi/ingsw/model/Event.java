@@ -1,6 +1,9 @@
 package it.polimi.ingsw.model;
 
 
+import it.polimi.ingsw.model.gameMap.Cell;
+import it.polimi.ingsw.model.gameMap.IslandBoard;
+
 /**
  * @author thomas
  *

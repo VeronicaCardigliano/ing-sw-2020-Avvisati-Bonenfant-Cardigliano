@@ -1,5 +1,6 @@
-package it.polimi.ingsw.model;
+package it.polimi.ingsw.model.gameMap;
 
+import it.polimi.ingsw.model.Event;
 import it.polimi.ingsw.model.godCards.OpponentTurnGodCard;
 
 import java.util.HashSet;
@@ -33,8 +34,12 @@ public class IslandBoard {
     }
 
     public Cell getCell(int i, int j) throws RuntimeException {
-        if (i >= dimension || j >= dimension || i < 0 || j < 0) throw new RuntimeException("Invalid coordinate");
+        if (i >= dimension || j >= dimension || i < 0 || j < 0) throw new RuntimeException("Invalid coordinates");
         return matrix[i][j];
+    }
+
+    public Cell getCell(Coordinates coord) {
+        return getCell(coord.getI(), coord.getJ());
     }
 
     /*

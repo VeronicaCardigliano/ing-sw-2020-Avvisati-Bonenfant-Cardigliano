@@ -1,6 +1,6 @@
 package it.polimi.ingsw.parser;
 
-import it.polimi.ingsw.model.IslandBoard;
+import it.polimi.ingsw.model.gameMap.IslandBoard;
 import it.polimi.ingsw.model.Player;
 import it.polimi.ingsw.model.godCards.*;
 import org.json.JSONArray;

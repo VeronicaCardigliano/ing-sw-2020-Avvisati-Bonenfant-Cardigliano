@@ -1,9 +1,8 @@
 package it.polimi.ingsw.model.godCards;
 
-import it.polimi.ingsw.model.Cell;
-import it.polimi.ingsw.model.IslandBoard;
+import it.polimi.ingsw.model.gameMap.Cell;
+import it.polimi.ingsw.model.gameMap.IslandBoard;
 import it.polimi.ingsw.model.Player;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Map;

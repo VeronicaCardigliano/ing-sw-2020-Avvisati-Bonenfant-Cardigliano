@@ -1,4 +1,6 @@
-package it.polimi.ingsw.model;
+package it.polimi.ingsw.model.gameMap;
+
+import it.polimi.ingsw.model.Player;
 
 /**
  * @author veronica

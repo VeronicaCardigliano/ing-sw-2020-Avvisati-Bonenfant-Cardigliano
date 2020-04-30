@@ -1,9 +1,8 @@
 package it.polimi.ingsw.model;
 
+import it.polimi.ingsw.model.gameMap.Builder;
 import it.polimi.ingsw.model.godCards.GodCard;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,5 +85,9 @@ public class Player {
 
     public void startTurn() {
         godCard.startTurn();
+    }
+
+    public void forceStep(String step) {
+        godCard.forceState(step);
     }
 }

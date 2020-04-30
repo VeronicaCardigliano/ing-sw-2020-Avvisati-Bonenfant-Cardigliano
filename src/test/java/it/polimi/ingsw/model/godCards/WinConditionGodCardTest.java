@@ -1,6 +1,9 @@
 package it.polimi.ingsw.model.godCards;
 
 import it.polimi.ingsw.model.*;
+import it.polimi.ingsw.model.gameMap.Builder;
+import it.polimi.ingsw.model.gameMap.Cell;
+import it.polimi.ingsw.model.gameMap.IslandBoard;
 import it.polimi.ingsw.parser.GodCardParser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

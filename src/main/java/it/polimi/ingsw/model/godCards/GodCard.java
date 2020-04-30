@@ -3,9 +3,9 @@ package it.polimi.ingsw.model.godCards;
 
 import java.util.ArrayList;
 
-import it.polimi.ingsw.model.Cell;
+import it.polimi.ingsw.model.gameMap.Cell;
 import it.polimi.ingsw.model.Event;
-import it.polimi.ingsw.model.IslandBoard;
+import it.polimi.ingsw.model.gameMap.IslandBoard;
 import it.polimi.ingsw.model.Player;
 
 
@@ -32,7 +32,7 @@ public class GodCard {
 
 
     /**
-     * GodCard constructor. Parses JSON
+     * GodCard constructor.
      * @param player whose card is
      */
     public GodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states) {
@@ -65,6 +65,14 @@ public class GodCard {
                 currState = "BOTH";
                 break;
             }
+    }
+
+    public void forceState(String state) {
+        if(!state.equals("MOVE") && !state.equals("BUILD"))
+            throw new IllegalArgumentException("State can be etheir MOVE or BUILD");
+
+        this.currState = state;
+
     }
 
     public String getName() {

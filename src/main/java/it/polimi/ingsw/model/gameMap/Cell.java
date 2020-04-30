@@ -1,4 +1,4 @@
-package it.polimi.ingsw.model;
+package it.polimi.ingsw.model.gameMap;
 
 /**
  * @author giulio
@@ -7,36 +7,22 @@ package it.polimi.ingsw.model;
  * build an additional block if height = 3 or a dome has been set.
  */
 
-public class Cell{
+public class Cell extends Coordinates{
 
-    private final int i;
-    private final int j;
     private int height;
     private boolean domePresent;
     private Builder occupant;
 
 
     public Cell(int i, int j) throws IllegalArgumentException{
-        if (!(i >= 0 && i < IslandBoard.dimension && j >= 0 && j < IslandBoard.dimension)) throw new IllegalArgumentException("Invalid coordinates");
-        else {
-            this.i = i;
-            this.j = j;
-            height = 0;
-            this.domePresent = false;
-            this.occupant = null;
-        }
+        super(i, j);
+        height = 0;
+        this.domePresent = false;
+        this.occupant = null;
     }
 
     public boolean isDomePresent(){
         return this.domePresent;
-    }
-
-    public int getI(){
-        return this.i;
-    }
-
-    public int getJ(){
-        return this.j;
     }
 
     public int getHeight(){
