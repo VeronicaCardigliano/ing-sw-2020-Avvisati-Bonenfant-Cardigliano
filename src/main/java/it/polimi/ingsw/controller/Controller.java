@@ -53,18 +53,12 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
     }
 
     private void gameMoves () {
-        boolean win = false;
-
-        while (!win && model.getPlayers().size() > 1) {
+        while (!model.endGame()) {
             //the Step is updated after every effective move or build from the methods themselves (move and build)
             switch (model.getCurrStep(currPlayer)) {
                 case "MOVE":
-                    //I send through a Model notify the possible destinations, then I set the chosen one in the update method
-                    model.findPossibleDestinations();
-                    //I verify if the currPlayer won
-                    win = model.hasWon(); //TODO decidere se spostarlo fuori dallo switch
-                    break;
                 case "BUILD":
+                    //I send through a Model notify the possible destinations, then I set the chosen one in the update method
                     model.findPossibleDestinations();
                     break;
                 case "BOTH":
@@ -86,7 +80,7 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
      */
 
     public void game() {
-        String winner;
+        currState = model.getCurrState();
         while (currState != Model.State.ENDGAME) {
             switch (currState) {
                 case SETUP_NUMOFPLAYERS:
@@ -131,11 +125,6 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                     break;
             }
         }
-        if (model.hasWon())
-            winner = currPlayer.getNickname();
-        else
-            winner = model.getPlayers().get(0).getNickname();
-        view.showWhoWon(winner);
     }
 
 

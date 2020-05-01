@@ -12,9 +12,8 @@ import static java.lang.Math.max;
 /**
  * @author giulio
  *
- * Specific Card associated to a god whom effect activates during his turn. This kind of god implements its own build and move depending on three different parameters read from the json file.
- *
- *
+ * Specific Card associated to a god whom effect activates during his turn. This kind of god implements its own
+ *  move depending on three different parameters read from the json file.
  */
 public class YourMoveGodCard extends GodCard {
 

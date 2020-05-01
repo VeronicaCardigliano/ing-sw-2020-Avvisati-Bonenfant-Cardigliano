@@ -13,7 +13,6 @@ public class Coordinates {
     }
 
 
-
     public Coordinates(Coordinates c) {
         this.i = c.getI();
         this.j = c.getJ();
@@ -30,6 +29,7 @@ public class Coordinates {
     public static boolean equals(Coordinates c1, Coordinates c2) {
         return c1.getI() == c2.getI() && c1.getJ() == c2.getJ();
     }
+
 
     @Override
     public boolean equals(Object o) {

@@ -1,6 +1,7 @@
 package it.polimi.ingsw.view;
 
 import it.polimi.ingsw.model.gameMap.Builder;
+import it.polimi.ingsw.model.gameMap.Coordinates;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -11,7 +12,7 @@ import java.util.Set;
  * view class notifies Controller (as an Observable) and is notified by Model (as an observer)
  */
 public class View extends ViewObservable implements BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
-                            ErrorsObserver, PlayerLoseObserver {
+                            ErrorsObserver, BuildersPlacementObserver, PlayerLoseObserver, EndGameObserver {
 
     private Scanner input;
 
@@ -45,7 +46,7 @@ public class View extends ViewObservable implements BuilderPossibleMoveObserver,
             }
             if (!alreadyUsed) {
                 System.out.println(s);
-                System.out.println(Model.getGodDescription(s)); //make godDescription and godNames static?
+                System.out.println(Model.getGodDescription(s));
             }
         }
         System.out.println("Select your GodCard from the available ones"); */
@@ -75,10 +76,6 @@ public class View extends ViewObservable implements BuilderPossibleMoveObserver,
         notifyStepChoice(input.nextLine().toUpperCase());
     }
 
-    public void showWhoWon (String winner) {
-        System.out.println("Player " + winner + " won the game!!!");
-    }
-
     @Override
     public void updatePossibleBuildDst(Set possibleDstBuilder1, Set possibleDstBuilder2, Set possibleDstBuilder1forDome, Set possibleDstBuilder2forDome) {
         //show the possible destinations received, and take the choice notifying it to controller
@@ -99,5 +96,15 @@ public class View extends ViewObservable implements BuilderPossibleMoveObserver,
     @Override
     public void onLossUpdate(String currPlayer) {
         System.out.println("Player " + currPlayer + " lost the game");
+    }
+
+    @Override
+    public void onEndGameUpdate(String winnerNickname) {
+        System.out.println ("Player " + winnerNickname + " wins!!");
+    }
+
+    @Override
+    public void onBuildersPlacementUpdate(Coordinates positionBuilder1, Coordinates positionBuilder2) {
+        //send informations about the new placement of builders in order to modify the map
     }
 }

@@ -4,7 +4,6 @@ import it.polimi.ingsw.model.gameMap.Coordinates;
 import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -220,7 +219,7 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
         testModel.effectiveMove(new Coordinates(2,2), new Coordinates(3,3));
-        assertTrue(testModel.hasWon());
+        assertTrue(testModel.endGame());
 
 
 

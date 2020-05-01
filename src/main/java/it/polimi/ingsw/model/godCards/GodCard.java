@@ -196,8 +196,6 @@ public class GodCard {
 
         }
 
-
-
         return moved;
     }
 
@@ -263,6 +261,8 @@ public class GodCard {
     public String getCurrState() {
         return currState;
     }
+
+    public int getStepNumber () {return step;}
 
     @Override
     public boolean equals(Object o) {

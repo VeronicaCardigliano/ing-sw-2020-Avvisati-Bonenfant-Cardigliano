@@ -1,6 +1,7 @@
 package it.polimi.ingsw.model;
 
 import it.polimi.ingsw.model.Model;
+import it.polimi.ingsw.model.gameMap.Coordinates;
 import it.polimi.ingsw.view.*;
 
 import java.util.List;
@@ -15,12 +16,29 @@ public class ModelObservable {
     private BuilderPossibleBuildObserver possibleBuildObserver;
     private PlayerLoseObserver playerLoseObserver;
     private ErrorsObserver errorsObserver;
+    private EndGameObserver endGameObserver;
+    private BuildersPlacementObserver buildersPlacementObserver;
 
     //private List<Observer<T>> observers = new ArrayList<>();
 
 
     public void setErrorsObserver (ErrorsObserver newErrorsObserver) {
         errorsObserver = newErrorsObserver;}
+
+    public void setEndGameObserver (EndGameObserver newEndGameObserver) {
+        endGameObserver = newEndGameObserver;}
+
+    public void setPossibleMoveObserver (BuilderPossibleMoveObserver newPossibleMoveObserver) {
+        possibleMoveObserver = newPossibleMoveObserver;}
+
+    public void setPossibleBuildObserver (BuilderPossibleBuildObserver newPossibleBuildObserver) {
+        possibleBuildObserver = newPossibleBuildObserver;}
+
+    public void setPlayerLoseObserver (PlayerLoseObserver newPlayerLoseObserver) {
+        playerLoseObserver = newPlayerLoseObserver;}
+
+    public void setBuildersPlacementObserver (BuildersPlacementObserver newBuildersPlacementObservers) {
+        buildersPlacementObserver = newBuildersPlacementObservers;}
 
     /*
     public void notifyState (Model.State State) {
@@ -57,4 +75,17 @@ public class ModelObservable {
             System.out.println("error observer is not set");
     }
 
+    public void notifyEndGame (String winnerNick) {
+        if (endGameObserver != null)
+            endGameObserver.onEndGameUpdate(winnerNick);
+        else
+            System.out.println("endGame observer is not set");
+    }
+
+    public void notifyBuildersPlacement (Coordinates positionBuilder1, Coordinates positionBuilder2) {
+        if (buildersPlacementObserver != null)
+            buildersPlacementObserver.onBuildersPlacementUpdate(positionBuilder1, positionBuilder2);
+        else
+            System.out.println("buildersPlacement observer is not set");
+    }
 }

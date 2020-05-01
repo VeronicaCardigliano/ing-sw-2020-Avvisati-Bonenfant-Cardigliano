@@ -32,7 +32,7 @@ public class Model extends ModelObservable {
 
 
     private Player currPlayer;
-
+    private Builder chosenBuilder;
     Set<String> chosenCards = new HashSet<>();
     Set<String> chosenColors = new HashSet<>();
 
@@ -275,28 +275,42 @@ public class Model extends ModelObservable {
         return true;
     }
 
-    //TODO aggiungere la notifica del piazzamento dei builder
     public boolean setCurrPlayerBuilders(Coordinates builder1Coord, Coordinates builder2Coord) {
-        boolean set = true;
+        boolean set = false;
 
         Cell cell1 = gameMap.getCell(builder1Coord);
         Cell cell2 = gameMap.getCell(builder2Coord);
 
-        return !cell1.isOccupied() && !cell2.isOccupied() &&
-                cell1.setOccupant(currPlayer.getBuilders().get(0)) && cell2.setOccupant(currPlayer.getBuilders().get(1));
+        if (!cell1.isOccupied() && !cell2.isOccupied() &&
+                cell1.setOccupant(currPlayer.getBuilders().get(0)) && cell2.setOccupant(currPlayer.getBuilders().get(1))) {
+            set = true;
+            notifyBuildersPlacement(builder1Coord, builder2Coord);
+        }
+        return set;
     }
 
     /**
-     * Called after every MOVE step to verify if the currPlayer won
-     * @return true if the player wins, false if the winCondition didn't occur
+     * Called after every step to verify if the currPlayer won or if a player won remaining the only one who hasn't lost
+     * @return true if someone wins, false otherwise
      */
-    public boolean hasWon () {
-        return currPlayer.getGodCard().winCondition();
+    public boolean endGame () {
+        boolean end = false;
+        if (currPlayer.getGodCard().winCondition()) {
+            notifyEndGame(currPlayer.getNickname());
+            end = true;
+        }
+        else if (players.size() == 1) {
+            notifyEndGame(players.get(0).getNickname());
+            end = true;
+        }
+
+        return end;
     }
 
     public String getCurrStep (Player currPlayer) {
         return currPlayer.getGodCard().getCurrState().toUpperCase();
     }
+
 
     /**
      * This method is called to find the possible destinations for both the builders of the currPlayer
@@ -306,6 +320,7 @@ public class Model extends ModelObservable {
     public Set<Coordinates> possibleDstCells (int builderIndex, boolean buildDome) {
         Set<Coordinates> possibleDstBuilder = new HashSet<>();
         Builder builder = currPlayer.getBuilders().get(builderIndex);
+
         Coordinates src = builder.getCell();
         int x, y;
         int i_src = src.getI();
@@ -360,6 +375,14 @@ public class Model extends ModelObservable {
     }
 
     public void effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
+        //save the builder if this is the first game step of currPlayer
+        if (currPlayer.getGodCard().getStepNumber() == 0)
+            chosenBuilder = gameMap.getCell(src).getBuilder();
+        else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
+            notifyWrongInsertion("ERROR: you have to continue the turn with the same player ");
+            return;
+        }
+
         currPlayer.getGodCard().build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
 
         //build method increase the currStep of the player
@@ -371,6 +394,14 @@ public class Model extends ModelObservable {
     }
 
     public void effectiveMove (Coordinates src, Coordinates dst) {
+        //save the builder if this is the first game step of currPlayer
+        if (currPlayer.getGodCard().getStepNumber() == 0)
+            chosenBuilder = gameMap.getCell(src).getBuilder();
+        else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
+            notifyWrongInsertion("ERROR: you have to continue the turn with the same player ");
+            return;
+        }
+
         currPlayer.getGodCard().move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
 
         //move method increases the currStep of the player
@@ -405,7 +436,10 @@ public class Model extends ModelObservable {
         }
     }
 
-    //Step in currPlayer.GodCard is BOTH, then I set the step in function of what user decides to do
+    /**
+     * This method is called when Step in currPlayer.GodCard is BOTH
+     * @param step is the effective step the user decides to do
+     */
     public void setStepChoice (String step) {
         if (step.equals("MOVE") || step.equals("BUILD"))
             currPlayer.forceStep(step);
