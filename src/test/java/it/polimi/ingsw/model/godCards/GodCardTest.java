@@ -52,9 +52,9 @@ class GodCardTest {
     @BeforeEach
     public void cleanMap() {
 
-        godCard.startTurn();
         gameMap = new IslandBoard();
         godCard.setGameMap(gameMap);
+        godCard.startTurn();
 
         Cell cell1 = gameMap.getCell(maxCoordinate / 2,maxCoordinate / 2);
         Cell cell2 = gameMap.getCell(maxCoordinate,maxCoordinate);

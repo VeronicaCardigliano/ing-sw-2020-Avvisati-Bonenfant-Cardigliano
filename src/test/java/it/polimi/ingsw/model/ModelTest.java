@@ -105,22 +105,9 @@ class ModelTest {
         assertTrue(testModel.assignColor("LIGHT_BLUE"));
     }
 
-    @Test
-    public void noGodGame() {
-        testModel.setNumberOfPlayers(2);
-
-        //adding 2 players
-        assertTrue(testModel.addPlayer("Aryam", "2020.04.25"));
-        assertTrue(testModel.addPlayer("Leopoldo", "2019.04.25"));
-
-
-
-
-
-    }
 
     @Test
-    public void simpleGame() {
+    public void athenaVSPrometheus() {
 
         System.out.println("SETUP_NUMOFPLAYERS");
 
@@ -176,10 +163,64 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,4)));
         testModel.effectiveMove(new Coordinates(4,4), new Coordinates(3,4));
+        assertEquals("BUILD", testModel.getCurrStep(testModel.getCurrPlayer()));
+        testModel.findPossibleDestinations();
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
+        testModel.effectiveBuild(new Coordinates(3,4), new Coordinates(3,3), false);
 
+        //player1
+        testModel.findPossibleDestinations();
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
+        testModel.effectiveMove(new Coordinates(1,1), new Coordinates(2,2)); //move (2,2)
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
+        testModel.effectiveBuild(new Coordinates(2,2), new Coordinates(3,3), false); //build (3,3)
 
+        //player2
 
+        testModel.setStepChoice("MOVE");
+        testModel.findPossibleDestinations(); //in questo caso deve avvenire dopo la setStepChoice()
 
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,4)));
+        testModel.effectiveMove(new Coordinates(3,4), new Coordinates(2,4));
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
+        testModel.effectiveBuild(new Coordinates(2,4), new Coordinates(2,3), false);
+
+        //player1
+        testModel.findPossibleDestinations();
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
+        testModel.effectiveMove(new Coordinates(2,2), new Coordinates(2,3));
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
+        testModel.effectiveBuild(new Coordinates(2,3), new Coordinates(2,2), false);
+
+        //player2
+        testModel.setStepChoice("MOVE");
+        testModel.findPossibleDestinations();
+
+        assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,2)));
+        testModel.effectiveMove(new Coordinates(4,3), new Coordinates(4,2));
+        assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,3)));
+        testModel.effectiveBuild(new Coordinates(4,2), new Coordinates(4,3), false);
+
+        //player 1
+        testModel.findPossibleDestinations();
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
+        testModel.effectiveMove(new Coordinates(2,3), new Coordinates(2,2));
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
+        testModel.effectiveBuild(new Coordinates(2,2), new Coordinates(2,3), false);
+
+        //player2
+        testModel.setStepChoice("MOVE");
+        testModel.findPossibleDestinations();
+        assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,1)));
+        testModel.effectiveMove(new Coordinates(4,2), new Coordinates(4,1));
+        assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,2)));
+        testModel.effectiveBuild(new Coordinates(4,1), new Coordinates(4,2), false);
+
+        //player 1
+        testModel.findPossibleDestinations();
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
+        testModel.effectiveMove(new Coordinates(2,2), new Coordinates(3,3));
+        assertTrue(testModel.hasWon());
 
 
 

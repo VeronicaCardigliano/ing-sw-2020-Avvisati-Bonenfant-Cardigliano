@@ -8,7 +8,6 @@ import it.polimi.ingsw.parser.GodCardParser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -29,7 +28,7 @@ public class Model extends ModelObservable {
     public enum State { SETUP_NUMOFPLAYERS, SETUP_PLAYERS, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
     private State currState;
     private String currStep;
-    private GodCardParser cardsParser;
+    private final GodCardParser cardsParser;
 
 
     private Player currPlayer;
@@ -96,10 +95,6 @@ public class Model extends ModelObservable {
         return currPlayer;
     }
 
-    public String getCurrPlayerName() {
-        return currPlayer.getNickname();
-    }
-
     public Set<String> getGodNames() {
         return this.cardsParser.getGodDescriptions().keySet();
     }
@@ -124,8 +119,10 @@ public class Model extends ModelObservable {
             currPlayer = players.get(0);
         else {
             currPlayer = turnManager.next();
-            if (currState == State.GAME)
+            if (currState == State.GAME) {
                 currPlayer.startTurn();
+
+            }
         }
     }
 
@@ -171,7 +168,6 @@ public class Model extends ModelObservable {
      */
     public boolean addPlayer (String nickname, String birthday) {
         boolean canAdd = true;
-        Player newPlayer;
 
         if (nickname == null) {
             notifyWrongInsertion("ERROR: Nickname can't be null ");
@@ -183,11 +179,11 @@ public class Model extends ModelObservable {
             canAdd = false;
         }
 
-        if(players.contains(nickname)) {
-            notifyWrongInsertion("Nickname: " + nickname + " is already in use.");
-            canAdd = false;
-        }
-
+        for(Player p : players)
+            if(p.getNickname().equals(nickname)) {
+                notifyWrongInsertion("Nickname: " + nickname + " is already in use.");
+                canAdd = false;
+            }
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
         long epoch = 0;
@@ -399,7 +395,7 @@ public class Model extends ModelObservable {
             case "BUILD":
                 //View has to obtain the list of the possible build destinations for both builders and for the possible build of a dome
                 possibleDstBuilder1 = possibleDstCells(0, false);
-                possibleDstBuilder2 = possibleDstCells(0,true);
+                possibleDstBuilder2 = possibleDstCells(1,false);
                 possibleDstBuilder1forDome = possibleDstCells(0,true);
                 possibleDstBuilder2forDome = possibleDstCells(1,true);
                 if (!hasLostDuringBuild())
@@ -415,10 +411,6 @@ public class Model extends ModelObservable {
             currPlayer.forceStep(step);
         else
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
-    }
-
-    protected IslandBoard getGameMap () {
-        return gameMap;
     }
 
 }

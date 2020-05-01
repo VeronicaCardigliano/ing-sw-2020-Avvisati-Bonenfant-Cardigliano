@@ -18,6 +18,7 @@ public class IslandBoard {
 
     private Cell[][] matrix = new Cell[dimension][dimension];
     private Set<OpponentTurnGodCard> constraintsList;
+    private OpponentTurnGodCard constraintToActivate;
 
     /**
      * Initializes a matrix[dimension][dimension] of Cell
@@ -107,7 +108,7 @@ public class IslandBoard {
      * @param card with contraint
      */
     public void addConstraint(OpponentTurnGodCard card) {
-        constraintsList.add(card);
+        constraintToActivate = card;
     }
 
     /**
@@ -128,6 +129,12 @@ public class IslandBoard {
             }
 
         return allowed;
+    }
+
+    public void loadConstraint() {
+        if(constraintToActivate != null)
+            constraintsList.add(constraintToActivate);
+        constraintToActivate = null;
     }
 
 }

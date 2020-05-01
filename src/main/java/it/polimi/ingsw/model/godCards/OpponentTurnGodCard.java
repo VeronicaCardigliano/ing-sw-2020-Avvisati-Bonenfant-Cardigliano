@@ -31,6 +31,7 @@ public class OpponentTurnGodCard extends GodCard {
 
         this.activeOnMoveUp = flagParameters.get("activeOnMoveUp");
         this.blockMoveUp = flagParameters.get("blockMoveUp");
+
     }
 
     @Override
@@ -72,7 +73,7 @@ public class OpponentTurnGodCard extends GodCard {
     }
 
     public boolean checkFutureEvent(Event futureEvent) {
-        boolean allowed = false;
+        boolean allowed = true;
 
         //move events
         if(futureEvent.getType() == Event.EventType.MOVE) {

@@ -8,8 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OpponentTurnGodCardTest {
 
@@ -73,12 +72,24 @@ public class OpponentTurnGodCardTest {
         assertTrue(gameMap.getCell(0,1).addBlock());
         assertTrue(defaultCard.move(0,0,0,1));
 
+        //default1 building
+        assertTrue(defaultCard.build(0,1,1,1, false));
+
         //starting turn for player1
         athena.startTurn();
 
         //athena god card moving up and activating its power
         assertTrue(gameMap.getCell(2,3).addBlock());
         assertTrue(athena.move(2,2,2,3));
+
+        //adding blocks in (3,3)
+        gameMap.getCell(3,3).addBlock();
+        gameMap.getCell(3,3).addBlock();
+        assertEquals(2, gameMap.getCell(3,3).getHeight());
+
+        //athena shouldn't block herself
+        assertTrue(athena.move(2,3,3,3));
+
 
         //starting turn for player1
         defaultCard.startTurn();

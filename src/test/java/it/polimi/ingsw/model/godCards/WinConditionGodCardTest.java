@@ -40,9 +40,9 @@ class WinConditionGodCardTest {
     @BeforeEach
     public void cleanMap() {
 
-        godCardPan.startTurn();
         gameMap = new IslandBoard();
         godCardPan.setGameMap(gameMap);
+        godCardPan.startTurn();
 
         Cell cell1 = gameMap.getCell(maxCoordinate / 2,maxCoordinate / 2);
         Cell cell2 = gameMap.getCell(maxCoordinate,maxCoordinate);

@@ -71,12 +71,12 @@ class YourBuildGodCardTest {
     @BeforeEach
     public void cleanMap() {
 
-        godCardAtlas.startTurn();
         gameMap = new IslandBoard();
         godCardAtlas.setGameMap(gameMap);
         godCardDemeter.setGameMap(gameMap);
         godCardHephaestus.setGameMap(gameMap);
         godCardZeus.setGameMap(gameMap);
+        godCardAtlas.startTurn();
 
         Cell cell1 = gameMap.getCell(maxCoordinate - 1,maxCoordinate - 3);
         Cell cell2 = gameMap.getCell(maxCoordinate,maxCoordinate);

@@ -65,6 +65,11 @@ public class GodCard {
                 currState = "BOTH";
                 break;
             }
+
+        //activate pending constraint
+        if(gameMap == null)
+            throw new RuntimeException("GameMap has to be set before starting turn.");
+        gameMap.loadConstraint();
     }
 
     public void forceState(String state) {
