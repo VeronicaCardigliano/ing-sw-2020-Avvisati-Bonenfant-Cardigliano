@@ -19,6 +19,7 @@ class YourBuildGodCardTest {
     static GodCard godCardDemeter;
     static GodCard godCardHephaestus;
     static GodCard godCardZeus;
+    static GodCard godCardHestia;
     static Player player;
     static Player player2;
     static IslandBoard gameMap;
@@ -66,6 +67,7 @@ class YourBuildGodCardTest {
         godCardDemeter = parser.createCard(player, "Demeter");
         godCardHephaestus = parser.createCard(player2, "Hephaestus");
         godCardZeus = parser.createCard(player2, "Zeus");
+        godCardHestia = parser.createCard(player2, "Hestia");
     }
 
     @BeforeEach
@@ -76,7 +78,9 @@ class YourBuildGodCardTest {
         godCardDemeter.setGameMap(gameMap);
         godCardHephaestus.setGameMap(gameMap);
         godCardZeus.setGameMap(gameMap);
+        godCardHestia.setGameMap(gameMap);
         godCardAtlas.startTurn();
+        godCardHestia.startTurn();
 
         Cell cell1 = gameMap.getCell(maxCoordinate - 1,maxCoordinate - 3);
         Cell cell2 = gameMap.getCell(maxCoordinate,maxCoordinate);
@@ -195,6 +199,25 @@ class YourBuildGodCardTest {
 
         assertFalse(godCardHephaestus.askBuild(i_src, j_src, i_src +1, j_src+1, false));
         assertFalse(godCardHephaestus.askBuild(i_src, j_src, i_src +1, j_src+1, true));
+    }
+
+    @Test
+    public void hestiaTest(){
+
+        int i_src = builder3.getCell().getI();
+        int j_src = builder3.getCell().getJ();
+
+        assertTrue(godCardHestia.askMove(i_src,j_src,i_src+1, j_src+1));
+        godCardHestia.move(i_src,j_src,i_src+1, j_src+1);
+
+        assertTrue(godCardHestia.askBuild(i_src+1, j_src+1, i_src,j_src,false));
+        godCardHestia.build(i_src+1, j_src+1, i_src,j_src);
+
+        assertFalse(godCardHestia.askBuild(i_src+1, j_src+1, i_src, j_src+1,false));
+
+        assertTrue(godCardHestia.askBuild(i_src+1, j_src+1, i_src+1, j_src,false));
+
+
     }
 
 }

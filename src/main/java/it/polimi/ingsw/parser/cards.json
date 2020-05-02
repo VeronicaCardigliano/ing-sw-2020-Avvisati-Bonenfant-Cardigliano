@@ -87,6 +87,16 @@
     "type": "BUILD",
     "description": "Your worker may build a block under itself",
     "blockUnderItself": true
+  },
+
+  "Hestia":
+  {
+    "name": "Hestia",
+    "type": "BUILD",
+    "description": "Your Worker may build one additional time, but this cannot be on a perimeter space",
+    "states": [["MOVE", "BUILD"],
+      ["MOVE", "BUILD", "BUILD"]],
+    "extraBuildNotPerimeter": true
   }
 
 }

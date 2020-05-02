@@ -11,9 +11,10 @@ public class YourBuildGodCard extends GodCard {
 
     private boolean canBuildDomeEverywhere;
     private boolean secondBuildDiffDest;
-    private int numberOfBuilds;
     private boolean secondBuildNotDome;
     private boolean blockUnderItself;
+    private boolean extraBuildNotPerimeter;
+    private int numberOfBuilds;
     private Cell firstBuildDst;
 
     /**
@@ -30,6 +31,7 @@ public class YourBuildGodCard extends GodCard {
         this.secondBuildDiffDest = flagParameters.get("secondBuildDiffDest");
         this.secondBuildNotDome = flagParameters.get("secondBuildNotDome");
         this.blockUnderItself = flagParameters.get("blockUnderItself");
+        this.extraBuildNotPerimeter = flagParameters.get("extraBuildNotPerimeter");
 
     }
 
@@ -58,6 +60,17 @@ public class YourBuildGodCard extends GodCard {
             else if (secondBuildDiffDest && !secondBuildNotDome)
                 //Demeter GodCard effect
                 extraConditions = dst != firstBuildDst;
+            else if (!secondBuildDiffDest && !secondBuildNotDome && extraBuildNotPerimeter && step == 2) {
+                //Hestia GodCard effect
+
+                //Check if statesCopy is at last build
+
+                    extraConditions = (i_dst != 0 && i_dst != IslandBoard.dimension - 1 &&
+                                       j_dst != 0 && j_dst != IslandBoard.dimension - 1);
+
+                //Reset card State list and values
+
+            }
         }
 
         return (super.askBuild(i_src, j_src, i_dst, j_dst,buildDome) || (src.getBuilder() != null &&

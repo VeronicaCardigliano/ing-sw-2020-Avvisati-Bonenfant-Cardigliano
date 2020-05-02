@@ -87,6 +87,8 @@ public class GodCardParser {
                             godObject.getBoolean("secondBuildDiffDest"));
                     flagParameters.put("blockUnderItself", godObject.opt("blockUnderItself") != null &&
                             godObject.getBoolean("blockUnderItself"));
+                    flagParameters.put("extraBuildNotPerimeter", godObject.opt("extraBuildNotPerimeter") != null &&
+                            godObject.getBoolean("extraBuildNotPerimeter"));
                     intParameters.put("numberOfBuilds", godObject.opt("numberOfBuilds") != null ? godObject.getInt("numberOfBuilds") : 1);
 
                     cardCreated = new YourBuildGodCard(player, name, description, states, flagParameters, intParameters);
