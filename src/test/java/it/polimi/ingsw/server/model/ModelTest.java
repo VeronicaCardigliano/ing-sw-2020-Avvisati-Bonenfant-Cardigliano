@@ -50,7 +50,7 @@ class ModelTest {
         playersListTest = testModel.getPlayers();
         assertEquals("Anna", playersListTest.get(0).getNickname());
 
-        testModel.deletePlayer (playersListTest.get(0));
+        testModel.deletePlayer (playersListTest.get(0).getNickname());
 
         System.out.println("\nTesting if player has been correctly deleted...");
         playersListTest = testModel.getPlayers();
@@ -62,7 +62,7 @@ class ModelTest {
     public void expectedExceptionIfPlayerToDeleteNotFound () {
         testModel.addPlayer("Paolo", "2000.07.01");
         Player samplePlayer = new Player("Beatrice");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> testModel.deletePlayer(samplePlayer));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> testModel.deletePlayer(samplePlayer.getNickname()));
     }
 
     @Test

@@ -9,6 +9,7 @@ import it.polimi.ingsw.server.parser.GodCardParser;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author veronica
@@ -130,21 +131,33 @@ public class Model extends ModelObservable {
      * @return returns a copy of the list of players so that external methods can't modify the ArrayList
      */
 
-    public ArrayList<Player> getPlayers() {
-        return new ArrayList<>(this.players);
+    public Set<String> getNicknames() {
+        return this.players.stream().map(player -> player.getNickname()).collect(Collectors.toSet());
+    }
+
+    public ArrayList<Player> getPlayers(){
+        return new ArrayList<>(players);
     }
 
     /**
      * deletes a player if he loses the match (if the number of players is three, the match will go on)
-     * @param player who has lost the match
+     * @param playerName who has lost the match
      * @exception IllegalArgumentException is thrown if the player isn't in the list of players of the match
      */
 
-    public void deletePlayer (Player player) throws IllegalArgumentException {
-        boolean found = players.remove(player);
+    public void deletePlayer (String playerName) throws IllegalArgumentException {
 
-        for (Builder x: player.getBuilders()) {
-            x.getCell().removeOccupant();
+        boolean found = false;
+
+        for (Player p : players)
+
+            if (p.getNickname().equals(playerName)){
+
+                for (Builder x : p.getBuilders()) {
+                    x.getCell().removeOccupant();
+                }
+
+                found = players.remove(p);
         }
 
         if (!found)
@@ -354,7 +367,7 @@ public class Model extends ModelObservable {
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) {
 
             notifyLoss(currPlayer.getNickname());
-            deletePlayer(currPlayer);
+            deletePlayer(currPlayer.getNickname());
             return true;
         }
         return false;
@@ -368,7 +381,7 @@ public class Model extends ModelObservable {
                 possibleDstBuilder1forDome.isEmpty() && possibleDstBuilder2forDome.isEmpty()) {
 
             notifyLoss(currPlayer.getNickname());
-            deletePlayer(currPlayer);
+            deletePlayer(currPlayer.getNickname());
             return true;
         }
         return false;
