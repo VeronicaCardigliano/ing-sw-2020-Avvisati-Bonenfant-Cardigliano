@@ -22,7 +22,7 @@ public class GodCardParser {
 
     public GodCardParser(String path) {
         String jsonString = null;
-        Set<String> godNames = new HashSet<>();
+        Set<String> godNames;
 
         try {
             //I need to save the file content in a string

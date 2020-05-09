@@ -1,7 +1,8 @@
 package it.polimi.ingsw.server.controller;
 
-import it.polimi.ingsw.server.model.gameMap.Cell;
+
+import it.polimi.ingsw.server.model.gameMap.Coordinates;
 
 public interface BuilderMoveObserver {
-    void onBuilderMove (Cell src, Cell dst);
+    void onBuilderMove (String player, Coordinates src, Coordinates dst);
 }

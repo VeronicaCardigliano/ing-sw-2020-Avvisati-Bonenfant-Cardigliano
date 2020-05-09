@@ -52,4 +52,6 @@ public class NetworkParser {
         return jsonObject.getString("date");
     }
 
+    public String getName() { return jsonObject.getString("name");}
+
 }
