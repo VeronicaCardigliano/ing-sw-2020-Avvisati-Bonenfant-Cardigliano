@@ -34,14 +34,14 @@
     "type": "BUILD",
     "description": "Your Worker may build one additional time, but not on the same space",
     "numberOfBuilds": 2,
-    "states": [["MOVE", "BUILD", "BUILD"]],
+    "states": [["MOVE", "BUILD"], ["MOVE", "BUILD", "BUILD"]],
     "secondBuildDiffDest": true},
 
   "Hephaestus":
   {"name": "Hephaestus",
     "type": "BUILD",
     "description": "Your Worker may build one additional block (not dome) on top of your first block",
-    "states": [["MOVE", "BUILD", "BUILD"]],
+    "states": [["MOVE", "BUILD"], ["MOVE", "BUILD", "BUILD"]],
     "numberOfBuilds": 2,
     "secondBuildDiffDest": false,
     "secondBuildNotDome": true},
@@ -96,7 +96,8 @@
     "description": "Your Worker may build one additional time, but this cannot be on a perimeter space",
     "states": [["MOVE", "BUILD"],
       ["MOVE", "BUILD", "BUILD"]],
-    "extraBuildNotPerimeter": true
+    "extraBuildNotPerimeter": true,
+    "secondBuildNotDome": true
   }
 
 }

@@ -59,7 +59,7 @@ public class GodCardParser {
         Map<String, Boolean> flagParameters = new HashMap<>();
         Map<String, Integer> intParameters = new HashMap<>();
 
-        if(godDescriptions.keySet().contains(godName)) {
+        if(godDescriptions.containsKey(godName)) {
             godObject = jsonObject.getJSONObject(godName);
 
             //possible attributes
