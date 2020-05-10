@@ -12,7 +12,7 @@ import java.util.Set;
  * @author thomas
  * Container for Virtual Views. Supposed to multiplex notifies coming from ModelObservable.
  */
-public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacementObserver,
+public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacedObserver,
                                     EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver{
 
     List<VirtualView> views;
@@ -30,7 +30,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     //Observer Methods are multiplexed to the right VirtualViews
 
     @Override
-    public void updatePossibleBuildDst(String nickname, Set possibleDstBuilder1, Set possibleDstBuilder2, Set possibleDstBuilder1forDome, Set possibleDstBuilder2forDome) {
+    public void updatePossibleBuildDst(String nickname, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
         for(VirtualView view : views)
             if(view.getNickname().equals(nickname))
                 view.updatePossibleBuildDst(nickname, possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
@@ -44,9 +44,9 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     }
 
     @Override
-    public void onBuildersPlacementUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
+    public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
         for(VirtualView view : views)
-            view.onBuildersPlacementUpdate(nickname, positionBuilder1, positionBuilder2);
+            view.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2);
     }
 
     @Override

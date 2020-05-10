@@ -12,6 +12,8 @@ public abstract class ViewObservable {
     StepChoiceObserver stepChoiceObserver;
     BuilderSetupObserver builderSetupObserver;
     PlayerDeletionObserver playerDeletionObserver;
+    DisconnectionObserver disconnectionObserver;
+    GodCardChoiceObserver godCardChoiceObserver;
 
     private static final boolean DEBUG = true;
 
@@ -55,5 +57,14 @@ public abstract class ViewObservable {
             playerDeletionObserver.onPlayerDeleted(player);
     }
 
+    protected void notifyDisconnection(String player) {
+        if(!DEBUG)
+            disconnectionObserver.onDisconnection(player);
+    }
+
+    protected void notifyGodCardChoice(String player, String godCard) {
+        if(!DEBUG)
+            godCardChoiceObserver.onGodCardChoice(player, godCard);
+    }
 
 }

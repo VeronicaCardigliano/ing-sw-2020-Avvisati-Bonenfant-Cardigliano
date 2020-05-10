@@ -15,7 +15,7 @@ public class ModelObservable {
     private PlayerLoseObserver playerLoseObserver;
     private ErrorsObserver errorsObserver;
     private EndGameObserver endGameObserver;
-    private BuildersPlacementObserver buildersPlacementObserver;
+    private BuildersPlacedObserver buildersPlacedObserver;
     private BuilderMovementObserver builderMovementObserver;
     private BuilderBuildObserver builderBuildObserver;
 
@@ -35,8 +35,8 @@ public class ModelObservable {
     public void setPlayerLoseObserver (PlayerLoseObserver newPlayerLoseObserver) {
         playerLoseObserver = newPlayerLoseObserver;}
 
-    public void setBuildersPlacementObserver (BuildersPlacementObserver newBuildersPlacementObservers) {
-        buildersPlacementObserver = newBuildersPlacementObservers;}
+    public void setBuildersPlacedObserver(BuildersPlacedObserver newBuildersPlacedObservers) {
+        buildersPlacedObserver = newBuildersPlacedObservers;}
 
     /*
     public void notifyState (Model.State State) {
@@ -81,8 +81,8 @@ public class ModelObservable {
     }
 
     public void notifyBuildersPlacement (String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
-        if (buildersPlacementObserver != null)
-            buildersPlacementObserver.onBuildersPlacementUpdate(nickname, positionBuilder1, positionBuilder2);
+        if (buildersPlacedObserver != null)
+            buildersPlacedObserver.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2);
         else
             System.out.println("buildersPlacement observer is not set");
     }

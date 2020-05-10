@@ -18,7 +18,7 @@ import java.util.Set;
  * Each VirtualVieww is a Runnable object associated to a socket.
  */
 public class VirtualView extends ViewObservable implements Runnable, BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
-                            ErrorsObserver, BuildersPlacementObserver, PlayerLoseObserver, EndGameObserver {
+                            ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver {
 
     private final Socket socket;
     private PrintWriter out;
@@ -48,16 +48,16 @@ public class VirtualView extends ViewObservable implements Runnable, BuilderPoss
             while(connected) {
                 String message = in.nextLine();
 
-                System.out.println("Received message from " + socket.getInetAddress() + ": " + message);
+                System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
 
                 connected = handleMessage(message);
 
 
             }
 
-            socket.close();
             in.close();
             out.close();
+            socket.close();
 
         } catch (IOException e) {
             System.err.println(e.getMessage());
@@ -87,30 +87,30 @@ public class VirtualView extends ViewObservable implements Runnable, BuilderPoss
 
 
             switch (parser.getRequest()) {
-                case "MOVE":
+                case Messages.MOVE:
                     src = parser.getSrcCoordinates();
                     dst = parser.getDstCoordinates();
                     notifyMove(nickname, src, dst);
                     break;
 
-                case "BUILD":
+                case Messages.BUILD:
                     src = parser.getSrcCoordinates();
                     dst = parser.getDstCoordinates();
                     notifyBuild(nickname, src, dst, parser.getBuildDome());
                     break;
 
-                case "SETCURRPLAYERBUILDERS":
+                case Messages.SET_BUILDERS:
                     builder1 = parser.getSrcCoordinates();
                     builder2 = parser.getDstCoordinates();
                     notifySetupBuilders(nickname, builder1, builder2);
                     break;
 
-                case "ASSIGNCOLOR":
+                case Messages.SET_COLOR:
                     color = parser.getColor();
                     notifyColorChoice(nickname, color);
                     break;
 
-                case "ADDPLAYER":
+                case Messages.ADD_PLAYER:
                     //drops redundant add player command
                     if(this.nickname != null) {
                         date = parser.getDate();
@@ -122,21 +122,22 @@ public class VirtualView extends ViewObservable implements Runnable, BuilderPoss
                     }
                     break;
 
-                case "DELETEPLAYER":
-                    notifyPlayerDeletion(this.nickname);
+                case Messages.DELETE_PLAYER:
+                    notifyPlayerDeletion(this.nickname); //il controller deve fare in modo che ViewManager rimuova questa view
+                    //disconnettere?
                     break;
 
-                case "SETNUMBEROFPLAYERS":
+                case Messages.SET_NUMBER_OF_PLAYERS:
                     numberOfplayers = parser.getNumberOfPlayers();
                     notifyNumberOfPlayers(numberOfplayers);
                     break;
 
-                case "STEPCHOICE":
+                case Messages.SET_STEP_CHOICE:
                     String stepChoice = parser.getStepChoice();
                     notifyStepChoice(nickname, stepChoice);
                     break;
 
-                case "DISCONNECT":
+                case Messages.DISCONNECT:
                     connected = false;
 
             }
@@ -170,7 +171,7 @@ public class VirtualView extends ViewObservable implements Runnable, BuilderPoss
     }
 
     @Override
-    public void onBuildersPlacementUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
+    public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
         send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2));
     }
 
