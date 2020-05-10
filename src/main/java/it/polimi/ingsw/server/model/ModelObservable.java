@@ -16,7 +16,8 @@ public class ModelObservable {
     private ErrorsObserver errorsObserver;
     private EndGameObserver endGameObserver;
     private BuildersPlacementObserver buildersPlacementObserver;
-
+    private BuilderMovementObserver builderMovementObserver;
+    private BuilderBuildObserver builderBuildObserver;
 
 
     public void setErrorsObserver (ErrorsObserver newErrorsObserver) {
@@ -84,5 +85,19 @@ public class ModelObservable {
             buildersPlacementObserver.onBuildersPlacementUpdate(nickname, positionBuilder1, positionBuilder2);
         else
             System.out.println("buildersPlacement observer is not set");
+    }
+
+    public void notifyBuilderMovement (String nickname, Coordinates src, Coordinates dst){
+        if (builderMovementObserver != null)
+            builderMovementObserver.onBuilderMovement(nickname, src, dst);
+        else
+            System.out.println("builder movement observer is not set");
+    }
+
+    public void notifyBuilderBuild (String nickname, Coordinates src, Coordinates dst, boolean dome){
+        if (builderBuildObserver != null)
+            builderBuildObserver.onBuilderBuild(nickname, src, dst, dome);
+        else
+            System.out.println("builder build observer is not set");
     }
 }

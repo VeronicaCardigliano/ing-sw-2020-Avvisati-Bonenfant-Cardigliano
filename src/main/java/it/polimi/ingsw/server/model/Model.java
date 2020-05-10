@@ -26,7 +26,7 @@ public class Model extends ModelObservable {
     private final CyclingIterator<Player> turnManager = new CyclingIterator<>(players);
 
     //in this class currState refers to the match state, instead currStep refers to the single movement during GAME state
-    public enum State { SETUP_NUMOFPLAYERS, SETUP_PLAYERS, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
+    public enum State { SETUP_NUMOFPLAYERS, SETUP_PLAYERS, SETUP_COLOR, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
     private State currState;
     private String currStep;
     private final GodCardParser cardsParser;
@@ -116,15 +116,15 @@ public class Model extends ModelObservable {
         if(players.isEmpty())
             throw new RuntimeException("there are no players in this lobby");
 
-        if (currState == State.SETUP_PLAYERS)
+        /*if (currState == State.SETUP_PLAYERS)
             currPlayer = players.get(0);
-        else {
+        else {*/
             currPlayer = turnManager.next();
-            if (currState == State.GAME) {
+            /*if (currState == State.GAME) {
                 currPlayer.startTurn();
 
             }
-        }
+        }*/
     }
 
     /**
@@ -162,6 +162,10 @@ public class Model extends ModelObservable {
 
         if (!found)
             throw new IllegalArgumentException("Player not found");
+    }
+
+    public int getNumberOfPlayers(){
+        return numPlayers;
     }
 
     public boolean setNumberOfPlayers(int num){
@@ -387,42 +391,59 @@ public class Model extends ModelObservable {
         return false;
     }
 
-    public void effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
+    public boolean effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
+        boolean result = false;
         //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
             notifyWrongInsertion(currPlayer.getNickname(), "ERROR: you have to continue the turn with the same player ");
-            return;
+            return result;
         }
 
-        currPlayer.getGodCard().build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
+        result = currPlayer.build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
 
         //build method increase the currStep of the player
-        currStep = getCurrStep(currPlayer);
-        if (!currStep.equals("END"))
-            findPossibleDestinations();
-        else
-            setNextPlayer();
+        if (result) {
+            notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome);
+            currStep = getCurrStep(currPlayer);
+            if (!currStep.equals("END"))
+                findPossibleDestinations();
+            else
+                setNextPlayer();
+        } else {
+            //TODO what should i notify here?
+            notifyWrongInsertion(currPlayer.getNickname(), "Invalid move");
+        }
+        return result;
     }
 
-    public void effectiveMove (Coordinates src, Coordinates dst) {
+    public boolean effectiveMove (Coordinates src, Coordinates dst) {
+
+        boolean result = false;
         //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
-            notifyWrongInsertion(currPlayer.getNickname(), "ERROR: you have to continue the turn with the same player ");
-            return;
+            notifyWrongInsertion(currPlayer.getNickname(), "ERROR: you have to continue the turn with the same " +
+                    "player ");
+            return result;
         }
 
-        currPlayer.getGodCard().move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
+        result = currPlayer.move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
 
         //move method increases the currStep of the player
-        currStep = getCurrStep(currPlayer);
-        if (!currStep.equals("END"))
-            findPossibleDestinations();
-        else
-            setNextPlayer();
+
+        if (result) {
+            notifyBuilderMovement(currPlayer.getNickname(),src, dst);
+            currStep = getCurrStep(currPlayer);
+            if (!currStep.equals("END"))
+                findPossibleDestinations();
+            else
+                setNextPlayer();
+        }
+        else notifyWrongInsertion(currPlayer.getNickname(), "Invalid Build");
+        return result;
     }
 
     public void findPossibleDestinations () {

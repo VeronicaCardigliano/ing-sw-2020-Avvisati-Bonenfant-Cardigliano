@@ -1,8 +1,11 @@
 package it.polimi.ingsw.server.controller;
 
+import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.Player;
+import it.polimi.ingsw.server.model.gameMap.Coordinates;
+import it.polimi.ingsw.server.view.ViewManager;
 import it.polimi.ingsw.server.view.VirtualView;
 
 //TODO: make sure of not passing editable objects
@@ -11,136 +14,13 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
             GodCardChoiceObserver, ColorChoiceObserver, StepChoiceObserver {
 
     private Model model;
-    private VirtualView virtualView;
-    private int numPlayers;
-    private Player currPlayer;
+    private ViewManager viewManager;
 
-    private Model.State currState;
-
-    public Controller (Model model, VirtualView virtualView) {
+    public Controller (Model model, ViewManager viewManager) {
 
         this.model = model;
-        this.virtualView = virtualView;
+        this.viewManager = viewManager;
 
-    }
-
-    private void setupCards () {
-        int i = 0;
-        while (i < numPlayers) {
-            //prints the GodNames and their description only of still available cards
-            //virtualView.chooseGodCard(model.getGodDescriptions(), model.getChosenCards());
-
-            if (!(currPlayer.getGodCard() == null)) {
-                i++;
-                model.setNextPlayer();
-                currPlayer = model.getCurrPlayer();
-            }
-        }
-    }
-
-    private void setupBuilders () {
-        int i = 0;
-        while (i < numPlayers) {
-
-            //virtualView.chooseBuilderColor(model.getChosenColors());
-
-            if(!(currPlayer.getBuilders() == null)) {
-                i++;
-                model.setNextPlayer();
-                currPlayer = model.getCurrPlayer();
-            }
-        }
-    }
-
-    private void gameMoves () {
-        while (!model.endGame()) {
-            //the Step is updated after every effective move or build from the methods themselves (move and build)
-            switch (model.getCurrStep(currPlayer)) {
-                case "MOVE":
-                case "BUILD":
-                    //I send through a Model notify the possible destinations, then I set the chosen one in the update method
-                    model.findPossibleDestinations();
-                    break;
-                case "BOTH":
-                    //virtualView.chooseNextStep();
-                    break;
-                case "END":
-                    model.setNextPlayer();
-                    currPlayer = model.getCurrPlayer();
-                    break;
-            }
-        }
-    }
-
-
-    /**
-     * the method game has to manage turns, match states and movement steps
-     * cycling once for each setup phases and using a cycling iterator for the game one
-     *
-     */
-
-    public void game() {
-        currState = model.getCurrState();
-        while (currState != Model.State.ENDGAME) {
-            switch (currState) {
-                case SETUP_NUMOFPLAYERS:
-                    //virtualView.askNumberOfPlayers();
-                    break;
-
-                case SETUP_PLAYERS:
-                    while (model.getPlayers().isEmpty() || model.getPlayers().size() < numPlayers)
-                       // virtualView.askForNewPlayer();
-                    model.setNextState();
-                    currState = model.getCurrState();
-                    break;
-
-                case SETUP_CARDS:
-                    //returns to the first player
-                    model.setNextPlayer();
-                    currPlayer = model.getCurrPlayer();
-
-                    setupCards();
-                    model.setNextState();
-                    currState = model.getCurrState();
-                    break;
-
-                case SETUP_BUILDERS:
-                    //returns to the first player
-                    model.setNextPlayer();
-                    currPlayer = model.getCurrPlayer();
-
-                    setupBuilders();
-                    model.setNextState();
-                    currState = model.getCurrState();
-                    break;
-
-                case GAME:
-                    //returns to the first player
-                    model.setNextPlayer();
-                    currPlayer = model.getCurrPlayer();
-
-                    gameMoves();
-                    model.setNextState();
-                    currState = model.getCurrState();
-                    break;
-            }
-        }
-    }
-
-
-    @Override
-    public void onBuilderBuild(Cell src, Cell dst, boolean buildDome) {
-        model.effectiveBuild(src, dst, buildDome);
-    }
-
-    @Override
-    public void onBuilderMove(Cell src, Cell dst) {
-        model.effectiveMove(src, dst);
-    }
-
-    @Override
-    public void onNicknameAndDateInsertion(String nickname, String birthday) {
-        model.addPlayer(nickname, birthday);
     }
 
     /**
@@ -149,25 +29,99 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
      */
     @Override
     public void onNumberInsertion(int num) {
-        if (model.setNumberOfPlayers(num)) {
-            numPlayers = model.getNumPlayers();
-            model.setNextState();
-            currState = model.getCurrState();
+
+        if (model.getCurrState() == Model.State.SETUP_NUMOFPLAYERS && model.getNumberOfPlayers() != 2 ||
+        model.getNumPlayers() != 3) {
+
+            if (model.setNumberOfPlayers(num)) {
+                //TODO viewManager.askNick&Date() //broadcast message
+                model.setNextState();
+            }
+
+        }
+    }
+
+
+    @Override
+    public void onNicknameAndDateInsertion(String nickname, String birthday) {
+
+        if (model.getCurrState() == Model.State.SETUP_PLAYERS) {
+
+            if (model.getPlayers().size() < model.getNumPlayers()){
+            model.addPlayer(nickname, birthday);
+            }
+
+            if (model.getPlayers().size() == model.getNumPlayers()) {
+                model.setNextState();
+                //setNextPlayer used to initialize first player :)
+                model.setNextPlayer();
+                //TODO viewManager.askColor(model.currPlayer().getNickname());
+            }
+
+        }
+    }
+
+
+    @Override
+    public void onColorChoice(String player, String color){
+
+        if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(player)){
+            model.assignColor(color);
+            model.setNextPlayer();
+            if (model.getCurrPlayer().equals(model.getPlayers().get(0)))
+                model.setNextState();
+            else;//TODO viewManager.askGod(model.getCurrPlayer().getNickname());
+
         }
     }
 
     @Override
-    public void onGodCardChoice(String godCardName) {
-        model.assignCard(godCardName);
-    }
+    public void onGodCardChoice(String player, String godCardName) {
+        if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().getNickname().equals(player) &&
+                model.getCurrPlayer().getGodCard() == null) {
+
+                if (model.assignCard(godCardName)) {
+                    //Initialize the turn
+                    model.getCurrPlayer().getGodCard().startTurn();
+                    model.setNextPlayer();
+                    if (model.getCurrPlayer().equals(model.getPlayers().get(0)))
+                        model.setNextState();
+                    else; //TODO viewManager.askGod(model.getCurrPlayer().getNickname());
+                }
+            }
+        }
+
+//-------------
 
     @Override
-    public void onColorChoice(String chosenColor) {
-        model.assignColor(chosenColor);
+    public void onBuilderBuild(String player, Coordinates src, Coordinates dst, boolean buildDome) {
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(player))
+            if(model.effectiveBuild(src,dst,buildDome)){
+                if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")){
+                    model.setNextPlayer();
+                    model.getCurrPlayer().startTurn();
+                }
+            }
     }
 
+
     @Override
-    public void onStepChoice(String chosenStep) {
+    public void onBuilderMove(String player, Coordinates src, Coordinates dst) {
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(player))
+            if(model.effectiveMove(src, dst)){
+                if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")){
+                    model.setNextPlayer();
+                    model.getCurrPlayer().startTurn();
+            }
+        }
+    }
+
+
+//------------
+
+    @Override
+    public void onStepChoice(String player, String chosenStep) {
+        if (model.getCurrPlayer().getNickname().equals(player) && model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
         model.setStepChoice(chosenStep);
     }
 }
