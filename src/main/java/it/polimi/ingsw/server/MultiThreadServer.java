@@ -10,8 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class MultiThreadServer {
-    private int port;
-    private final int maxConnections = 3;
+    private final int port;
+    private final static int maxConnections = 3;
 
     public MultiThreadServer(int port) {
         this.port = port;
@@ -32,7 +32,10 @@ public class MultiThreadServer {
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
-                VirtualView view = new VirtualView(socket, viewManager);
+
+                System.out.println("Connected to " + socket.getInetAddress());
+
+                VirtualView view = new VirtualView(socket);
                 viewManager.add(view);
 
                 executor.submit(view);

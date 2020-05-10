@@ -132,7 +132,7 @@ public class Model extends ModelObservable {
      */
 
     public Set<String> getNicknames() {
-        return this.players.stream().map(player -> player.getNickname()).collect(Collectors.toSet());
+        return this.players.stream().map(Player::getNickname).collect(Collectors.toSet());
     }
 
     public ArrayList<Player> getPlayers(){
@@ -297,7 +297,7 @@ public class Model extends ModelObservable {
         if (!cell1.isOccupied() && !cell2.isOccupied() &&
                 cell1.setOccupant(currPlayer.getBuilders().get(0)) && cell2.setOccupant(currPlayer.getBuilders().get(1))) {
             set = true;
-            notifyBuildersPlacement(builder1Coord, builder2Coord);
+            notifyBuildersPlacement(currPlayer.getNickname(), builder1Coord, builder2Coord);
         }
         return set;
     }

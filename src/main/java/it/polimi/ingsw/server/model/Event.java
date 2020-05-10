@@ -37,10 +37,7 @@ public class Event {
     }
 
     public int heightDifference() {
-        if(type == EventType.MOVE)
             return IslandBoard.heightDifference(srcCell, dstCell);
-        else
-            return 0;
     }
 
     public int getDstBlockHeight() {
@@ -50,12 +47,5 @@ public class Event {
     public boolean builtDome() {
         return type == EventType.BUILD_DOME;
     }
-
-    public int getBuiltBlockHeight() {
-        if(type == EventType.BUILD)
-            return dstCell.getHeight();
-        return -1;
-    }
-
 
 }

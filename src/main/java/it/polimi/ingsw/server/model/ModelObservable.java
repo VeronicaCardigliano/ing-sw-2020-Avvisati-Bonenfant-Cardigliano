@@ -42,15 +42,15 @@ public class ModelObservable {
             stateObserver.onStateUpdate(State);
     } */
 
-    public void notifyPossibleMoves (String currPlayer, Set possibleDstBuilder1, Set possibleDstBuilder2) {
+    public void notifyPossibleMoves (String currPlayer, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
         if(possibleMoveObserver != null)
             possibleMoveObserver.updatePossibleMoveDst(currPlayer, possibleDstBuilder1, possibleDstBuilder2);
         else
             System.out.println("possibleMoveObserver is not set");
     }
 
-    public void notifyPossibleBuilds (String currPlayer, Set possibleDstBuilder1, Set possibleDstBuilder2,
-                                      Set possibleDstBuilder1forDome, Set possibleDstBuilder2forDome) {
+    public void notifyPossibleBuilds (String currPlayer, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
+                                      Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
         if(possibleBuildObserver != null)
             possibleBuildObserver.updatePossibleBuildDst(currPlayer, possibleDstBuilder1, possibleDstBuilder2,
                 possibleDstBuilder1forDome, possibleDstBuilder2forDome);
@@ -60,7 +60,7 @@ public class ModelObservable {
 
     public void notifyLoss(String currPlayer) {
         if(playerLoseObserver != null)
-            playerLoseObserver.onLossUpdate(currPlayer, currPlayer);
+            playerLoseObserver.onLossUpdate(currPlayer);
         else
             System.out.println("playerLoseObserver is not set");
     }
@@ -79,9 +79,9 @@ public class ModelObservable {
             System.out.println("endGame observer is not set");
     }
 
-    public void notifyBuildersPlacement (Coordinates positionBuilder1, Coordinates positionBuilder2) {
+    public void notifyBuildersPlacement (String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
         if (buildersPlacementObserver != null)
-            buildersPlacementObserver.onBuildersPlacementUpdate(positionBuilder1, positionBuilder2);
+            buildersPlacementObserver.onBuildersPlacementUpdate(nickname, positionBuilder1, positionBuilder2);
         else
             System.out.println("buildersPlacement observer is not set");
     }

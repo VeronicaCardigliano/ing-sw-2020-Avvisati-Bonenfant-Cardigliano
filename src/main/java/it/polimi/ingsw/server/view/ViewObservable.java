@@ -1,46 +1,59 @@
 package it.polimi.ingsw.server.view;
 
 import it.polimi.ingsw.server.controller.*;
-import it.polimi.ingsw.server.model.gameMap.Cell;
-
+import it.polimi.ingsw.server.model.gameMap.Coordinates;
 
 public abstract class ViewObservable {
-    private NumberOfPlayersObserver numberOfPlayersObserver;
-    private BuilderBuildObserver buildObserver;
-    private BuilderMoveObserver moveObserver;
-    private NewPlayerObserver newPlayerObserver;
-    private GodCardChoiceObserver godCardChoiceObserver;
-    private ColorChoiceObserver colorChoiceObserver;
-    private StepChoiceObserver stepChoiceObserver;
+    BuilderBuildObserver builderBuildObserver;
+    BuilderMoveObserver builderMoveObserver;
+    ColorChoiceObserver colorChoiceObserver;
+    NewPlayerObserver newPlayerObserver;
+    NumberOfPlayersObserver numberOfPlayersObserver;
+    StepChoiceObserver stepChoiceObserver;
+    BuilderSetupObserver builderSetupObserver;
+    PlayerDeletionObserver playerDeletionObserver;
 
-    public void notifyNumberOfPlayers (int num) {
-        numberOfPlayersObserver.onNumberInsertion(num);
+    private static final boolean DEBUG = true;
+
+    protected void notifyBuild(String player, Coordinates src, Coordinates dst, boolean buildDome) {
+        if(!DEBUG)
+            builderBuildObserver.onBuilderBuild(player, src, dst, buildDome);
     }
 
-    public void notifyNewPlayer (String nickname, String birthday) {
-        newPlayerObserver.onNicknameAndDateInsertion(nickname, birthday);
+    protected  void notifyMove(String player, Coordinates src, Coordinates dst) {
+        if(!DEBUG)
+            builderMoveObserver.onBuilderMove(player, src, dst);
     }
 
-    public void notifyGodCardChoice (String godCardName) {
-        godCardChoiceObserver.onGodCardChoice(godCardName);
+    protected void notifyColorChoice(String player, String color) {
+        if(!DEBUG)
+            colorChoiceObserver.onColorChoice(player, color);
     }
 
-    public void notifyColorChoice (String chosenColor) {
-        colorChoiceObserver.onColorChoice(chosenColor);
+    protected void notifyNewPlayer(String nickname, String birthday) {
+        if(!DEBUG)
+            newPlayerObserver.onNicknameAndDateInsertion(nickname, birthday);
     }
 
-    public void notifyMoveChoice (Cell src, Cell dst) {
-        moveObserver.onBuilderMove(src, dst);
+    protected void notifyNumberOfPlayers(int numberOfPlayers) {
+        if(!DEBUG)
+            numberOfPlayersObserver.onNumberInsertion(numberOfPlayers);
     }
 
-    public void notifyBuildChoice (Cell src, Cell dst, boolean buildDome) {
-        buildObserver.onBuilderBuild(src, dst, buildDome);
+    protected void notifyStepChoice(String player, String step) {
+        if(!DEBUG)
+            stepChoiceObserver.onStepChoice(player, step);
     }
 
-    public void notifyStepChoice (String chosenStep) {
-        stepChoiceObserver.onStepChoice(chosenStep);
+    protected void notifySetupBuilders(String player, Coordinates pos1, Coordinates pos2) {
+        if(!DEBUG)
+            builderSetupObserver.onBuilderSetup(player, pos1, pos2);
     }
 
-    public void notifyAddPlayer(String nickname, String birthday) {}
+    protected void notifyPlayerDeletion(String player) {
+        if(!DEBUG)
+            playerDeletionObserver.onPlayerDeleted(player);
+    }
+
 
 }

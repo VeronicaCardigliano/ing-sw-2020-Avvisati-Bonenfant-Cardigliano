@@ -54,4 +54,6 @@ public class NetworkParser {
 
     public String getName() { return jsonObject.getString("name");}
 
+    public String getStepChoice() { return jsonObject.getString("choice");}
+
 }
