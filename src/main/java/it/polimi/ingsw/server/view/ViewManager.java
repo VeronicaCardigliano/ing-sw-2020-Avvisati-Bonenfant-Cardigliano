@@ -14,7 +14,8 @@ import java.util.Set;
  * Container for Virtual Views. Supposed to multiplex notifies coming from ModelObservable.
  */
 public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacedObserver,
-                                    EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver{
+                                    EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver,
+        PlayerTurnObserver, ColorAssignmentObserver{
 
     List<VirtualView> views;
 
@@ -54,6 +55,12 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
                 view.send(Messages.askGod());
     }
 
+    public void askBuilders(String player){
+        for(VirtualView view : views)
+            if(view.getNickname().equals(player))
+                view.send(Messages.askBuilders());
+    }
+
     //Observer Methods are multiplexed to the right VirtualViews
 
     @Override
@@ -90,6 +97,18 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     }
 
     @Override
+    public void onWrongNumberInsertion() {
+        //TODO view.send(Messages.errorNumber());
+    }
+
+    @Override
+    public void onWrongPlayerInsertion(String nickname) {
+        for(VirtualView view : views)
+            if(view.getNickname().equals(nickname))
+                view.send(Messages.errorAddPlayer(nickname));
+    }
+
+    @Override
     public void onLossUpdate(String nickname) {
         for(VirtualView view : views)
             if(view.getNickname().equals(nickname))
@@ -99,5 +118,21 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     @Override
     public void onStateUpdate(Model.State currState) {
         //TODO da fare?
+    }
+
+    @Override
+    public void onPlayerTurn(String nickname) {
+        for (VirtualView view : views){
+            if (view.getNickname().equals(nickname))
+                view.send(Messages.turnUpdate(nickname));
+        }
+    }
+
+    @Override
+    public void onColorAssigned(String nickname) {
+        for (VirtualView view : views){
+            if (view.getNickname().equals(nickname))
+                view.send(Messages.colorUpdate(nickname));
+        }
     }
 }

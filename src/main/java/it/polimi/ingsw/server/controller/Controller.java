@@ -6,7 +6,7 @@ import it.polimi.ingsw.server.view.ViewManager;
 
 
 public class Controller implements BuilderBuildObserver, BuilderMoveObserver, NewPlayerObserver, NumberOfPlayersObserver,
-            GodCardChoiceObserver, ColorChoiceObserver, StepChoiceObserver, DisconnectionObserver{
+            GodCardChoiceObserver, ColorChoiceObserver, StepChoiceObserver, DisconnectionObserver, BuilderSetupObserver{
 
     private final Model model;
     private final ViewManager viewManager;
@@ -17,6 +17,9 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
         this.viewManager = viewManager;
 
     }
+
+
+
 
     /**
      * This update of Controller is called by a specific View's notify when the user insert a number
@@ -29,17 +32,19 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
         model.getNumPlayers() != 3) {
 
             if (model.setNumberOfPlayers(num)) {
-                viewManager.askNumberOfPlayers(); //broadcast message
+                viewManager.askNickAndDate();
                 model.setNextState();
             }
+            else viewManager.askNumberOfPlayers(); //broadcast message
 
         }
     }
 
 
+
+
     @Override
     public void onNicknameAndDateInsertion(String nickname, String birthday) {
-
         if (model.getCurrState() == Model.State.SETUP_PLAYERS) {
 
             if (model.getPlayers().size() < model.getNumPlayers()){
@@ -52,7 +57,6 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                 model.setNextPlayer();
                 viewManager.askNickAndDate();
             }
-
         }
     }
 
@@ -60,16 +64,19 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
     @Override
     public void onColorChoice(String player, String color){
 
-        if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(player)){
-            model.assignColor(color);
-            model.setNextPlayer();
-            if (model.getCurrPlayer().equals(model.getPlayers().get(0)))
-                model.setNextState();
-            else
-                viewManager.askColor(model.getCurrPlayer().getNickname());
+        if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(player)) {
+            if (model.assignColor(color)) {
+                model.setNextPlayer();
 
+                if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
+                    model.setNextState();
+                    viewManager.askGod(model.getCurrPlayer().getNickname());
+                } else
+                    viewManager.askColor(model.getCurrPlayer().getNickname());
+            }
         }
     }
+
 
     @Override
     public void onGodCardChoice(String player, String godCardName) {
@@ -80,15 +87,27 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                     //Initialize the turn
                     model.getCurrPlayer().getGodCard().startTurn();
                     model.setNextPlayer();
+                    viewManager.askGod(model.getCurrPlayer().getNickname());
                     if (model.getCurrPlayer().equals(model.getPlayers().get(0)))
                         model.setNextState();
                     else
-                        viewManager.askGod(model.getCurrPlayer().getNickname());
-                }
+                        viewManager.askBuilders(model.getCurrPlayer().getNickname());
+                } else viewManager.askGod(player);
             }
         }
 
-        //TODO askBuilderPlacement ?
+    @Override
+    public void onBuilderSetup(String player, Coordinates builder1, Coordinates builder2){
+        if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().getNickname().equals(player))
+
+            if (model.setCurrPlayerBuilders(builder1, builder2)){
+                model.setNextPlayer();
+            } else viewManager.askBuilders(player);
+
+        if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
+            model.setNextState();
+        }
+    }
 
 //-------------
 

@@ -13,7 +13,7 @@ import java.util.Scanner;
 
 public class NetworkHandler extends ModelObservable implements Runnable, BuilderBuildObserver, BuilderMoveObserver,
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
-        PlayerDeletionObserver, StepChoiceObserver, DisconnectionObserver {
+        StepChoiceObserver, DisconnectionObserver {
 
     private final Socket socket;
     private PrintWriter out;
@@ -94,11 +94,6 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     @Override
     public void onNumberInsertion(int num) {
         send(Messages.setNumberOfPlayers(num));
-    }
-
-    @Override
-    public void onPlayerDeleted(String player) {
-        send(Messages.deletePlayer());
     }
 
     @Override

@@ -97,7 +97,7 @@
     "states": [["MOVE", "BUILD"],
       ["MOVE", "BUILD", "BUILD"]],
     "extraBuildNotPerimeter": true,
-    "secondBuildNotDome": true
+    "secondBuildNotDome": false
   }
 
 }

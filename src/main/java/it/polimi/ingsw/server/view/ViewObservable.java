@@ -14,6 +14,7 @@ public abstract class ViewObservable {
     DisconnectionObserver disconnectionObserver;
     GodCardChoiceObserver godCardChoiceObserver;
 
+
     private static final boolean DEBUG = true;
 
     protected void notifyBuild(String player, Coordinates src, Coordinates dst, boolean buildDome) {

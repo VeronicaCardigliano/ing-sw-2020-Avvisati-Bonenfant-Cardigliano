@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.parser;
 
+import it.polimi.ingsw.server.model.Player;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,12 +28,18 @@ public abstract class Messages {
     public static final String ADD_PLAYER = "addPlayer";
     public static final String DELETE_PLAYER = "deletePlayer";
     public static final String DISCONNECT = "disconnect";
+    public static final String TURN_UPDATE = "turnUpdate";
+    public static final String ERROR_NUMBER = "errorNumber"; //for ERROR
+    public static final String ERROR_ADD_PLAYER = "errorAddPlayer";
+    public static final String COLOR_UPDATE = "colorUpdate";
+
 
     //request type from controller
     public static final String ASK_NICK_AND_DATE = "askNickAndDate";
     public static final String ASK_COLOR = "askColor";
     public static final String ASK_GOD = "askGod";
     public static final String ASK_NUMBER_OF_PLAYERS = "askNumberOfPlayers";
+    public static final String ASK_BUILDERS = "askBuilders";
 
 
     //key values
@@ -49,6 +56,7 @@ public abstract class Messages {
     public static final String POSSIBLE_DST = "possibleDst";
     public static final String STEP_CHOICE = "stepChoice";
     public static final String POSITIONS = "positions"; //for SET_BUILDERS
+
 
     private static JSONObject fromCoordinates(Coordinates coord) {
         JSONObject obj = new JSONObject();
@@ -208,4 +216,26 @@ public abstract class Messages {
     public static String askNumberOfPlayers() {
         return (new JSONObject()).put(TYPE, ASK_NUMBER_OF_PLAYERS).toString();
     }
+
+    public static String askBuilders(){ return (new JSONObject()).put(TYPE, ASK_BUILDERS).toString(); }
+
+
+    public static String turnUpdate(String nickname){
+        return (new JSONObject()).put(TYPE, TURN_UPDATE).put(PLAYER, nickname).toString();
+    }
+
+
+    public static String errorNumber(){
+        return (new JSONObject()).put(TYPE, ERROR_NUMBER).toString();
+    }
+
+
+    public static String errorAddPlayer(String nickname){
+        return (new JSONObject()).put(TYPE, ERROR_ADD_PLAYER).put(PLAYER,nickname).toString();
+    }
+
+    public static String colorUpdate(String nickname){
+        return (new JSONObject()).put(TYPE, COLOR_UPDATE).toString();
+    }
+
 }

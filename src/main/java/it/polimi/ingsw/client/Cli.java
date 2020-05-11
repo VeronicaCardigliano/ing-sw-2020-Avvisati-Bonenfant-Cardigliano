@@ -191,6 +191,16 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     }
 
     @Override
+    public void onWrongNumberInsertion() {
+        //TODO @vero
+    }
+
+    @Override
+    public void onWrongPlayerInsertion(String nickname) {
+        //TODO @vero
+    }
+
+    @Override
     public void onLossUpdate(String currPlayer) {
         occupiedCells.remove(currPlayer);
         if (this.nickname.equals(currPlayer))

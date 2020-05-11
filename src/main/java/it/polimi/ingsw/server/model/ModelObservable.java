@@ -9,7 +9,7 @@ import java.util.Set;
  * has a list of observers and each of them is updated calling the notify method
  */
 public class ModelObservable {
-    //private StateObserver stateObserver;
+    private StateObserver stateObserver;
     private BuilderPossibleMoveObserver possibleMoveObserver;
     private BuilderPossibleBuildObserver possibleBuildObserver;
     private PlayerLoseObserver playerLoseObserver;
@@ -18,7 +18,8 @@ public class ModelObservable {
     private BuildersPlacedObserver buildersPlacedObserver;
     private BuilderMovementObserver builderMovementObserver;
     private BuilderBuildObserver builderBuildObserver;
-
+    private PlayerTurnObserver playerTurnObserver;
+    private ColorAssignmentObserver colorAssignmentObserver;
 
     public void setErrorsObserver (ErrorsObserver newErrorsObserver) {
         errorsObserver = newErrorsObserver;}
@@ -38,10 +39,24 @@ public class ModelObservable {
     public void setBuildersPlacedObserver(BuildersPlacedObserver newBuildersPlacedObservers) {
         buildersPlacedObserver = newBuildersPlacedObservers;}
 
-    /*
+    public void setBuilderBuildObserver(BuilderBuildObserver newBuilderBuildObserver){
+        builderBuildObserver = newBuilderBuildObserver;
+    }
+
+    public void setBuilderMovementObserver(BuilderMovementObserver newBuilderMovementObserver){
+        builderMovementObserver = newBuilderMovementObserver;
+    }
+
+    public void setPlayerTurnObserver(PlayerTurnObserver newPlayerTurnObserver){
+        playerTurnObserver = newPlayerTurnObserver;
+    }
+
+
     public void notifyState (Model.State State) {
+        if (stateObserver != null)
             stateObserver.onStateUpdate(State);
-    } */
+        else System.out.println("state observer is not set");
+    }
 
     public void notifyPossibleMoves (String currPlayer, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
         if(possibleMoveObserver != null)
@@ -73,6 +88,20 @@ public class ModelObservable {
             System.out.println("error observer is not set");
     }
 
+    public void notifyWrongNumber (){
+        if (errorsObserver != null)
+            errorsObserver.onWrongNumberInsertion();
+        else
+            System.out.println("error observer is not set");
+    }
+
+    public void notifyWrongAddPlayer(String nickname){
+        if (errorsObserver != null)
+            errorsObserver.onWrongPlayerInsertion(nickname);
+        else
+            System.out.println("error observer is not set");
+    }
+
     public void notifyEndGame (String winnerNick) {
         if (endGameObserver != null)
             endGameObserver.onEndGameUpdate(winnerNick);
@@ -99,5 +128,20 @@ public class ModelObservable {
             builderBuildObserver.onBuilderBuild(nickname, src, dst, dome);
         else
             System.out.println("builder build observer is not set");
+    }
+
+    public void notifyPlayerTurn (String nickname){
+        if (playerTurnObserver != null){
+            playerTurnObserver.onPlayerTurn(nickname);
+        }
+        else
+            System.out.println("player turn observer is not set");
+    }
+
+    public void notifyColorAssigned(String nickname){
+        if (colorAssignmentObserver != null){
+            colorAssignmentObserver.onColorAssigned(nickname);
+        } else
+            System.out.println("color assigned observe is not set");
     }
 }

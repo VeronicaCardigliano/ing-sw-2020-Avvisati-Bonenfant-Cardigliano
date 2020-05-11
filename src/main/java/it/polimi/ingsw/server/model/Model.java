@@ -67,6 +67,9 @@ public class Model extends ModelObservable {
                 currState = State.SETUP_PLAYERS;
                 break;
             case SETUP_PLAYERS:
+                currState = State.SETUP_COLOR;
+                break;
+            case SETUP_COLOR:
                 currState = State.SETUP_CARDS;
                 break;
             case SETUP_CARDS:
@@ -79,7 +82,7 @@ public class Model extends ModelObservable {
                 currState = State.ENDGAME;
                 break;
         }
-        //notifyState(currState);
+        notifyState(currState);
     }
 
 
@@ -115,16 +118,8 @@ public class Model extends ModelObservable {
     public void setNextPlayer () {
         if(players.isEmpty())
             throw new RuntimeException("there are no players in this lobby");
-
-        /*if (currState == State.SETUP_PLAYERS)
-            currPlayer = players.get(0);
-        else {*/
-            currPlayer = turnManager.next();
-            /*if (currState == State.GAME) {
-                currPlayer.startTurn();
-
-            }
-        }*/
+        currPlayer = turnManager.next();
+        notifyPlayerTurn(currPlayer.getNickname());
     }
 
     /**
@@ -174,7 +169,7 @@ public class Model extends ModelObservable {
             return true;
         }
         else
-            notifyWrongInsertion(currPlayer.getNickname(), "ERROR: number of player not valid, choose '2' or '3'");
+            notifyWrongNumber();
         return false;
     }
 
@@ -187,18 +182,18 @@ public class Model extends ModelObservable {
         boolean canAdd = true;
 
         if (nickname == null) {
-            notifyWrongInsertion(nickname, "ERROR: Nickname can't be null ");
+            notifyWrongAddPlayer(nickname);
             canAdd = false;
         }
 
         if(players.size() >= numPlayers) {
-            notifyWrongInsertion(nickname, "The lobby is full");
+            notifyWrongAddPlayer(nickname);
             canAdd = false;
         }
 
         for(Player p : players)
             if(p.getNickname().equals(nickname)) {
-                notifyWrongInsertion(nickname, "Nickname: " + nickname + " is already in use.");
+                notifyWrongAddPlayer(nickname);
                 canAdd = false;
             }
 
@@ -209,12 +204,12 @@ public class Model extends ModelObservable {
             epoch = df.parse(birthday).getTime();
 
             if(epoch > System.currentTimeMillis()) {
-                notifyWrongInsertion(nickname, "Invalid birth date");
+                notifyWrongAddPlayer(nickname);
                 canAdd = false;
             }
 
         } catch (ParseException e) {
-            notifyWrongInsertion(nickname, "Invalid birth date format");
+            notifyWrongAddPlayer(nickname);
             canAdd = false;
         }
 
@@ -227,6 +222,7 @@ public class Model extends ModelObservable {
                 return 0;
             });
         }
+        else notifyWrongAddPlayer(nickname);
 
 
         return canAdd;
@@ -267,10 +263,12 @@ public class Model extends ModelObservable {
     public boolean assignColor (String chosenColor) {
 
         boolean existing = false;
+        boolean assigned = true;
+
         for (String s: chosenColors) {
             if (chosenColor.equals(s)){
                 notifyWrongInsertion(currPlayer.getNickname(),"ERROR: Color already used, choose from the available ones ");
-                return false;
+                assigned = false;
             }
         }
 
@@ -283,13 +281,16 @@ public class Model extends ModelObservable {
 
         if (!existing) {
             notifyWrongInsertion(currPlayer.getNickname(), "ERROR: The name entered is not an existing color, choose from the available ones ");
-            return false;
+            assigned = false;
         }
 
-        chosenColors.add(chosenColor);
-        currPlayer.setBuilders(new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)),
-                new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)));
-        return true;
+        if (assigned) {
+            chosenColors.add(chosenColor);
+            currPlayer.setBuilders(new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)),
+                    new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)));
+            notifyColorAssigned(currPlayer.getNickname());
+        }
+        return assigned;
     }
 
     public boolean setCurrPlayerBuilders(Coordinates builder1Coord, Coordinates builder2Coord) {
@@ -397,7 +398,8 @@ public class Model extends ModelObservable {
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
-            notifyWrongInsertion(currPlayer.getNickname(), "ERROR: you have to continue the turn with the same player ");
+            notifyWrongInsertion(currPlayer.getNickname(),
+                    "ERROR: you have to continue the turn with the same builder ");
             return result;
         }
 
