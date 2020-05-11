@@ -7,7 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class GameMap {
+/**
+ * This class is the GameMap Object
+ */
+public class CliGameMap {
     private String green = Color.ANSI_GREEN.escape(), yellow = Color.ANSI_YELLOW.escape(), blue = Color.ANSI_BLUE.escape();
     private String builderColor;
     private String reset = Color.RESET;
@@ -27,7 +30,7 @@ public class GameMap {
     private Map<Coordinates, Integer> heights = new HashMap<>();
 
     //initialize the heights to zero for each cell
-    public GameMap () {
+    public CliGameMap() {
         for (int i=0; i < Cli.mapDimension; i++)
             for (int j=0; j < Cli.mapDimension; j++)
                 heights.put(new Coordinates(i,j), 0);

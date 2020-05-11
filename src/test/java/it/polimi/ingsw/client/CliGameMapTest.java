@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-class GameMapTest {
+class CliGameMapTest {
 
     @Test
     public void genericTest() {
@@ -19,7 +19,7 @@ class GameMapTest {
         try {
             InputStream inputTextStream = new FileInputStream(inputTextFile);
             Cli cli = new Cli(inputTextStream);
-            GameMap map = new GameMap();
+            CliGameMap map = new CliGameMap();
             ArrayList<Coordinates> occupiedCells1 = new ArrayList<>();
             Set<Coordinates> possibleBuilder1 = new HashSet<>();
             possibleBuilder1.add(new Coordinates(0,1));

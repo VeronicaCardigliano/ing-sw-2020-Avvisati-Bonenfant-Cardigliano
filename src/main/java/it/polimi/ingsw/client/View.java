@@ -9,10 +9,11 @@ import java.util.Set;
 public interface View {
 
     void askNumberOfPlayers ();
-    void askForNewPlayer ();
-    void chooseGodCard (Map<String, String> godDescriptions, Set<String> chosenGodCards);
-    void chooseBuilderColor (Map<String, String> chosenColors);
+    void askNickAndDate ();
+    void askGodCard (Map<String, String> godDescriptions, Set<String> chosenGodCards);
+    void askBuilderColor (Set<String> chosenColors);
     void placeBuilders (String nickname);
     void chooseNextStep ();
-
+    void build();
+    void move();
 }
