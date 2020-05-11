@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.parser;
 
+import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.Player;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
@@ -32,7 +33,8 @@ public abstract class Messages {
     public static final String ERROR_NUMBER = "errorNumber"; //for ERROR
     public static final String ERROR_ADD_PLAYER = "errorAddPlayer";
     public static final String COLOR_UPDATE = "colorUpdate";
-
+    public static final String PLAYER_ADDED = "playerAdded";
+    public static final String STEP_UPDATE = "stepUpdate";
 
     //request type from controller
     public static final String ASK_NICK_AND_DATE = "askNickAndDate";
@@ -56,6 +58,8 @@ public abstract class Messages {
     public static final String POSSIBLE_DST = "possibleDst";
     public static final String STEP_CHOICE = "stepChoice";
     public static final String POSITIONS = "positions"; //for SET_BUILDERS
+    public static final String RESULT = "result";
+    public static final String STEP = "step"; //for STEP_UPDATE
 
 
     private static JSONObject fromCoordinates(Coordinates coord) {
@@ -131,24 +135,26 @@ public abstract class Messages {
         return message.toString();
     }
 
-    public static String move(String player, Coordinates src, Coordinates dst) {
+    public static String move(String player, Coordinates src, Coordinates dst, boolean result) {
         JSONObject message = new JSONObject();
         message.put(TYPE, MOVE);
         message.put(PLAYER, player);
         message.put(SRC, fromCoordinates(src));
         message.put(DST, fromCoordinates(dst));
+        message.put(RESULT, result);
 
 
         return message.toString();
     }
 
-    public static String build(String player, Coordinates src, Coordinates dst, boolean buildDome) {
+    public static String build(String player, Coordinates src, Coordinates dst, boolean buildDome, boolean result) {
         JSONObject message = new JSONObject();
         message.put(TYPE, BUILD);
         message.put(PLAYER, player);
         message.put(SRC, fromCoordinates(src));
         message.put(DST, fromCoordinates(dst));
         message.put(BUILD_DOME, buildDome);
+        message.put(RESULT, result);
 
         return message.toString();
     }
@@ -229,13 +235,16 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, ERROR_NUMBER).toString();
     }
 
-
-    public static String errorAddPlayer(String nickname){
-        return (new JSONObject()).put(TYPE, ERROR_ADD_PLAYER).put(PLAYER,nickname).toString();
+    public static String colorUpdate(String nickname, String color, boolean result){
+        return (new JSONObject()).put(TYPE, COLOR_UPDATE).put(COLOR, color).put(RESULT, result).toString();
     }
 
-    public static String colorUpdate(String nickname){
-        return (new JSONObject()).put(TYPE, COLOR_UPDATE).toString();
+    public static String playerAdded(String nickname, boolean result) {
+        return (new JSONObject()).put(TYPE, PLAYER_ADDED).put(NAME, nickname).put(RESULT, result).toString();
+    }
+
+    public static String stepUpdate(Model.State state) {
+        return (new JSONObject()).put(TYPE, STEP_UPDATE).put(STEP, state.toString()).toString();
     }
 
 }

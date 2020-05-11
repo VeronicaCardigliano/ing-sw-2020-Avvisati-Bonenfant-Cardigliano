@@ -31,11 +31,14 @@ public class MultiThreadServer {
         System.out.println("Server Ready");
         while (true) {
             try {
+
                 Socket socket = serverSocket.accept();
 
-                System.out.println("Connected to " + socket.getInetAddress());
+                System.out.println("Connected to " + socket.getRemoteSocketAddress());
 
                 VirtualView view = new VirtualView(socket);
+                if(!viewManager.isFirstViewSet())
+                    viewManager.setFirstView(view);
                 viewManager.add(view);
 
                 executor.submit(view);

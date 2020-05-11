@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * the Set of chosen Cards and Colors and the jsonPath
  */
 
-public class Model extends ModelObservable {
+public class Model extends ModelObservableWithSelect {
     private final static String jsonPath = "src/main/java/it/polimi/ingsw/server/parser/cards.json";
 
     private final ArrayList<Player> players = new ArrayList<>();
@@ -182,18 +182,15 @@ public class Model extends ModelObservable {
         boolean canAdd = true;
 
         if (nickname == null) {
-            notifyWrongAddPlayer(nickname);
             canAdd = false;
         }
 
         if(players.size() >= numPlayers) {
-            notifyWrongAddPlayer(nickname);
             canAdd = false;
         }
 
         for(Player p : players)
             if(p.getNickname().equals(nickname)) {
-                notifyWrongAddPlayer(nickname);
                 canAdd = false;
             }
 
@@ -204,12 +201,10 @@ public class Model extends ModelObservable {
             epoch = df.parse(birthday).getTime();
 
             if(epoch > System.currentTimeMillis()) {
-                notifyWrongAddPlayer(nickname);
                 canAdd = false;
             }
 
         } catch (ParseException e) {
-            notifyWrongAddPlayer(nickname);
             canAdd = false;
         }
 
@@ -222,8 +217,8 @@ public class Model extends ModelObservable {
                 return 0;
             });
         }
-        else notifyWrongAddPlayer(nickname);
 
+        notifyPlayerAdded(nickname, canAdd);
 
         return canAdd;
     }
@@ -280,7 +275,8 @@ public class Model extends ModelObservable {
         }
 
         if (!existing) {
-            notifyWrongInsertion(currPlayer.getNickname(), "ERROR: The name entered is not an existing color, choose from the available ones ");
+            notifyWrongInsertion();
+            notifyColorAssigned(currPlayer.getNickname(), chosenColor, false);
             assigned = false;
         }
 
@@ -288,7 +284,7 @@ public class Model extends ModelObservable {
             chosenColors.add(chosenColor);
             currPlayer.setBuilders(new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)),
                     new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)));
-            notifyColorAssigned(currPlayer.getNickname());
+            notifyColorAssigned(currPlayer.getNickname(), chosenColor, true);
         }
         return assigned;
     }
@@ -302,8 +298,10 @@ public class Model extends ModelObservable {
         if (!cell1.isOccupied() && !cell2.isOccupied() &&
                 cell1.setOccupant(currPlayer.getBuilders().get(0)) && cell2.setOccupant(currPlayer.getBuilders().get(1))) {
             set = true;
-            notifyBuildersPlacement(currPlayer.getNickname(), builder1Coord, builder2Coord);
+
         }
+
+        notifyBuildersPlacement(currPlayer.getNickname(), builder1Coord, builder2Coord, set);
         return set;
     }
 
@@ -407,7 +405,7 @@ public class Model extends ModelObservable {
 
         //build method increase the currStep of the player
         if (result) {
-            notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome);
+
             currStep = getCurrStep(currPlayer);
             if (!currStep.equals("END"))
                 findPossibleDestinations();
@@ -417,6 +415,8 @@ public class Model extends ModelObservable {
             //TODO what should i notify here?
             notifyWrongInsertion(currPlayer.getNickname(), "Invalid move");
         }
+
+        notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result);
         return result;
     }
 
@@ -456,7 +456,7 @@ public class Model extends ModelObservable {
                 possibleDstBuilder1 = possibleDstCells(0, false);
                 possibleDstBuilder2 = possibleDstCells(1, false);
                 if (!hasLostDuringMove())
-                    notifyPossibleMoves(currPlayer.getNickname(), possibleDstBuilder1, possibleDstBuilder2);
+                    notifyPossibleMoves(possibleDstBuilder1, possibleDstBuilder2);
                 break;
 
             case "BUILD":
@@ -466,7 +466,7 @@ public class Model extends ModelObservable {
                 possibleDstBuilder1forDome = possibleDstCells(0,true);
                 possibleDstBuilder2forDome = possibleDstCells(1,true);
                 if (!hasLostDuringBuild())
-                    notifyPossibleBuilds(currPlayer.getNickname(), possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
+                    notifyPossibleBuilds(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
                 break;
                 //case END exception
         }

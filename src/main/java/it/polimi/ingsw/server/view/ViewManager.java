@@ -15,9 +15,12 @@ import java.util.Set;
  */
 public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacedObserver,
                                     EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver,
-        PlayerTurnObserver, ColorAssignmentObserver{
+        PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver{
 
     List<VirtualView> views;
+    VirtualView firstView;
+
+    VirtualView selectedView;
 
     public ViewManager() {
         views = new ArrayList<>();
@@ -31,10 +34,18 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         views.removeIf(view -> view.getNickname().equals(nickname));
     }
 
+    public boolean isFirstViewSet() {
+        return firstView != null;
+    }
+
+    public void setFirstView(VirtualView view) {
+        firstView = view;
+        firstView.send(Messages.askNumberOfPlayers());
+    }
 
     public void askNumberOfPlayers() {
         for (VirtualView view : views)
-            view.send(Messages.askNumberOfPlayers());
+            firstView.send(Messages.askNumberOfPlayers());
     }
 
     public void askNickAndDate() {
@@ -64,75 +75,131 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     //Observer Methods are multiplexed to the right VirtualViews
 
     @Override
-    public void updatePossibleBuildDst(String nickname, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
-        for(VirtualView view : views)
-            if(view.getNickname().equals(nickname))
-                view.send(Messages.possibleBuildDestinations(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome));
+    public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
+
+        selectedView.send(Messages.possibleBuildDestinations(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome));
+
+        cleanSelection();
     }
 
     @Override
-    public void updatePossibleMoveDst(String nickname, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
-        for(VirtualView view : views)
-            if(view.getNickname().equals(nickname))
-                view.send(Messages.possibleMoveDestinations(possibleDstBuilder1, possibleDstBuilder2));
+    public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
+        selectedView.send(Messages.possibleMoveDestinations(possibleDstBuilder1, possibleDstBuilder2));
+
+        cleanSelection();
     }
 
     @Override
-    public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
+    public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         for(VirtualView view : views)
             view.send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2));
+
+        cleanSelection();
     }
 
     @Override
     public void onEndGameUpdate(String winnerNickname) {
         for(VirtualView view : views)
             view.send(Messages.endGame(winnerNickname));
+
+        cleanSelection();
     }
 
     @Override
-    public void onWrongInsertionUpdate(String nickname, String error) {
-        for(VirtualView view : views)
-            if(view.getNickname().equals(nickname))
-                view.send(Messages.errorMessage(error));
+    public void onWrongInsertionUpdate(String error) {
+        selectedView.send(Messages.errorMessage(error));
+
+        cleanSelection();
     }
 
     @Override
     public void onWrongNumberInsertion() {
-        //TODO view.send(Messages.errorNumber());
-    }
+        selectedView.send(Messages.errorNumber());
 
-    @Override
-    public void onWrongPlayerInsertion(String nickname) {
-        for(VirtualView view : views)
-            if(view.getNickname().equals(nickname))
-                view.send(Messages.errorAddPlayer(nickname));
+        cleanSelection();
     }
 
     @Override
     public void onLossUpdate(String nickname) {
-        for(VirtualView view : views)
-            if(view.getNickname().equals(nickname))
-                view.send(Messages.lostGame());
+        selectedView.send(Messages.lostGame());
+
+        cleanSelection();
     }
 
     @Override
     public void onStateUpdate(Model.State currState) {
-        //TODO da fare?
+        for(VirtualView view : views)
+            view.send(Messages.stepUpdate(currState));
+
+        cleanSelection();
     }
 
     @Override
     public void onPlayerTurn(String nickname) {
-        for (VirtualView view : views){
-            if (view.getNickname().equals(nickname))
-                view.send(Messages.turnUpdate(nickname));
-        }
+        for (VirtualView view : views)
+            view.send(Messages.turnUpdate(nickname));
+
+
+        cleanSelection();
     }
 
     @Override
-    public void onColorAssigned(String nickname) {
-        for (VirtualView view : views){
-            if (view.getNickname().equals(nickname))
-                view.send(Messages.colorUpdate(nickname));
-        }
+    public void onColorAssigned(String nickname, String color, boolean result) {
+        if(result)
+            for (VirtualView view : views)
+                view.send(Messages.colorUpdate(nickname, color, true));
+        else
+            selectedView.send(Messages.colorUpdate(nickname, color, false));
+
+        cleanSelection();
+    }
+
+    @Override
+    public void onViewSelect(String nickname) {
+        for(VirtualView view : views)
+            if(view.getNickname().equals(nickname))
+                selectedView = view;
+    }
+
+
+
+    @Override
+    public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
+        if(result)
+            for(VirtualView view : views)
+                view.send(Messages.build(nickname, src, dst, dome, true));
+        else
+            selectedView.send(Messages.build(nickname, src, dst, dome, false));
+
+        cleanSelection();
+    }
+
+    @Override
+    public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
+        if(result)
+            for(VirtualView view : views)
+                view.send(Messages.move(nickname, src, dst, true));
+        else
+            selectedView.send(Messages.move(nickname, src, dst, false));
+
+        cleanSelection();
+    }
+
+    /**
+     * reset view selected to prevent wrong notify usages from Model
+     */
+    private void cleanSelection() {
+        selectedView = null;
+    }
+
+    @Override
+    public void onPlayerAdded(String nickname, boolean result) {
+        if(result)
+            for(VirtualView view : views)
+                view.send(Messages.playerAdded(nickname, true));
+        else
+            selectedView.send(Messages.playerAdded(nickname, false));
+
+        cleanSelection();
     }
 }

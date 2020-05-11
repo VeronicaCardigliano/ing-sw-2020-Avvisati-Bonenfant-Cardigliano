@@ -4,11 +4,14 @@ import it.polimi.ingsw.server.controller.*;
 import it.polimi.ingsw.server.model.ModelObservable;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.parser.Messages;
+import it.polimi.ingsw.server.parser.NetworkParser;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class NetworkHandler extends ModelObservable implements Runnable, BuilderBuildObserver, BuilderMoveObserver,
@@ -54,7 +57,41 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
 
 
     private boolean handleMessage(String message) {
-        //TODO finire
+        try {
+            NetworkParser parser = new NetworkParser(message);
+
+
+            switch (parser.getRequest()) {
+
+                //richieste Controller
+
+                case Messages.ASK_NUMBER_OF_PLAYERS:
+                    //abstractView.askNumberOfPlayers();
+                    break;
+
+                case Messages.ASK_NICK_AND_DATE:
+                    //abstractView.askNickAndDate();
+                    break;
+
+                case Messages.ASK_COLOR:
+                    //abstractView.askColor();
+                    break;
+
+                case Messages.ASK_GOD:
+                    //abstractView.askGod(); //TODO passare la lista dei god possibili? (specifica di gioco: il primo deve scegliere i 3 god possibili)
+                    break;
+
+                //notify dal Model
+
+                case Messages.POSSIBLE_BUILD_DESTINATIONS:
+                    ArrayList<Coordinates> list = parser.getCoordList();
+                    //notifyPossibleBuilds();
+
+            }
+
+        } catch (JSONException e) {
+
+        }
         return false;
     }
 

@@ -4,7 +4,7 @@ import it.polimi.ingsw.server.controller.*;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 
 public abstract class ViewObservable {
-    BuilderBuildObserver builderBuildObserver;
+    BuilderBuildObserver builderBuiltObserver;
     BuilderMoveObserver builderMoveObserver;
     ColorChoiceObserver colorChoiceObserver;
     NewPlayerObserver newPlayerObserver;
@@ -19,7 +19,7 @@ public abstract class ViewObservable {
 
     protected void notifyBuild(String player, Coordinates src, Coordinates dst, boolean buildDome) {
         if(!DEBUG)
-            builderBuildObserver.onBuilderBuild(player, src, dst, buildDome);
+            builderBuiltObserver.onBuilderBuild(player, src, dst, buildDome);
     }
 
     protected  void notifyMove(String player, Coordinates src, Coordinates dst) {
@@ -61,5 +61,6 @@ public abstract class ViewObservable {
         if(!DEBUG)
             godCardChoiceObserver.onGodCardChoice(player, godCard);
     }
+
 
 }
