@@ -1,5 +1,5 @@
 package it.polimi.ingsw.server.view;
 
 public interface GodChoiceObserver {
-    void onGodCardAssigned(String nickname, String card);
+    void onGodCardAssigned(String nickname, String card, boolean result);
 }

@@ -140,6 +140,8 @@ public class Model extends ModelObservableWithSelect {
      * @exception IllegalArgumentException is thrown if the player isn't in the list of players of the match
      */
 
+    //notifyViewSelection
+
     public void deletePlayer (String playerName) throws IllegalArgumentException {
 
         boolean found = false;
@@ -192,6 +194,7 @@ public class Model extends ModelObservableWithSelect {
         for(Player p : players)
             if(p.getNickname().equals(nickname)) {
                 canAdd = false;
+                break;
             }
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
@@ -218,6 +221,7 @@ public class Model extends ModelObservableWithSelect {
             });
         }
 
+        notifyViewSelection(nickname);
         notifyPlayerAdded(nickname, canAdd);
 
         return canAdd;
@@ -229,10 +233,13 @@ public class Model extends ModelObservableWithSelect {
 
     public boolean assignCard (String chosenGodCard) {
         boolean existing = false;
+        boolean assigned = true;
+
         for (String s: chosenCards) {
             if (chosenGodCard.equals(s)){
-                notifyWrongInsertion(currPlayer.getNickname(), "ERROR: GodCard name already used ");
-                return false;
+                //notifyWrongInsertion(currPlayer.getNickname(), "ERROR: GodCard name already used ");
+                assigned = false;
+                break;
             }
         }
         for (String s: getGodNames())
@@ -243,12 +250,19 @@ public class Model extends ModelObservableWithSelect {
 
         if (!existing) {
             notifyWrongInsertion(currPlayer.getNickname(), "ERROR: The name entered is not an existing godCard, choose from the available ones ");
-            return false;
+            assigned = false;
         }
-        chosenCards.add(chosenGodCard);
-        currPlayer.setGodCard(cardsParser.createCard(currPlayer, chosenGodCard));
-        currPlayer.getGodCard().setGameMap(gameMap);
-        return true;
+
+        if (assigned) {
+            chosenCards.add(chosenGodCard);
+            currPlayer.setGodCard(cardsParser.createCard(currPlayer, chosenGodCard));
+            currPlayer.getGodCard().setGameMap(gameMap);
+        }
+
+        notifyViewSelection(currPlayer.getNickname());
+        notifyGodChoice(currPlayer.getNickname(), chosenGodCard, assigned);
+
+        return assigned;
     }
 
     /** This method is used by game() to create 2 builders for current player and assign the chosen color to them
@@ -258,12 +272,12 @@ public class Model extends ModelObservableWithSelect {
     public boolean assignColor (String chosenColor) {
 
         boolean existing = false;
-        boolean assigned = true;
+        boolean assigned = false;
 
         for (String s: chosenColors) {
             if (chosenColor.equals(s)){
                 notifyWrongInsertion(currPlayer.getNickname(),"ERROR: Color already used, choose from the available ones ");
-                assigned = false;
+                assigned = true;
             }
         }
 
@@ -274,19 +288,16 @@ public class Model extends ModelObservableWithSelect {
             }
         }
 
-        if (!existing) {
-            notifyWrongInsertion(currPlayer.getNickname(),"ERROR: Color does not exist, choose from the available ones ");
-            notifyColorAssigned(currPlayer.getNickname(), chosenColor, false);
-            assigned = false;
-        }
-
-        if (assigned) {
+        if (!assigned && existing) {
             chosenColors.add(chosenColor);
             currPlayer.setBuilders(new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)),
                     new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)));
-            notifyColorAssigned(currPlayer.getNickname(), chosenColor, true);
         }
-        return assigned;
+
+        notifyViewSelection(currPlayer.getNickname());
+        notifyColorAssigned(currPlayer.getNickname(),chosenColor, !assigned && existing);
+
+        return !assigned && existing ;
     }
 
     public boolean setCurrPlayerBuilders(Coordinates builder1Coord, Coordinates builder2Coord) {
@@ -346,19 +357,24 @@ public class Model extends ModelObservableWithSelect {
 
                 switch (currStep) {
                     case "MOVE":
-                        if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y))
+                        if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
+                            notifyPossibleBuilds(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome
+                                    , possibleDstBuilder2forDome);
+                        }
                             break;
 
                     case "BUILD":
                         if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
-                                currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome))
+                                currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
+                            notifyPossibleMoves(possibleDstBuilder1, possibleDstBuilder2);
+                        }
                             break;
-                        //case BOTH exception
                 }
             }
         return possibleDstBuilder;
+
     }
 
     /**
@@ -391,61 +407,60 @@ public class Model extends ModelObservableWithSelect {
     }
 
     public boolean effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
-        boolean result = false;
+        boolean result;
+        boolean correctBuilder = true;
         //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
             notifyWrongInsertion(currPlayer.getNickname(),
                     "ERROR: you have to continue the turn with the same builder ");
-            return result;
+            correctBuilder = false;
         }
 
         result = currPlayer.build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
 
         //build method increase the currStep of the player
-        if (result) {
+        if (result && correctBuilder) {
 
             currStep = getCurrStep(currPlayer);
             if (!currStep.equals("END"))
                 findPossibleDestinations();
             else
                 setNextPlayer();
-        } else {
-            //TODO what should i notify here?
-            notifyWrongInsertion(currPlayer.getNickname(), "Invalid move");
         }
 
-        notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result);
-        return result;
+        notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result && correctBuilder);
+        return result && correctBuilder;
     }
 
     public boolean effectiveMove (Coordinates src, Coordinates dst) {
 
-        boolean result = false;
+        boolean result;
+        boolean correctBuilder = true;
+
         //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
             notifyWrongInsertion(currPlayer.getNickname(), "ERROR: you have to continue the turn with the same " +
                     "player ");
-            return result;
+            correctBuilder = false;
         }
 
         result = currPlayer.move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
 
         //move method increases the currStep of the player
-
-        if (result) {
-            notifyBuilderMovement(currPlayer.getNickname(),src, dst, true);
+        if (result && correctBuilder) {
             currStep = getCurrStep(currPlayer);
             if (!currStep.equals("END"))
                 findPossibleDestinations();
             else
                 setNextPlayer();
         }
-        else notifyWrongInsertion(currPlayer.getNickname(), "Invalid Build");
-        return result;
+
+        notifyBuilderMovement(currPlayer.getNickname(),src, dst, result && correctBuilder);
+        return result && correctBuilder;
     }
 
     public void findPossibleDestinations () {
