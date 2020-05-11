@@ -374,7 +374,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
 
     //Every player has to add to the static Map of colors, the new entry
     @Override
-    public void onGodCardAssigned(String nickname, String godCard) {
+    public void onGodCardAssigned(String nickname, String godCard, boolean result) {
         System.out.println ("GodCard assigned correctly.");
         chosenGodCards.put(nickname, godCard);
     }
@@ -435,4 +435,5 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public void onPlayerTurn(String nickname) {
         System.out.println("Turn ended. Now playing: " + nickname);
     }
+
 }

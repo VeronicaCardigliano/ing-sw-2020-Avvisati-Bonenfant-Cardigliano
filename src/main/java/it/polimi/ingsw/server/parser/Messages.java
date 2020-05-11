@@ -35,6 +35,7 @@ public abstract class Messages {
     public static final String COLOR_UPDATE = "colorUpdate";
     public static final String PLAYER_ADDED = "playerAdded";
     public static final String STEP_UPDATE = "stepUpdate";
+    public static final String GOD_CARD_ASSIGNED = "godCardAssigned";
 
     //request type from controller
     public static final String ASK_NICK_AND_DATE = "askNickAndDate";
@@ -42,6 +43,7 @@ public abstract class Messages {
     public static final String ASK_GOD = "askGod";
     public static final String ASK_NUMBER_OF_PLAYERS = "askNumberOfPlayers";
     public static final String ASK_BUILDERS = "askBuilders";
+    public static final String ASK_STEP = "askStep";
 
 
     //key values
@@ -60,6 +62,7 @@ public abstract class Messages {
     public static final String POSITIONS = "positions"; //for SET_BUILDERS
     public static final String RESULT = "result";
     public static final String STEP = "step"; //for STEP_UPDATE
+    public static final String GOD_CARD = "godCard";
 
 
     private static JSONObject fromCoordinates(Coordinates coord) {
@@ -245,6 +248,14 @@ public abstract class Messages {
 
     public static String stepUpdate(Model.State state) {
         return (new JSONObject()).put(TYPE, STEP_UPDATE).put(STEP, state.toString()).toString();
+    }
+
+    public static String askStep(){
+        return (new JSONObject()).put(TYPE, ASK_STEP).toString();
+    }
+
+    public static String godCardAssigned(String godCard, boolean result){
+        return (new JSONObject()).put(TYPE, GOD_CARD_ASSIGNED).put(GOD_CARD, godCard).put(RESULT, result).toString();
     }
 
 }

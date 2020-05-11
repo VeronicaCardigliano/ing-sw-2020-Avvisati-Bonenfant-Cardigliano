@@ -34,9 +34,8 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
             if (model.setNumberOfPlayers(num)) {
                 viewManager.askNickAndDate();
                 model.setNextState();
-            }
-            else viewManager.askNumberOfPlayers(); //broadcast message
-
+            } else
+                viewManager.askNumberOfPlayers(); //broadcast message
         }
     }
 
@@ -67,7 +66,6 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
         if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(player)) {
             if (model.assignColor(color)) {
                 model.setNextPlayer();
-
                 if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
                     model.setNextState();
                     viewManager.askGod(model.getCurrPlayer().getNickname());
@@ -113,27 +111,34 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
 
     @Override
     public void onBuilderBuild(String player, Coordinates src, Coordinates dst, boolean buildDome) {
-        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(player))
-            if(model.effectiveBuild(src,dst,buildDome)){
-                if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")){
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(player)) {
+            if (model.getCurrPlayer().getGodCard().getCurrState().equals("BUILD"))
+            if (model.effectiveBuild(src, dst, buildDome)) {
+                if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
                     model.setNextPlayer();
                     model.getCurrPlayer().startTurn();
                 }
             }
+            else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
+                viewManager.askStep(player);
+        }
     }
 
 
     @Override
     public void onBuilderMove(String player, Coordinates src, Coordinates dst) {
-        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(player))
-            if(model.effectiveMove(src, dst)){
-                if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")){
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(player)) {
+            if (model.getCurrPlayer().getGodCard().getCurrState().equals("MOVE"))
+            if (model.effectiveMove(src, dst)) {
+                if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
                     model.setNextPlayer();
                     model.getCurrPlayer().startTurn();
+                }
             }
+            else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
+                viewManager.askStep(player);
         }
     }
-
 
 //------------
 

@@ -14,7 +14,7 @@ import java.util.Set;
  * Container for Virtual Views. Supposed to multiplex notifies coming from ModelObservable.
  */
 public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacedObserver,
-                                    EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver,
+                                    EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver, GodChoiceObserver ,
         PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver{
 
     List<VirtualView> views;
@@ -41,6 +41,12 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     public void setFirstView(VirtualView view) {
         firstView = view;
         firstView.send(Messages.askNumberOfPlayers());
+    }
+
+    public void askStep(String nickname) {
+        for (VirtualView view : views)
+            if (view.getNickname().equals(nickname))
+                view.send(Messages.askStep());
     }
 
     public void askNumberOfPlayers() {
@@ -201,5 +207,14 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
             selectedView.send(Messages.playerAdded(nickname, false));
 
         cleanSelection();
+    }
+
+    @Override
+    public void onGodCardAssigned(String nickname, String card, boolean result) {
+        if (result)
+            for (VirtualView view : views)
+                view.send(Messages.godCardAssigned(card, true));
+        else
+            selectedView.send(Messages.godCardAssigned(card, false));
     }
 }
