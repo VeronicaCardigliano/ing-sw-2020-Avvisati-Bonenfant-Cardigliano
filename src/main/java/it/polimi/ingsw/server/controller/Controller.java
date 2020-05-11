@@ -1,20 +1,15 @@
 package it.polimi.ingsw.server.controller;
 
-import it.polimi.ingsw.server.model.gameMap.Builder;
-import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.Model;
-import it.polimi.ingsw.server.model.Player;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.view.ViewManager;
-import it.polimi.ingsw.server.view.VirtualView;
 
-//TODO: make sure of not passing editable objects
 
 public class Controller implements BuilderBuildObserver, BuilderMoveObserver, NewPlayerObserver, NumberOfPlayersObserver,
-            GodCardChoiceObserver, ColorChoiceObserver, StepChoiceObserver {
+            GodCardChoiceObserver, ColorChoiceObserver, StepChoiceObserver, DisconnectionObserver{
 
-    private Model model;
-    private ViewManager viewManager;
+    private final Model model;
+    private final ViewManager viewManager;
 
     public Controller (Model model, ViewManager viewManager) {
 
@@ -34,7 +29,7 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
         model.getNumPlayers() != 3) {
 
             if (model.setNumberOfPlayers(num)) {
-                //TODO viewManager.askNick&Date() //broadcast message
+                viewManager.askNumberOfPlayers(); //broadcast message
                 model.setNextState();
             }
 
@@ -55,7 +50,7 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                 model.setNextState();
                 //setNextPlayer used to initialize first player :)
                 model.setNextPlayer();
-                //TODO viewManager.askColor(model.currPlayer().getNickname());
+                viewManager.askNickAndDate();
             }
 
         }
@@ -70,7 +65,8 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
             model.setNextPlayer();
             if (model.getCurrPlayer().equals(model.getPlayers().get(0)))
                 model.setNextState();
-            else;//TODO viewManager.askGod(model.getCurrPlayer().getNickname());
+            else
+                viewManager.askColor(model.getCurrPlayer().getNickname());
 
         }
     }
@@ -86,10 +82,13 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                     model.setNextPlayer();
                     if (model.getCurrPlayer().equals(model.getPlayers().get(0)))
                         model.setNextState();
-                    else; //TODO viewManager.askGod(model.getCurrPlayer().getNickname());
+                    else
+                        viewManager.askGod(model.getCurrPlayer().getNickname());
                 }
             }
         }
+
+        //TODO askBuilderPlacement ?
 
 //-------------
 
@@ -123,5 +122,11 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
     public void onStepChoice(String player, String chosenStep) {
         if (model.getCurrPlayer().getNickname().equals(player) && model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
         model.setStepChoice(chosenStep);
+    }
+
+    @Override
+    public void onDisconnection(String player) {
+        viewManager.remove(player);
+        model.deletePlayer(player);
     }
 }

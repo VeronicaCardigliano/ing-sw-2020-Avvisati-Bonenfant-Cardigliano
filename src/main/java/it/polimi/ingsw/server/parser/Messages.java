@@ -28,6 +28,13 @@ public abstract class Messages {
     public static final String DELETE_PLAYER = "deletePlayer";
     public static final String DISCONNECT = "disconnect";
 
+    //request type from controller
+    public static final String ASK_NICK_AND_DATE = "askNickAndDate";
+    public static final String ASK_COLOR = "askColor";
+    public static final String ASK_GOD = "askGod";
+    public static final String ASK_NUMBER_OF_PLAYERS = "askNumberOfPlayers";
+
+
     //key values
     public static final String COLOR = "color"; //for SET_COLOR
     public static final String WINNER = "winner"; //for END_GAME
@@ -41,6 +48,7 @@ public abstract class Messages {
     public static final String DESCRIPTION = "description"; //for ERROR
     public static final String POSSIBLE_DST = "possibleDst";
     public static final String STEP_CHOICE = "stepChoice";
+    public static final String POSITIONS = "positions"; //for SET_BUILDERS
 
     private static JSONObject fromCoordinates(Coordinates coord) {
         JSONObject obj = new JSONObject();
@@ -141,8 +149,12 @@ public abstract class Messages {
         JSONObject message = new JSONObject();
         message.put(TYPE, BUILDERS_PLACEMENT);
         message.put(PLAYER, nickname);
-        message.put("positionBuilder1", fromCoordinates(positionBuilder1));
-        message.put("positionBuilder2", fromCoordinates(positionBuilder2));
+
+        JSONArray positions = new JSONArray();
+        positions.put(fromCoordinates(positionBuilder1));
+        positions.put(fromCoordinates(positionBuilder2));
+
+        message.put(POSITIONS, positions);
 
         return message.toString();
     }
@@ -151,9 +163,9 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, DISCONNECT).toString();
     }
 
-    public static String deletePlayer() {
+    /*public static String deletePlayer() {
         return (new JSONObject()).put(TYPE, DELETE_PLAYER).toString();
-    }
+    }*/
 
     public static String stepChoice(String choice) {
         JSONObject message = new JSONObject();
@@ -181,6 +193,19 @@ public abstract class Messages {
         return message.toString();
     }
 
+    public static String askNickAndDate() {
+        return (new JSONObject()).put(TYPE, ASK_NICK_AND_DATE).toString();
+    }
 
+    public static String askColor() {
+        return (new JSONObject()).put(TYPE, ASK_COLOR).toString();
+    }
 
+    public static String askGod() {
+        return (new JSONObject()).put(TYPE, ASK_GOD).toString();
+    }
+
+    public static String askNumberOfPlayers() {
+        return (new JSONObject()).put(TYPE, ASK_NUMBER_OF_PLAYERS).toString();
+    }
 }

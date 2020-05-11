@@ -10,15 +10,13 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
-import java.util.Set;
 
 /**
  * @author thomas
  * VirtualView class notifies Controller (as an Observable) and is notified by Model (as an observer).
  * Each VirtualVieww is a Runnable object associated to a socket.
  */
-public class VirtualView extends ViewObservable implements Runnable, BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
-                            ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver {
+public class VirtualView extends ViewObservable implements Runnable {
 
     private final Socket socket;
     private PrintWriter out;
@@ -64,7 +62,7 @@ public class VirtualView extends ViewObservable implements Runnable, BuilderPoss
         }
     }
 
-    private void send(String message) {
+    public void send(String message) {
         out.println(message);
     }
 
@@ -122,10 +120,6 @@ public class VirtualView extends ViewObservable implements Runnable, BuilderPoss
                     }
                     break;
 
-                case Messages.DELETE_PLAYER:
-                    notifyPlayerDeletion(this.nickname); //il controller deve fare in modo che ViewManager rimuova questa view
-                    //disconnettere?
-                    break;
 
                 case Messages.SET_NUMBER_OF_PLAYERS:
                     numberOfplayers = parser.getNumberOfPlayers();
@@ -139,6 +133,7 @@ public class VirtualView extends ViewObservable implements Runnable, BuilderPoss
 
                 case Messages.DISCONNECT:
                     connected = false;
+                    notifyDisconnection(nickname);
 
             }
         } catch (JSONException e) {
@@ -148,36 +143,5 @@ public class VirtualView extends ViewObservable implements Runnable, BuilderPoss
         return connected;
     }
 
-    //--------------------------------------- OBSERVER METHODS ---------------------------------------------------------
 
-    @Override
-    public void updatePossibleBuildDst(String nickname, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
-        send(Messages.possibleBuildDestinations(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome));
-    }
-
-    @Override
-    public void onWrongInsertionUpdate(String nickname, String error) {
-        send(Messages.errorMessage(error));
-    }
-
-    @Override
-    public void onLossUpdate(String nickname) {
-        send(Messages.lostGame());
-    }
-
-    @Override
-    public void onEndGameUpdate(String winnerNickname) {
-        send(Messages.endGame(winnerNickname));
-    }
-
-    @Override
-    public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
-        send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2));
-    }
-
-
-    @Override
-    public void updatePossibleMoveDst(String nickname, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
-        send(Messages.possibleMoveDestinations(possibleDstBuilder1, possibleDstBuilder2));
-    }
 }

@@ -3,7 +3,10 @@ package it.polimi.ingsw.server.parser;
 //Parses a string containing a json to evaluate e request coming from the view
 
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
+import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class NetworkParser {
 
@@ -53,6 +56,20 @@ public class NetworkParser {
     public String getName() { return jsonObject.getString(Messages.NAME);}
 
     public String getStepChoice() { return jsonObject.getString(Messages.STEP_CHOICE);}
+
+    private Coordinates fromJSONObject(JSONObject coordJSON) {
+        return new Coordinates(coordJSON.getInt("i"), coordJSON.getInt("j"));
+    }
+
+    public ArrayList<Coordinates> getCoordList() {
+        JSONArray arr = jsonObject.getJSONArray(Messages.POSSIBLE_DST);
+        ArrayList<Coordinates> list = new ArrayList<>();
+
+        for(int i = 0; i < arr.length(); i++)
+            list.add(fromJSONObject(arr.getJSONObject(i)));
+
+        return list;
+    }
 
 }
 

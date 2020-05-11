@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.view;
 
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
+import it.polimi.ingsw.server.parser.Messages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,33 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         views.add(view);
     }
 
+    public void remove(String nickname) {
+        views.removeIf(view -> view.getNickname().equals(nickname));
+    }
 
+
+    public void askNumberOfPlayers() {
+        for (VirtualView view : views)
+            view.send(Messages.askNumberOfPlayers());
+    }
+
+    public void askNickAndDate() {
+        for(VirtualView view : views)
+            view.send(Messages.askNickAndDate());
+
+    }
+
+    public void askColor(String player) {
+        for(VirtualView view : views)
+            if(view.getNickname().equals(player))
+                view.send(Messages.askColor());
+    }
+
+    public void askGod(String player) {
+        for(VirtualView view : views)
+            if(view.getNickname().equals(player))
+                view.send(Messages.askGod());
+    }
 
     //Observer Methods are multiplexed to the right VirtualViews
 
@@ -33,39 +60,40 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     public void updatePossibleBuildDst(String nickname, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
         for(VirtualView view : views)
             if(view.getNickname().equals(nickname))
-                view.updatePossibleBuildDst(nickname, possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
+                view.send(Messages.possibleBuildDestinations(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome));
     }
 
     @Override
     public void updatePossibleMoveDst(String nickname, Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
         for(VirtualView view : views)
             if(view.getNickname().equals(nickname))
-                view.updatePossibleMoveDst(nickname, possibleDstBuilder1, possibleDstBuilder2);
+                view.send(Messages.possibleMoveDestinations(possibleDstBuilder1, possibleDstBuilder2));
     }
 
     @Override
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
         for(VirtualView view : views)
-            view.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2);
+            view.send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2));
     }
 
     @Override
     public void onEndGameUpdate(String winnerNickname) {
         for(VirtualView view : views)
-            view.onEndGameUpdate(winnerNickname);
+            view.send(Messages.endGame(winnerNickname));
     }
 
     @Override
     public void onWrongInsertionUpdate(String nickname, String error) {
         for(VirtualView view : views)
             if(view.getNickname().equals(nickname))
-                view.onWrongInsertionUpdate(nickname, error);
+                view.send(Messages.errorMessage(error));
     }
 
     @Override
     public void onLossUpdate(String nickname) {
         for(VirtualView view : views)
-            if(view.getNickname().equals(nickname));
+            if(view.getNickname().equals(nickname))
+                view.send(Messages.lostGame());
     }
 
     @Override

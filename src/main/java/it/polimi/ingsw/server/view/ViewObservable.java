@@ -11,7 +11,6 @@ public abstract class ViewObservable {
     NumberOfPlayersObserver numberOfPlayersObserver;
     StepChoiceObserver stepChoiceObserver;
     BuilderSetupObserver builderSetupObserver;
-    PlayerDeletionObserver playerDeletionObserver;
     DisconnectionObserver disconnectionObserver;
     GodCardChoiceObserver godCardChoiceObserver;
 
@@ -50,11 +49,6 @@ public abstract class ViewObservable {
     protected void notifySetupBuilders(String player, Coordinates pos1, Coordinates pos2) {
         if(!DEBUG)
             builderSetupObserver.onBuilderSetup(player, pos1, pos2);
-    }
-
-    protected void notifyPlayerDeletion(String player) {
-        if(!DEBUG)
-            playerDeletionObserver.onPlayerDeleted(player);
     }
 
     protected void notifyDisconnection(String player) {
