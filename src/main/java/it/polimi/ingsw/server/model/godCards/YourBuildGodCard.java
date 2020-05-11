@@ -60,15 +60,11 @@ public class YourBuildGodCard extends GodCard {
             else if (secondBuildDiffDest && !secondBuildNotDome)
                 //Demeter GodCard effect
                 extraConditions = dst != firstBuildDst;
-            else if (!secondBuildDiffDest && !secondBuildNotDome && extraBuildNotPerimeter && step == 2) {
+            else if (!secondBuildDiffDest && !secondBuildNotDome && extraBuildNotPerimeter) {
                 //Hestia GodCard effect
-
-                //Check if statesCopy is at last build
 
                     extraConditions = (i_dst != 0 && i_dst != IslandBoard.dimension - 1 &&
                                        j_dst != 0 && j_dst != IslandBoard.dimension - 1);
-
-                //Reset card State list and values
 
             }
         }

@@ -40,7 +40,7 @@ class GodCardTest {
         player.setBuilders(builder1, builder2);
 
         System.out.println("giving player1 a default card...");
-        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/parser/cards.json");
+        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
         godCard = parser.createCard(player, "default");
         player.setGodCard(godCard);
 
