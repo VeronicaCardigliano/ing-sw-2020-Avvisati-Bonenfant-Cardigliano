@@ -95,10 +95,10 @@ class ModelTest {
         playersListTest = testModel.getPlayers();
 
         testModel.setNextPlayer();
-        assertTrue(testModel.assignColor("GREY"));
+        assertTrue(testModel.assignColor("MAGENTA"));
         //System.out.println("\nExpected error for color already used...");
         testModel.setNextPlayer();
-        assertFalse(testModel.assignColor( "GREY"));
+        assertFalse(testModel.assignColor( "MAGENTA"));
         //System.out.println("\nExpected error for non-existent color name...");
         assertFalse(testModel.assignColor("YELLOW"));
         assertTrue(testModel.assignColor("LIGHT_BLUE"));
@@ -133,7 +133,7 @@ class ModelTest {
         assertTrue(testModel.assignColor("WHITE"));
         assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(0,0), new Coordinates(0,1)));
         testModel.setNextPlayer();
-        assertTrue(testModel.assignColor("GREY"));
+        assertTrue(testModel.assignColor("MAGENTA"));
         assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(4,4), new Coordinates(4,3)));
 
 
@@ -227,9 +227,6 @@ class ModelTest {
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
         testModel.effectiveMove(new Coordinates(2,2), new Coordinates(3,3));
         assertTrue(testModel.endGame());
-
-
-
 
     }
 }

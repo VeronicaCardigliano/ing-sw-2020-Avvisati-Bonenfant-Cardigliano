@@ -38,7 +38,7 @@ public class CellTest {
     public void canSetNewOccupantOnlyIfNotBusy() {
         Cell cell = new Cell(3, 4);
         Builder builder1 = new Builder(new Player("thomas"), Builder.BuilderColor.WHITE);
-        Builder builder2 = new Builder(new Player("giulio"), Builder.BuilderColor.GREY);
+        Builder builder2 = new Builder(new Player("giulio"), Builder.BuilderColor.MAGENTA);
 
         assertTrue(cell.setOccupant(builder1));
         assertTrue(cell.isOccupied());

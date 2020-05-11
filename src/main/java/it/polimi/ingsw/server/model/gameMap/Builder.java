@@ -12,7 +12,7 @@ public class Builder {
     final private Player player;
     private Cell cell;
     private final BuilderColor color;
-    public enum BuilderColor { GREY, LIGHT_BLUE, WHITE }
+    public enum BuilderColor { MAGENTA, LIGHT_BLUE, WHITE }
 
     /**
      * @param player : owner of the pawn

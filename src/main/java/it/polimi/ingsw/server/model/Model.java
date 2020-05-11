@@ -275,7 +275,7 @@ public class Model extends ModelObservableWithSelect {
         }
 
         if (!existing) {
-            notifyWrongInsertion();
+            notifyWrongInsertion(currPlayer.getNickname(),"ERROR: Color does not exist, choose from the available ones ");
             notifyColorAssigned(currPlayer.getNickname(), chosenColor, false);
             assigned = false;
         }
@@ -437,7 +437,7 @@ public class Model extends ModelObservableWithSelect {
         //move method increases the currStep of the player
 
         if (result) {
-            notifyBuilderMovement(currPlayer.getNickname(),src, dst);
+            notifyBuilderMovement(currPlayer.getNickname(),src, dst, true);
             currStep = getCurrStep(currPlayer);
             if (!currStep.equals("END"))
                 findPossibleDestinations();
