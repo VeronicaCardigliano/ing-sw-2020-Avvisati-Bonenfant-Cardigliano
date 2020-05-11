@@ -1,5 +1,6 @@
-package it.polimi.ingsw.client;
+package it.polimi.ingsw.client.cli;
 
+import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.view.*;
@@ -18,12 +19,12 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     //these attributes are passed to the NetworkHandler through notifies
     protected static int numPlayers;
     //Set of GodCards already chosen by a player
-    private static Map<String,String> chosenGodCards = new HashMap<>();
+    protected static Map<String,String> chosenGodCards = new HashMap<>();
     //Map of each player and the color he has chosen
-    private static Map<String,String> chosenColorsForPlayer = new HashMap<>();
+    protected static Map<String,String> chosenColorsForPlayer = new HashMap<>();
     //Map of each player and the coordinates of his builders
-    private static Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
-    private static Set<String> chosenColors = new HashSet<>();
+    protected static Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
+    protected static Set<String> chosenColors = new HashSet<>();
 
     //not static attributes which change for each player/client
     private String nickname;
@@ -43,32 +44,35 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         cliGameMap = new CliGameMap();
     }
 
-    /*
-    //method created just for testing purpose
-    public void main () {
-        askNumberOfPlayers();
-        askForNewPlayer();
-        askForNewPlayer();
-        askForNewPlayer();
-        chooseGodCard ((new Model()).getGodDescriptions(), chosenGodCards);
-        chooseBuilderColor(chosenColors);
-        chooseNextStep();
+    //used by test
+    protected void setNickname (String nickname) {
+        this.nickname = nickname;
     }
-    */
 
     /**
      * This list of set methods is used by tests
      */
 
-    //protected void setChosenCard (String chosenGodCard) {
-    //    chosenGodCards.add(chosenGodCard);}
-
-    //protected void setNumPlayers (int num) {
-    //   numPlayers = num;}
-
     protected void setChosenColor (String player, String chosenColor) {
-        chosenColorsForPlayer.put(player, chosenColor);
+        chosenColorsForPlayer.put(player, chosenColor.toUpperCase());
     }
+
+    protected void setOccupiedCells (String player, ArrayList<Coordinates> cells) {
+        occupiedCells.put(player, cells);
+    }
+
+    protected void setChosenGodCard (String player, String godCard) {
+        chosenGodCards.put(player, godCard);
+    }
+
+    protected static Map<String, ArrayList<Coordinates>> getOccupiedCells () {
+        return occupiedCells;
+    }
+
+    protected static Map<String, String> getChosenGodCards () {
+        return chosenGodCards;
+    }
+
 
     /**
      * Used by cliGameMap to print the builders in the correct color
@@ -79,17 +83,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         return chosenColorsForPlayer.get(player);
     }
 
-    /**
-     * The method put will replace the value of an existing key and will create it if doesn't exist
-     * In this case the keySet is the list of players and values are their builders' coordinates
-     */
-    protected void setOccupiedCells (String player, ArrayList<Coordinates> cells) {
-        occupiedCells.put(player, cells);
-    }
-
-    protected Map<String, ArrayList<Coordinates>> getOccupiedCells () {
-        return occupiedCells;
-    }
 
     /**
      * Asks for the number of players of the match, just the first player has to set it
@@ -98,7 +91,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public void askNumberOfPlayers() {
         System.out.println("Insert the number of players ");
         numPlayers = Integer.parseInt(input.nextLine());
-        notifyNumberOfPlayers(Integer.parseInt(input.nextLine()));
+        notifyNumberOfPlayers(numPlayers);
     }
 
     /**
@@ -121,7 +114,10 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
      */
     @Override
     public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenGodCards) {
-        //this.chosenGodCards = chosenGodCards;
+        String red = Color.ANSI_RED.escape();
+        System.out.println("\nSelect your GodCard from the available ones ");
+        System.out.println("-------------------------------------------");
+
         for (String s : godDescriptions.keySet()) {
             boolean alreadyUsed = false;
             for (String x : chosenGodCards) {
@@ -131,12 +127,12 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
                 }
             }
             if (!alreadyUsed) {
-                System.out.println(s);
+                System.out.println(red + s + Color.RESET);
                 //the second element of godDescriptions is the description, the key is the godName
                 System.out.println(godDescriptions.get(s));
             }
         }
-        System.out.println("Select your GodCard from the available ones");
+
         String chosenCard = input.nextLine();
         notifyGodCardChoice(nickname, chosenCard);
     }
@@ -147,7 +143,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
      */
     @Override
     public void askBuilderColor(Set<String> chosenColors) {
-        System.out.println("Available builder colors: ");
+        System.out.println("\nSelect a color for your builders from the available ones: ");
         //prints the colors only if they're still available
         for (Builder.BuilderColor color : Builder.BuilderColor.values()) {
             boolean alreadyUsed = false;
@@ -155,10 +151,19 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
                 if (alreadyChosen.equals(color.toString()))
                     alreadyUsed = true;
             }
-            if (!alreadyUsed)
-                System.out.println(color.name().toUpperCase() + " ");
+            if (!alreadyUsed) {
+                String realColor = "";
+                switch (color.name().toUpperCase()) {
+                    case "MAGENTA":
+                        realColor = Color.ANSI_MAGENTA.escape();
+                        break;
+                    case "LIGHT_BLUE":
+                        realColor = Color.ANSI_LIGHTBLUE.escape();
+                        break;
+                }
+                System.out.println(realColor + color.name().toUpperCase() + Color.RESET);
+            }
         }
-        System.out.println("Select a color for your Builders");
         String chosenColor = input.nextLine();
         notifyColorChoice(nickname, chosenColor.toUpperCase());
     }
@@ -166,7 +171,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void placeBuilders(String nickname) {
         int x,y;
-        System.out.println("Insert the coordinates of cells in which you want to place your builders \n X1: ");
+        System.out.println("\nInsert the coordinates of cells in which you want to place your builders \nX1: ");
         x = Integer.parseInt(input.nextLine());
         System.out.println("Y1: ");
         y = Integer.parseInt(input.nextLine());
@@ -234,14 +239,14 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         else
             cliGameMap.print(occupiedCells, null, possibleDstBuilder, chosenBuilderNum);
 
-        System.out.println("Insert the coordinates of where you want to build ");
+        System.out.println("\nInsert the coordinates of where you want to build ");
         System.out.println("X: ");
         x_dst = Integer.parseInt(input.nextLine());
         System.out.println("Y: ");
         y_dst = Integer.parseInt(input.nextLine());
 
         while (!possibleDstBuilder.contains(new Coordinates(x_dst, y_dst))){
-            System.out.println("Invalid coordinates. Select a cell with a valid builder");
+            System.out.println("\nInvalid coordinates. Select a cell with a valid builder");
             System.out.println("X: ");
             x_dst = Integer.parseInt(input.nextLine());
             System.out.println("Y: ");
@@ -261,7 +266,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
 
         cliGameMap.print(occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNum);
 
-        System.out.println("Insert the coordinates of the builder you want to use ");
+        System.out.println("\nInsert the coordinates of the builder you want to use ");
         System.out.println("X: ");
         x_src = Integer.parseInt(input.nextLine());
         System.out.println("Y: ");
@@ -270,7 +275,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         //verifies that the selected cell contains a valid builder
         while (!((occupiedCells.get(nickname).get(0).getI() == x_src && occupiedCells.get(nickname).get(0).getJ() == y_src) ||
                 (occupiedCells.get(nickname).get(1).getI() == x_src && occupiedCells.get(nickname).get(1).getJ() == y_src))){
-            System.out.println("Invalid coordinates, select a cell with a valid builder");
+            System.out.println("\nInvalid coordinates, select a cell with a valid builder");
             System.out.println("X: ");
             x_src = Integer.parseInt(input.nextLine());
             System.out.println("Y: ");
@@ -306,7 +311,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             y_dstMove = Integer.parseInt(input.nextLine());
         }
 
-        notifyMove(nickname, new Coordinates(x_src,y_src), new Coordinates(x_dstMove,y_dstMove));
+        //notifyMove(nickname, new Coordinates(x_src,y_src), new Coordinates(x_dstMove,y_dstMove));
     }
 
     /**
@@ -376,7 +381,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void onGodCardAssigned(String nickname, String godCard, boolean result) {
         System.out.println ("GodCard assigned correctly.");
-        chosenGodCards.put(nickname, godCard);
+        setChosenGodCard(nickname, godCard);
     }
 
     @Override
@@ -407,27 +412,34 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
-        if (!result)
-          build();
-        else
-          cliGameMap.modifyHeight(dst, dome);
+        if (!result) {
+            System.out.println ("\nERROR: wrong Build.");
+            build();
+        }
+        else {
+            cliGameMap.modifyHeight(dst, dome);
+            cliGameMap.print(occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNum);
+        }
     }
 
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
-        if (!result)
+        if (!result) {
+            System.out.println ("\nERROR: wrong Move.");
             move();
+        }
         else {
             ArrayList<Coordinates> selectedCells = new ArrayList<>();
-            if (Coordinates.equals(occupiedCells.get(nickname).get(0), dst)) {
+            if (Coordinates.equals(occupiedCells.get(nickname).get(0), src)) {
                 selectedCells.add(0, dst);
                 selectedCells.add(1, occupiedCells.get(nickname).get(1));
             }
-            else if (Coordinates.equals(occupiedCells.get(nickname).get(1), dst)) {
+            else if (Coordinates.equals(occupiedCells.get(nickname).get(1), src)) {
                 selectedCells.add(0, occupiedCells.get(nickname).get(0));
                 selectedCells.add(1, dst);
             }
             occupiedCells.put(nickname, selectedCells);
+            cliGameMap.print(occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNum);
         }
     }
 

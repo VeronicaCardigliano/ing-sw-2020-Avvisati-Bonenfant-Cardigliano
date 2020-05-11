@@ -1,4 +1,4 @@
-package it.polimi.ingsw.client;
+package it.polimi.ingsw.client.cli;
 
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 
@@ -76,8 +76,8 @@ public class CliGameMap {
                 if (Coordinates.equals(coordinates, occupiedCells.get(player).get(0)) ||
                         Coordinates.equals(coordinates, occupiedCells.get(player).get(1))) {
                     switch (Cli.getColor(player).toUpperCase()){
-                        case "GREY":
-                            builderColor = Color.ANSI_GREY.escape();
+                        case "MAGENTA":
+                            builderColor = Color.ANSI_MAGENTA.escape();
                             break;
                         case "WHITE":
                             builderColor = "";
@@ -139,6 +139,13 @@ public class CliGameMap {
                 horizontalUnderSeparator + horizontalLine + rightUnderCorner);
     }
 
+    private void printChosenGodCards () {
+        Map<String,String> chosenGodCards = Cli.getChosenGodCards();
+        for (String player : chosenGodCards.keySet()) {
+            System.out.println("    " + player + " : " + chosenGodCards.get(player));
+        }
+    }
+
     public void print (Map<String, ArrayList<Coordinates>> occupiedCells, Set<Coordinates> possibleDstBuilder1,
                        Set<Coordinates> possibleDstBuilder2, int chosenBuilderNumber) {
         int i;
@@ -150,6 +157,7 @@ public class CliGameMap {
         }
         printContents(i, occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNumber);
         printLastLine();
+        printChosenGodCards();
     }
 
 }
