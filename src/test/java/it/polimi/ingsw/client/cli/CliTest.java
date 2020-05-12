@@ -19,8 +19,7 @@ public class CliTest {
     public void resetStaticAttributes() {
         Cli.occupiedCells = new HashMap<>();
         Cli.chosenColorsForPlayer = new HashMap<>();
-        Cli.chosenGodCards = new HashMap<>();
-        Cli.chosenColors = new HashSet<>();
+        Cli.chosenGodCardsForPlayer = new HashMap<>();
     }
 
     @Test
@@ -43,9 +42,9 @@ public class CliTest {
             Set<Coordinates> possibleDst2 = new HashSet<>();
 
             //the network handler'll call CLI methods
-            cli.setChosenGodCard("Aldo", "Atlas");
-            cli.setChosenGodCard("Nic","Artemis");
-            cli.setChosenGodCard("Rick7", "Pan");
+            Cli.setChosenGodCard("Aldo", "Atlas");
+            Cli.setChosenGodCard("Nic","Artemis");
+            Cli.setChosenGodCard("Rick7", "Pan");
 
             cli.askNumberOfPlayers();
             cli.askNickAndDate();
@@ -59,28 +58,28 @@ public class CliTest {
             chosenGodCards.add("Pan");
             cli.askBuilderColor(chosenColors);
             chosenColors.add("WHITE");
-            cli.setChosenColor("Aldo", "white");
+            Cli.setChosenColor("Aldo", "white");
             cli.askBuilderColor(chosenColors);
             chosenColors.add("MAGENTA");
-            cli.setChosenColor("Nic", "Magenta");
+            Cli.setChosenColor("Nic", "Magenta");
             cli.askBuilderColor(chosenColors);
             chosenColors.add("LIGHT_BLUE");
-            cli.setChosenColor("Rick7", "Light_blue");
+            Cli.setChosenColor("Rick7", "Light_blue");
 
             cli.placeBuilders("Aldo");
             selectedCells1.add(new Coordinates(0,0));
             selectedCells1.add(new Coordinates(1,2));
-            cli.setOccupiedCells("Aldo",selectedCells1);
+            Cli.setOccupiedCells("Aldo",selectedCells1);
 
             cli.placeBuilders("Nic");
             selectedCells2.add(new Coordinates(1,4));
             selectedCells2.add(new Coordinates(1,3));
-            cli.setOccupiedCells("Nic",selectedCells2);
+            Cli.setOccupiedCells("Nic",selectedCells2);
 
             cli.placeBuilders("Rick7");
             selectedCells3.add(new Coordinates(4,4));
             selectedCells3.add(new Coordinates(4,3));
-            cli.setOccupiedCells("Rick7",selectedCells3);
+            Cli.setOccupiedCells("Rick7",selectedCells3);
 
             cli.setNickname("Nic");
             possibleDst1.add(new Coordinates(0,4));

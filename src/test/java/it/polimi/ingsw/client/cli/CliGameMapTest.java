@@ -19,8 +19,7 @@ class CliGameMapTest {
     public void resetStaticAttributes() {
         Cli.occupiedCells = new HashMap<>();
         Cli.chosenColorsForPlayer = new HashMap<>();
-        Cli.chosenGodCards = new HashMap<>();
-        Cli.chosenColors = new HashSet<>();
+        Cli.chosenGodCardsForPlayer = new HashMap<>();
     }
 
     @Test

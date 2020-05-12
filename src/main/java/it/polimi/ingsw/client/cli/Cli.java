@@ -16,15 +16,17 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     private static CliGameMap cliGameMap;
     private Scanner input;
 
-    //these attributes are passed to the NetworkHandler through notifies
-    protected static int numPlayers;
+    //Attributes declared protected to be used by tests
     //Set of GodCards already chosen by a player
-    protected static Map<String,String> chosenGodCards = new HashMap<>();
+    protected static Map<String,String> chosenGodCardsForPlayer = new HashMap<>();
     //Map of each player and the color he has chosen
     protected static Map<String,String> chosenColorsForPlayer = new HashMap<>();
     //Map of each player and the coordinates of his builders
     protected static Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
-    protected static Set<String> chosenColors = new HashSet<>();
+
+    private static Set<String> chosenColors = new HashSet<>();
+    private static Map<String, String> godDescriptions = new HashMap<>();
+    private static Set<String> chosenGodCards = new HashSet<>();
 
     //not static attributes which change for each player/client
     private String nickname;
@@ -36,7 +38,8 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     Set<Coordinates> possibleDstBuilder2forDome;
 
     //The destination of the move step is saved since the build'll have that source
-    private int chosenBuilderNum = 0, x_dstMove, y_dstMove;
+    private int chosenBuilderNum = 0;
+    private Coordinates dstMove;
 
 
     public Cli(InputStream source) {
@@ -44,25 +47,24 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         cliGameMap = new CliGameMap();
     }
 
-    //used by test
-    protected void setNickname (String nickname) {
-        this.nickname = nickname;
-    }
-
     /**
      * This list of set methods is used by tests
      */
 
-    protected void setChosenColor (String player, String chosenColor) {
+    protected void setNickname (String nickname) {
+        this.nickname = nickname;
+    }
+
+    protected static void setChosenColor (String player, String chosenColor) {
         chosenColorsForPlayer.put(player, chosenColor.toUpperCase());
     }
 
-    protected void setOccupiedCells (String player, ArrayList<Coordinates> cells) {
+    protected static void setOccupiedCells (String player, ArrayList<Coordinates> cells) {
         occupiedCells.put(player, cells);
     }
 
-    protected void setChosenGodCard (String player, String godCard) {
-        chosenGodCards.put(player, godCard);
+    protected static void setChosenGodCard (String player, String godCard) {
+        chosenGodCardsForPlayer.put(player, godCard);
     }
 
     protected static Map<String, ArrayList<Coordinates>> getOccupiedCells () {
@@ -70,7 +72,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     }
 
     protected static Map<String, String> getChosenGodCards () {
-        return chosenGodCards;
+        return chosenGodCardsForPlayer;
     }
 
 
@@ -83,6 +85,11 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         return chosenColorsForPlayer.get(player);
     }
 
+    private void checkLeaving(String string) {
+        if (string.equals("quit") || string.equals("QUIT")) {
+            //notifyDisconnection(nickname);
+        }
+    }
 
     /**
      * Asks for the number of players of the match, just the first player has to set it
@@ -90,7 +97,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void askNumberOfPlayers() {
         System.out.println("Insert the number of players ");
-        numPlayers = Integer.parseInt(input.nextLine());
+        int numPlayers = Integer.parseInt(input.nextLine());
         notifyNumberOfPlayers(numPlayers);
     }
 
@@ -101,19 +108,24 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public void askNickAndDate() {
         System.out.println("Insert player name: ");
         nickname = input.nextLine();
+        checkLeaving(nickname);
+
         System.out.println("Insert birthday date in the form \"yyyy.MM.dd\" ");
         String birthday = input.nextLine();
+        checkLeaving(birthday);
 
         notifyNewPlayer(nickname, birthday);
     }
 
     /**
      * Asks to choose a GodCard from the still available ones
-     * @param godDescriptions is a Map with God Names as key and descriptions as values
-     * @param chosenGodCards is a Set of the godCards name already chosen
+     * @param godDescriptionsParam is a Map with God Names as key and descriptions as values
+     * @param chosenGodCardsParam is a Set of the godCards name already chosen
      */
     @Override
-    public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenGodCards) {
+    public void askGodCard(Map<String, String> godDescriptionsParam, Set<String> chosenGodCardsParam) {
+        godDescriptions = godDescriptionsParam;
+        chosenGodCards = chosenGodCardsParam;
         String red = Color.ANSI_RED.escape();
         System.out.println("\nSelect your GodCard from the available ones ");
         System.out.println("-------------------------------------------");
@@ -134,6 +146,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         }
 
         String chosenCard = input.nextLine();
+        checkLeaving(chosenCard);
         notifyGodCardChoice(nickname, chosenCard);
     }
 
@@ -165,22 +178,38 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             }
         }
         String chosenColor = input.nextLine();
+        checkLeaving(chosenColor);
         notifyColorChoice(nickname, chosenColor.toUpperCase());
     }
 
+    /**
+     * @param nickname of the player who's placing its builders
+     */
+    //TODO: try catch for parseInt
     @Override
     public void placeBuilders(String nickname) {
+        String inputString;
         int x,y;
         System.out.println("\nInsert the coordinates of cells in which you want to place your builders \nX1: ");
-        x = Integer.parseInt(input.nextLine());
+        inputString = input.nextLine();
+        checkLeaving(inputString);
+        x = Integer.parseInt(inputString);
+
         System.out.println("Y1: ");
-        y = Integer.parseInt(input.nextLine());
+        inputString = input.nextLine();
+        checkLeaving(inputString);
+        y = Integer.parseInt(inputString);
         Coordinates selectedCellBuilder1 = new Coordinates(x,y);
 
         System.out.println("X2: ");
-        x = Integer.parseInt(input.nextLine());
+        inputString = input.nextLine();
+        checkLeaving(inputString);
+        x = Integer.parseInt(inputString);
+
         System.out.println("Y2: ");
-        y = Integer.parseInt(input.nextLine());
+        inputString = input.nextLine();
+        checkLeaving(inputString);
+        y = Integer.parseInt(inputString);
         Coordinates selectedCellBuilder2 = new Coordinates(x,y);
 
         notifySetupBuilders(nickname, selectedCellBuilder1, selectedCellBuilder2);
@@ -193,13 +222,32 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public void chooseNextStep() {
         System.out.println("Insert MOVE to move or BUILD to build ");
         String step = input.nextLine().toUpperCase();
+        checkLeaving(step);
 
         while (!(step.equals("MOVE") || step.equals("BUILD"))) {
             System.out.println("Wrong insertion. Insert \"MOVE\" to move or \"BUILD\" to build ");
             step = input.nextLine().toUpperCase();
+            checkLeaving(step);
         }
 
         notifyStepChoice(nickname, step);
+    }
+
+    private Coordinates coordinatesInsertion() {
+        int x, y;
+        String inputString;
+
+        System.out.println("X: ");
+        inputString = input.nextLine();
+        checkLeaving(inputString);
+        x = Integer.parseInt(inputString);
+
+        System.out.println("Y: ");
+        inputString = input.nextLine();
+        checkLeaving(inputString);
+        y = Integer.parseInt(inputString);
+
+        return new Coordinates(x,y);
     }
 
     /**
@@ -208,16 +256,18 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void build() {
         String buildType;
-        int x_dst, y_dst;
+        Coordinates dst;
         Set<Coordinates> possibleDstBuilder;
         boolean buildDome = false;
 
         System.out.println("Select what yuo want to build: insert 'D' for dome or 'B' for building ");
         buildType = input.nextLine().toUpperCase();
+        checkLeaving(buildType);
 
         while (!(buildType.equals("D") || buildType.equals("B"))) {
             System.out.println("Invalid insertion. Select what yuo want to build: insert 'D' for dome or 'B' for building ");
             buildType = input.nextLine().toUpperCase();
+            checkLeaving(buildType);
         }
 
         if (buildType.equals("D")) {
@@ -240,20 +290,15 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             cliGameMap.print(occupiedCells, null, possibleDstBuilder, chosenBuilderNum);
 
         System.out.println("\nInsert the coordinates of where you want to build ");
-        System.out.println("X: ");
-        x_dst = Integer.parseInt(input.nextLine());
-        System.out.println("Y: ");
-        y_dst = Integer.parseInt(input.nextLine());
 
-        while (!possibleDstBuilder.contains(new Coordinates(x_dst, y_dst))){
+        dst = coordinatesInsertion();
+
+        while (!possibleDstBuilder.contains(dst)){
             System.out.println("\nInvalid coordinates. Select a cell with a valid builder");
-            System.out.println("X: ");
-            x_dst = Integer.parseInt(input.nextLine());
-            System.out.println("Y: ");
-            y_dst = Integer.parseInt(input.nextLine());
+            dst = coordinatesInsertion();
         }
 
-        notifyBuild(nickname, new Coordinates(x_dstMove,y_dstMove), new Coordinates(x_dst, y_dst), buildDome);
+        notifyBuild(nickname, dstMove, dst, buildDome);
     }
 
     /**
@@ -261,28 +306,25 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
      */
     @Override
     public void move() {
-        int x_src,y_src;
+        Coordinates src;
         Set<Coordinates> possibleDstBuilder;
 
         cliGameMap.print(occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNum);
 
         System.out.println("\nInsert the coordinates of the builder you want to use ");
-        System.out.println("X: ");
-        x_src = Integer.parseInt(input.nextLine());
-        System.out.println("Y: ");
-        y_src = Integer.parseInt(input.nextLine());
+
+        src = coordinatesInsertion();
 
         //verifies that the selected cell contains a valid builder
-        while (!((occupiedCells.get(nickname).get(0).getI() == x_src && occupiedCells.get(nickname).get(0).getJ() == y_src) ||
-                (occupiedCells.get(nickname).get(1).getI() == x_src && occupiedCells.get(nickname).get(1).getJ() == y_src))){
+
+        while (!(Coordinates.equals(occupiedCells.get(nickname).get(0), src) ||
+                Coordinates.equals(occupiedCells.get(nickname).get(1), src))) {
+
             System.out.println("\nInvalid coordinates, select a cell with a valid builder");
-            System.out.println("X: ");
-            x_src = Integer.parseInt(input.nextLine());
-            System.out.println("Y: ");
-            y_src = Integer.parseInt(input.nextLine());
+            src = coordinatesInsertion();
         }
 
-        if (occupiedCells.get(nickname).get(0).getI() == x_src && occupiedCells.get(nickname).get(0).getJ() == y_src) {
+        if (Coordinates.equals(occupiedCells.get(nickname).get(0), src)) {
             chosenBuilderNum = 1;
             possibleDstBuilder = possibleDstBuilder1;
         }
@@ -297,21 +339,15 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             cliGameMap.print(occupiedCells, null, possibleDstBuilder, chosenBuilderNum);
 
         System.out.println("Insert the coordinates of where you want to move ");
-        System.out.println("X: ");
-        x_dstMove = Integer.parseInt(input.nextLine());
-        System.out.println("Y: ");
-        y_dstMove = Integer.parseInt(input.nextLine());
+        dstMove = coordinatesInsertion();
 
         //verifies that the selected cell contains a valid builder
-        while (!possibleDstBuilder.contains(new Coordinates(x_dstMove, y_dstMove))){
+        while (!possibleDstBuilder.contains(dstMove)){
             System.out.println("Invalid coordinates, select the coordinates with a valid builder");
-            System.out.println("X: ");
-            x_dstMove = Integer.parseInt(input.nextLine());
-            System.out.println("Y: ");
-            y_dstMove = Integer.parseInt(input.nextLine());
+            dstMove = coordinatesInsertion();
         }
 
-        //notifyMove(nickname, new Coordinates(x_src,y_src), new Coordinates(x_dstMove,y_dstMove));
+        notifyMove(nickname, src, dstMove);
     }
 
     /**
@@ -353,18 +389,30 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             System.out.println("New player added: " +nickname);
     }
 
+    /**
+     * Update of a generic error
+     * @param error string to be printed
+     */
     @Override
     public void onWrongInsertionUpdate(String error) {
         System.out.println(error);
     }
 
+    /**
+     * Update after a wrong insertion of the number of players
+     */
     @Override
     public void onWrongNumberInsertion() {
         System.out.println("Invalid number insertion.");
         askNumberOfPlayers();
     }
 
-    //Every player has to add to the static Map of colors, the new entry
+    /**
+     * Update after attempted color assignment
+     * @param color color String
+     * @param result is true if the assignment was successful, then each player
+     * has to add to the static Map of colors the new entry
+     */
     @Override
     public void onColorAssigned(String nickname, String color, boolean result) {
         if (!result) {
@@ -377,13 +425,28 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         }
     }
 
-    //Every player has to add to the static Map of colors, the new entry
+    /**
+     * Update after attempted color assignment
+     * @param godCard chosen godCard
+     * @param result is true if the assignment was successful, then each player
+     * has to add to the static Map of godCards the new entry
+     */
     @Override
     public void onGodCardAssigned(String nickname, String godCard, boolean result) {
-        System.out.println ("GodCard assigned correctly.");
-        setChosenGodCard(nickname, godCard);
+        if (!result) {
+            System.out.println("Invalid insertion of godCard.");
+            askGodCard(godDescriptions, chosenGodCards);
+        }
+        else {
+            System.out.println ("GodCard assigned correctly.");
+            setChosenGodCard(nickname, godCard);
+        }
     }
 
+    /**
+     * Sends a message of defeat
+     * @param currPlayer is the player who's currently playing and who has lost
+     */
     @Override
     public void onLossUpdate(String currPlayer) {
         occupiedCells.remove(currPlayer);
@@ -393,6 +456,9 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             System.out.println("Player " + currPlayer + " lost the game");
     }
 
+    /**
+     * Updates the sets of the possible destinations for a normal build and for the build of dome
+     */
     @Override
     public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
                                        Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
@@ -403,6 +469,9 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         build();
     }
 
+    /**
+     * Updates the sets of the possible destinations for a move
+     */
     @Override
     public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
         this.possibleDstBuilder1 = possibleDstBuilder1;
@@ -410,6 +479,14 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         move();
     }
 
+    /**
+     * Update after attempted build
+     * @param nickname of who built
+     * @param src cell coordinates
+     * @param dst cell coordinates
+     * @param dome true if there's a dome construction
+     * @param result true if build wad successful
+     */
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
         if (!result) {
@@ -422,6 +499,13 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         }
     }
 
+    /**
+     * Update after attempted move
+     * @param nickname of who moved
+     * @param src cell coordinates
+     * @param dst cell coordinates
+     * @param result if move was successful
+     */
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
         if (!result) {
@@ -443,6 +527,9 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         }
     }
 
+    /**
+     * @param nickname of the new player who's playing, starting a new turn
+     */
     @Override
     public void onPlayerTurn(String nickname) {
         System.out.println("Turn ended. Now playing: " + nickname);
