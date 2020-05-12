@@ -6,7 +6,7 @@ import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class NetworkParser {
 
@@ -18,6 +18,9 @@ public class NetworkParser {
 
     }
 
+    public String getAttribute(String attribute) {
+        return jsonObject.getString(attribute);
+    }
 
     public String getRequest(){
         return jsonObject.getString(Messages.TYPE);
@@ -53,6 +56,10 @@ public class NetworkParser {
         return jsonObject.getString(Messages.DATE);
     }
 
+    public boolean getResult() {
+        return jsonObject.getBoolean(Messages.RESULT);
+    }
+
     public String getName() { return jsonObject.getString(Messages.NAME);}
 
     public String getStepChoice() { return jsonObject.getString(Messages.STEP_CHOICE);}
@@ -61,14 +68,65 @@ public class NetworkParser {
         return new Coordinates(coordJSON.getInt("i"), coordJSON.getInt("j"));
     }
 
-    public ArrayList<Coordinates> getCoordList() {
-        JSONArray arr = jsonObject.getJSONArray(Messages.POSSIBLE_DST);
+    /**
+     * create a Set of Coordinates from a JSONArray
+     * @return
+     */
+    private Set<Coordinates> fromJSONArray(JSONArray array) {
+        Set<Coordinates> set = new HashSet<>();
+
+        for(int i = 0; i < array.length(); i++)
+            set.add(fromJSONObject(array.getJSONObject(i)));
+
+        return set;
+
+    }
+
+    public ArrayList<Coordinates> getCoordArray() {
+        JSONArray arr = jsonObject.getJSONArray(Messages.POSITIONS);
         ArrayList<Coordinates> list = new ArrayList<>();
 
         for(int i = 0; i < arr.length(); i++)
             list.add(fromJSONObject(arr.getJSONObject(i)));
 
         return list;
+
+    }
+
+
+    public ArrayList<Set<Coordinates>> getCoordSetList() {
+        JSONArray arr = jsonObject.getJSONArray(Messages.POSSIBLE_DST);
+        ArrayList<Set<Coordinates>> list = new ArrayList<>();
+
+        for(int i = 0; i < arr.length(); i++)
+            list.add(fromJSONArray(arr.getJSONArray(i)));
+
+        return list;
+    }
+
+    public String getGodCardName() {
+        return jsonObject.getString(Messages.GOD_CARD);
+    }
+
+    public Map<String, String> getGodDescriptions() {
+        JSONObject obj = jsonObject.getJSONObject(Messages.GOD_DESCRIPTIONS);
+
+        Map<String, String> godDescriptions = new HashMap<>();
+        for(String key : obj.keySet())
+            godDescriptions.put(key, obj.getString(key));
+
+        return godDescriptions;
+    }
+
+    public Set<String> getSetFromArray(String key) {
+        Set<String> set = new HashSet<>();
+
+        JSONArray arr = jsonObject.getJSONArray(key);
+
+        for(int i = 0; i < arr.length(); i++)
+            set.add(arr.getString(i));
+
+        return set;
     }
 
 }

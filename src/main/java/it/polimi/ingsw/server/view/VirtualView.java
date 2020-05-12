@@ -27,7 +27,7 @@ public class VirtualView extends ViewObservable implements Runnable {
 
     }
 
-    private void setNickname(String nickname) {
+    protected void setNickname(String nickname) {
         this.nickname = nickname;
     }
 
@@ -120,6 +120,10 @@ public class VirtualView extends ViewObservable implements Runnable {
                     }
                     break;
 
+                case Messages.SET_GOD_CARD:
+                    notifyGodCardChoice(nickname, parser.getGodCardName());
+                    break;
+
 
                 case Messages.SET_NUMBER_OF_PLAYERS:
                     numberOfplayers = parser.getNumberOfPlayers();
@@ -134,6 +138,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                 case Messages.DISCONNECT:
                     connected = false;
                     notifyDisconnection(nickname);
+                    send(Messages.disconnect());
 
             }
         } catch (JSONException e) {

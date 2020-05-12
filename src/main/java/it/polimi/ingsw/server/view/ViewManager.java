@@ -7,6 +7,7 @@ import it.polimi.ingsw.server.parser.Messages;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,7 +16,7 @@ import java.util.Set;
  */
 public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacedObserver,
                                     EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver, GodChoiceObserver ,
-        PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver{
+        PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver, ChoosenStepObserver{
 
     List<VirtualView> views;
     VirtualView firstView;
@@ -60,22 +61,23 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     }
 
-    public void askColor(String player) {
+    public void askColor(String player, Set<String> chosenColors) {
         for(VirtualView view : views)
             if(view.getNickname().equals(player))
-                view.send(Messages.askColor());
+                view.send(Messages.askColor(chosenColors));
     }
 
-    public void askGod(String player) {
-        for(VirtualView view : views)
-            if(view.getNickname().equals(player))
-                view.send(Messages.askGod());
-    }
 
     public void askBuilders(String player){
         for(VirtualView view : views)
             if(view.getNickname().equals(player))
                 view.send(Messages.askBuilders());
+    }
+
+    public void askGod(String nickname, Map<String, String> godDescriptions, Set<String> chosenGodCards) {
+        for(VirtualView view : views)
+            if(view.getNickname().equals(nickname))
+                view.send(Messages.askGod(godDescriptions, chosenGodCards));
     }
 
     //Observer Methods are multiplexed to the right VirtualViews
@@ -98,7 +100,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     @Override
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         for(VirtualView view : views)
-            view.send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2));
+            view.send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2, result));
 
         cleanSelection();
     }
@@ -203,8 +205,10 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         if(result)
             for(VirtualView view : views)
                 view.send(Messages.playerAdded(nickname, true));
-        else
+        else {
+            selectedView.setNickname(null);
             selectedView.send(Messages.playerAdded(nickname, false));
+        }
 
         cleanSelection();
     }
@@ -216,5 +220,10 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
                 view.send(Messages.godCardAssigned(card, true));
         else
             selectedView.send(Messages.godCardAssigned(card, false));
+    }
+
+    @Override
+    public void onChoosenStep(String nickname, String step, boolean result) {
+        selectedView.send(Messages.stepChoice(nickname, step, result));
     }
 }

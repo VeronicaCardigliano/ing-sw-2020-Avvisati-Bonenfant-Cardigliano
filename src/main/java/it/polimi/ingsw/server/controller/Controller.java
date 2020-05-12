@@ -61,46 +61,46 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
 
 
     @Override
-    public void onColorChoice(String player, String color){
+    public void onColorChoice(String nickname, String color){
 
-        if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(player)) {
+        if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(nickname)) {
             if (model.assignColor(color)) {
                 model.setNextPlayer();
                 if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
                     model.setNextState();
-                    viewManager.askGod(model.getCurrPlayer().getNickname());
+                    viewManager.askGod(model.getCurrPlayer().getNickname(), model.getGodDescriptions(), model.getChosenCards());
                 } else
-                    viewManager.askColor(model.getCurrPlayer().getNickname());
+                    viewManager.askColor(model.getCurrPlayer().getNickname(), model.getChosenColors());
             }
         }
     }
 
 
     @Override
-    public void onGodCardChoice(String player, String godCardName) {
-        if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().getNickname().equals(player) &&
+    public void onGodCardChoice(String nickname, String godCardName) {
+        if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().getNickname().equals(nickname) &&
                 model.getCurrPlayer().getGodCard() == null) {
 
                 if (model.assignCard(godCardName)) {
                     //Initialize the turn
                     model.getCurrPlayer().getGodCard().startTurn();
                     model.setNextPlayer();
-                    viewManager.askGod(model.getCurrPlayer().getNickname());
+                    viewManager.askGod(model.getCurrPlayer().getNickname(), model.getGodDescriptions(), model.getChosenCards());
                     if (model.getCurrPlayer().equals(model.getPlayers().get(0)))
                         model.setNextState();
                     else
                         viewManager.askBuilders(model.getCurrPlayer().getNickname());
-                } else viewManager.askGod(player);
+                } else viewManager.askGod(nickname, model.getGodDescriptions(), model.getChosenCards());
             }
         }
 
     @Override
-    public void onBuilderSetup(String player, Coordinates builder1, Coordinates builder2){
-        if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().getNickname().equals(player))
+    public void onBuilderSetup(String nickname, Coordinates builder1, Coordinates builder2){
+        if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().getNickname().equals(nickname))
 
             if (model.setCurrPlayerBuilders(builder1, builder2)){
                 model.setNextPlayer();
-            } else viewManager.askBuilders(player);
+            } else viewManager.askBuilders(nickname);
 
         if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
             model.setNextState();
@@ -110,8 +110,8 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
 //-------------
 
     @Override
-    public void onBuilderBuild(String player, Coordinates src, Coordinates dst, boolean buildDome) {
-        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(player)) {
+    public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname)) {
             if (model.getCurrPlayer().getGodCard().getCurrState().equals("BUILD"))
             if (model.effectiveBuild(src, dst, buildDome)) {
                 if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
@@ -120,14 +120,14 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                 }
             }
             else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-                viewManager.askStep(player);
+                viewManager.askStep(nickname);
         }
     }
 
 
     @Override
-    public void onBuilderMove(String player, Coordinates src, Coordinates dst) {
-        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(player)) {
+    public void onBuilderMove(String nickname, Coordinates src, Coordinates dst) {
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname)) {
             if (model.getCurrPlayer().getGodCard().getCurrState().equals("MOVE"))
             if (model.effectiveMove(src, dst)) {
                 if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
@@ -136,7 +136,7 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
                 }
             }
             else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-                viewManager.askStep(player);
+                viewManager.askStep(nickname);
         }
     }
 
@@ -149,8 +149,8 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
     }
 
     @Override
-    public void onDisconnection(String player) {
-        viewManager.remove(player);
-        model.deletePlayer(player);
+    public void onDisconnection(String nickname) {
+        viewManager.remove(nickname);
+        model.deletePlayer(nickname);
     }
 }

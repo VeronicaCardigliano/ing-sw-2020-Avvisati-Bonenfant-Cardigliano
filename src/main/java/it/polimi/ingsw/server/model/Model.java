@@ -249,7 +249,7 @@ public class Model extends ModelObservableWithSelect {
             }
 
         if (!existing) {
-            notifyWrongInsertion(currPlayer.getNickname(), "ERROR: The name entered is not an existing godCard, choose from the available ones ");
+            notifyWrongInsertion("ERROR: The name entered is not an existing godCard, choose from the available ones ");
             assigned = false;
         }
 
@@ -276,7 +276,7 @@ public class Model extends ModelObservableWithSelect {
 
         for (String s: chosenColors) {
             if (chosenColor.equals(s)){
-                notifyWrongInsertion(currPlayer.getNickname(),"ERROR: Color already used, choose from the available ones ");
+                notifyWrongInsertion("ERROR: Color already used, choose from the available ones ");
                 assigned = true;
             }
         }
@@ -413,7 +413,7 @@ public class Model extends ModelObservableWithSelect {
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
-            notifyWrongInsertion(currPlayer.getNickname(),
+            notifyWrongInsertion(
                     "ERROR: you have to continue the turn with the same builder ");
             correctBuilder = false;
         }
@@ -443,7 +443,7 @@ public class Model extends ModelObservableWithSelect {
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
-            notifyWrongInsertion(currPlayer.getNickname(), "ERROR: you have to continue the turn with the same " +
+            notifyWrongInsertion("ERROR: you have to continue the turn with the same " +
                     "player ");
             correctBuilder = false;
         }
@@ -492,10 +492,16 @@ public class Model extends ModelObservableWithSelect {
      * @param step is the effective step the user decides to do
      */
     public void setStepChoice (String step) {
-        if (step.equals("MOVE") || step.equals("BUILD"))
+        boolean changed = false;
+        if (step.equals("MOVE") || step.equals("BUILD")) {
             currPlayer.forceStep(step);
-        else
-            notifyWrongInsertion(currPlayer.getNickname(), "ERROR: The step entered is not a valid value ");
+            changed = true;
+        }
+        else {
+            notifyViewSelection(currPlayer.getNickname());
+            notifyWrongInsertion("ERROR: The step entered is not a valid value ");
+        }
+        notifyChoosenStep(currPlayer.getNickname(), step, changed);
     }
 
 }

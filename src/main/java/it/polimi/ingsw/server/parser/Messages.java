@@ -1,12 +1,12 @@
 package it.polimi.ingsw.server.parser;
 
 import it.polimi.ingsw.server.model.Model;
-import it.polimi.ingsw.server.model.Player;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class Messages {
@@ -27,15 +27,14 @@ public abstract class Messages {
     public static final String LOST_UPDATE = "lostUpdate";
     public static final String SET_NUMBER_OF_PLAYERS = "setNumberOfPlayers";
     public static final String ADD_PLAYER = "addPlayer";
-    public static final String DELETE_PLAYER = "deletePlayer";
     public static final String DISCONNECT = "disconnect";
     public static final String TURN_UPDATE = "turnUpdate";
     public static final String ERROR_NUMBER = "errorNumber"; //for ERROR
-    public static final String ERROR_ADD_PLAYER = "errorAddPlayer";
     public static final String COLOR_UPDATE = "colorUpdate";
     public static final String PLAYER_ADDED = "playerAdded";
-    public static final String STEP_UPDATE = "stepUpdate";
+    public static final String STATE_UPDATE = "stateUpdate";
     public static final String GOD_CARD_ASSIGNED = "godCardAssigned";
+    public static final String SET_GOD_CARD = "setGodCard";
 
     //request type from controller
     public static final String ASK_NICK_AND_DATE = "askNickAndDate";
@@ -55,14 +54,16 @@ public abstract class Messages {
     public static final String NUMBER_OF_PLAYERS = "numberOfPlayers"; //FOR SET_NUMBER_OF_PLAYERS
     public static final String DATE = "date"; //for ADD_PLAYER
     public static final String NAME = "name"; //for ADD_PLAYER
-    public static final String PLAYER = "player";
     public static final String DESCRIPTION = "description"; //for ERROR
     public static final String POSSIBLE_DST = "possibleDst";
     public static final String STEP_CHOICE = "stepChoice";
     public static final String POSITIONS = "positions"; //for SET_BUILDERS
     public static final String RESULT = "result";
-    public static final String STEP = "step"; //for STEP_UPDATE
-    public static final String GOD_CARD = "godCard";
+    public static final String STATE = "state"; //for STATE_UPDATE
+    public static final String GOD_CARD = "godCard"; //for SET_GOD_CARD
+    public static final String GOD_DESCRIPTIONS = "godDescriptions"; //for ASK_GOD
+    public static final String CHOSEN_GOD_CARDS = "chosenGodCards"; //for ASK_GOD
+    public static final String CHOSEN_COLORS = "chosenColors"; //for ASK_COLOR
 
 
     private static JSONObject fromCoordinates(Coordinates coord) {
@@ -84,10 +85,6 @@ public abstract class Messages {
     public static String possibleBuildDestinations(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
         JSONObject message = new JSONObject();
         message.put(TYPE, POSSIBLE_BUILD_DESTINATIONS);
-        /*message.put("possibleDstBuilder1", fromCollection(possibleDstBuilder1));
-        message.put("possibleDstBuilder2", fromCollection(possibleDstBuilder2));
-        message.put("possibleDstBuilder1forDome", fromCollection(possibleDstBuilder1forDome));
-        message.put("possibleDstBuilder2forDome", fromCollection(possibleDstBuilder2forDome));*/
 
         JSONArray possibleDst = new JSONArray();
         possibleDst.put(fromCollection(possibleDstBuilder1));
@@ -138,34 +135,54 @@ public abstract class Messages {
         return message.toString();
     }
 
-    public static String move(String player, Coordinates src, Coordinates dst, boolean result) {
+    /**
+     * Used
+     * @param src
+     * @param dst
+     * @return
+     */
+    public static String move(String nickname, Coordinates src, Coordinates dst) {
         JSONObject message = new JSONObject();
         message.put(TYPE, MOVE);
-        message.put(PLAYER, player);
+        message.put(NAME, nickname);
         message.put(SRC, fromCoordinates(src));
         message.put(DST, fromCoordinates(dst));
-        message.put(RESULT, result);
-
 
         return message.toString();
     }
 
-    public static String build(String player, Coordinates src, Coordinates dst, boolean buildDome, boolean result) {
+
+    public static String move(String nickname, Coordinates src, Coordinates dst, boolean result) {
+
+        return (new JSONObject(move(nickname,src, dst))).put(RESULT, result).toString();
+    }
+
+
+    public static String build(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
         JSONObject message = new JSONObject();
         message.put(TYPE, BUILD);
-        message.put(PLAYER, player);
+        message.put(NAME, nickname);
         message.put(SRC, fromCoordinates(src));
         message.put(DST, fromCoordinates(dst));
         message.put(BUILD_DOME, buildDome);
-        message.put(RESULT, result);
 
         return message.toString();
+    }
+
+    public static String build(String nickname, Coordinates src, Coordinates dst, boolean buildDome, boolean result) {
+
+        return (new JSONObject(build(nickname, src, dst, buildDome))).put(RESULT, result).toString();
+    }
+
+
+    public static String buildersPlacement(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
+        return (new JSONObject(buildersPlacement(nickname, positionBuilder1, positionBuilder2))).put(RESULT, result).toString();
     }
 
     public static String buildersPlacement(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2) {
         JSONObject message = new JSONObject();
         message.put(TYPE, BUILDERS_PLACEMENT);
-        message.put(PLAYER, nickname);
+        message.put(NAME, nickname);
 
         JSONArray positions = new JSONArray();
         positions.put(fromCoordinates(positionBuilder1));
@@ -184,9 +201,14 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, DELETE_PLAYER).toString();
     }*/
 
-    public static String stepChoice(String choice) {
+    public static String stepChoice(String nickname, String choice, boolean result) {
+        return (new JSONObject(stepChoice(nickname, choice))).put(RESULT, result).toString();
+    }
+
+    public static String stepChoice(String nickname, String choice) {
         JSONObject message = new JSONObject();
         message.put(TYPE, SET_STEP_CHOICE);
+        message.put(NAME, nickname);
         message.put(STEP_CHOICE, choice);
 
         return message.toString();
@@ -214,12 +236,24 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, ASK_NICK_AND_DATE).toString();
     }
 
-    public static String askColor() {
-        return (new JSONObject()).put(TYPE, ASK_COLOR).toString();
+    public static String askColor(Set<String> chosenColors) {
+        JSONObject message = new JSONObject();
+
+        message.put(TYPE, ASK_COLOR);
+        message.put(CHOSEN_COLORS, chosenColors);
+
+        return message.toString();
     }
 
-    public static String askGod() {
+    public static String askGod(Map<String, String> godDescriptions, Set<String> chosenGodCards) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(TYPE, ASK_GOD);
+
+        jsonObject.put(GOD_DESCRIPTIONS, godDescriptions);
+        jsonObject.put(CHOSEN_GOD_CARDS, chosenGodCards);
+
         return (new JSONObject()).put(TYPE, ASK_GOD).toString();
+
     }
 
     public static String askNumberOfPlayers() {
@@ -230,7 +264,7 @@ public abstract class Messages {
 
 
     public static String turnUpdate(String nickname){
-        return (new JSONObject()).put(TYPE, TURN_UPDATE).put(PLAYER, nickname).toString();
+        return (new JSONObject()).put(TYPE, TURN_UPDATE).put(NAME, nickname).toString();
     }
 
 
@@ -238,8 +272,12 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, ERROR_NUMBER).toString();
     }
 
+    public static String colorUpdate(String color) {
+        return (new JSONObject()).put(TYPE, COLOR_UPDATE).put(COLOR, color).toString();
+    }
+
     public static String colorUpdate(String nickname, String color, boolean result){
-        return (new JSONObject()).put(TYPE, COLOR_UPDATE).put(COLOR, color).put(RESULT, result).toString();
+        return (new JSONObject(colorUpdate(color))).put(NAME, nickname).put(RESULT, result).toString();
     }
 
     public static String playerAdded(String nickname, boolean result) {
@@ -247,8 +285,10 @@ public abstract class Messages {
     }
 
     public static String stepUpdate(Model.State state) {
-        return (new JSONObject()).put(TYPE, STEP_UPDATE).put(STEP, state.toString()).toString();
+        return (new JSONObject()).put(TYPE, STATE_UPDATE).put(STATE, state.toString()).toString();
     }
+
+
 
     public static String askStep(){
         return (new JSONObject()).put(TYPE, ASK_STEP).toString();
@@ -256,6 +296,10 @@ public abstract class Messages {
 
     public static String godCardAssigned(String godCard, boolean result){
         return (new JSONObject()).put(TYPE, GOD_CARD_ASSIGNED).put(GOD_CARD, godCard).put(RESULT, result).toString();
+    }
+
+    public static String setGodCard(String godCardName) {
+        return (new JSONObject()).put(TYPE, SET_GOD_CARD).put(GOD_CARD, godCardName).toString();
     }
 
 }

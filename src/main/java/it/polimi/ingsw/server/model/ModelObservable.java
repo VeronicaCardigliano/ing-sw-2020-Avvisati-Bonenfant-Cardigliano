@@ -22,6 +22,11 @@ public abstract class ModelObservable {
     private ColorAssignmentObserver colorAssignmentObserver;
     private GodChoiceObserver godChoiceObserver;
     private PlayerAddedObserver playerAddedObserver;
+    private ChoosenStepObserver choosenStepObserver;
+
+    public void setChoosenStepObserver(ChoosenStepObserver newChoosenStepObserver){
+        choosenStepObserver = newChoosenStepObserver;
+    }
 
     public void setPlayerAddedObserver(PlayerAddedObserver newPlayerAddedObserver) {
         playerAddedObserver = newPlayerAddedObserver;
@@ -99,7 +104,7 @@ public abstract class ModelObservable {
             System.out.println("playerLoseObserver is not set");
     }
 
-    public void notifyWrongInsertion (String currPlayer, String error){
+    public void notifyWrongInsertion (String error){
         if (errorsObserver != null)
             errorsObserver.onWrongInsertionUpdate(error);
         else
@@ -168,5 +173,12 @@ public abstract class ModelObservable {
             playerAddedObserver.onPlayerAdded(nickname, result);
         else
             System.out.println("player added observer is not set");
+    }
+
+    public void notifyChoosenStep(String nickname, String step, boolean result){
+        if (choosenStepObserver != null)
+            choosenStepObserver.onChoosenStep(nickname, step, result);
+        else
+            System.out.println("step choice observer is not set");
     }
 }
