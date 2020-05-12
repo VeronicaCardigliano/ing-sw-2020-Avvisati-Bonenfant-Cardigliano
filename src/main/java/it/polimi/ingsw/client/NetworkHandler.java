@@ -20,13 +20,17 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
         StepChoiceObserver, DisconnectionObserver {
 
-    private final Socket socket;
+    private Socket socket;
     private PrintWriter out;
     private View view;
+    private int port;
+    private String ip;
 
-    public NetworkHandler(Socket socket) {
-        this.socket = socket;
+    public NetworkHandler(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
     }
+
 
     public void setView(View view) {
         this.view = view;
@@ -35,6 +39,10 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     @Override
     public void run() {
         try {
+            socket = new Socket(ip, port);
+
+
+
             Scanner in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
             out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
             boolean connected = socket.isConnected();

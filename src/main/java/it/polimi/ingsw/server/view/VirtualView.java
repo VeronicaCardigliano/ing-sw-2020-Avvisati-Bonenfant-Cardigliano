@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.view;
 
+import it.polimi.ingsw.server.controller.Controller;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.parser.Messages;
 import it.polimi.ingsw.server.parser.NetworkParser;
@@ -22,10 +23,13 @@ public class VirtualView extends ViewObservable implements Runnable {
     private PrintWriter out;
     private String nickname;
 
-    public VirtualView(Socket socket) {
+    public VirtualView(Socket socket, Controller controller) {
+        setObservers(controller);
         this.socket = socket;
 
     }
+
+
 
     protected void setNickname(String nickname) {
         this.nickname = nickname;

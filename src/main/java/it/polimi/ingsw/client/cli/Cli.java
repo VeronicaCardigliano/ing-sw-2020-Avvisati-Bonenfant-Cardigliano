@@ -1,6 +1,8 @@
 package it.polimi.ingsw.client.cli;
 
+import it.polimi.ingsw.client.NetworkHandler;
 import it.polimi.ingsw.client.View;
+import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.view.*;
@@ -10,7 +12,7 @@ import java.util.*;
 
 public class Cli extends ViewObservable implements View, BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
         ColorAssignmentObserver, ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver,
-        BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver {
+        BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChoosenStepObserver {
 
     public final static int mapDimension = 5;
     private static CliGameMap cliGameMap;
@@ -46,6 +48,8 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         this.input = new Scanner(source);
         cliGameMap = new CliGameMap();
     }
+
+
 
     /**
      * This list of set methods is used by tests
@@ -535,4 +539,16 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         System.out.println("Turn ended. Now playing: " + nickname);
     }
 
+    @Override
+    public void onStateUpdate(Model.State currState) {
+        System.out.println("State changed: " + currState.toString());
+    }
+
+    @Override
+    public void onChoosenStep(String nickname, String step, boolean result) {
+        if(result)
+            System.out.println(nickname + " chose " + "step");
+        else
+            System.out.println("error choosing step");
+    }
 }

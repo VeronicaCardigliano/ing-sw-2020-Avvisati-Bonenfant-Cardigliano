@@ -41,7 +41,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     public void setFirstView(VirtualView view) {
         firstView = view;
-        firstView.send(Messages.askNumberOfPlayers());
+        //firstView.send(Messages.askNumberOfPlayers());
     }
 
     public void askStep(String nickname) {
@@ -51,8 +51,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     }
 
     public void askNumberOfPlayers() {
-        for (VirtualView view : views)
-            firstView.send(Messages.askNumberOfPlayers());
+        firstView.send(Messages.askNumberOfPlayers());
     }
 
     public void askNickAndDate() {
