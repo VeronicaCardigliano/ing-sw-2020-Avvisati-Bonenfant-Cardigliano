@@ -86,11 +86,6 @@ public class Model extends ModelObservableWithSelect {
     }
 
 
-
-    public int getNumPlayers(){
-        return this.numPlayers;
-    }
-
     public State getCurrState () {
         return this.currState;
     }
@@ -172,6 +167,7 @@ public class Model extends ModelObservableWithSelect {
         }
         else
             notifyWrongNumber();
+
         return false;
     }
 

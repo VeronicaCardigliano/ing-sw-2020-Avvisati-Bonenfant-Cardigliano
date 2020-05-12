@@ -114,7 +114,7 @@ public class VirtualView extends ViewObservable implements Runnable {
 
                 case Messages.ADD_PLAYER:
                     //drops redundant add player command
-                    if(this.nickname != null) {
+                    if(this.nickname == null) {
                         date = parser.getDate();
                         setNickname(parser.getName());
 

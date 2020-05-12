@@ -408,7 +408,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void onWrongNumberInsertion() {
         System.out.println("Invalid number insertion.");
-        askNumberOfPlayers();
     }
 
     /**

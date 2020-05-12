@@ -51,7 +51,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
             while(connected) {
                 String message = in.nextLine();
 
-                //System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
+                System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
 
                 connected = handleMessage(message);
 
@@ -68,16 +68,20 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     }
 
     private void send(String message) {
+
+        System.out.println("Sending: " + message);
         out.println(message);
     }
 
 
     private boolean handleMessage(String message) {
+        boolean connected = true;
+
         try {
             NetworkParser parser = new NetworkParser(message);
             ArrayList<Set<Coordinates>> list;
             String nickname;
-            boolean connected = true;
+
 
 
             switch (parser.getRequest()) {
@@ -176,6 +180,14 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
                     break;
 
 
+                case Messages.ERROR_NUMBER:
+                    notifyWrongNumber();
+                    break;
+
+                case Messages.ERROR:
+                    notifyWrongInsertion(parser.getAttribute(Messages.DESCRIPTION));
+                    break;
+
                 case Messages.DISCONNECT:
                     connected = false;
 
@@ -185,7 +197,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
         } catch (JSONException e) {
             notifyWrongInsertion(e.getMessage());
         }
-        return false;
+        return connected;
     }
 
 

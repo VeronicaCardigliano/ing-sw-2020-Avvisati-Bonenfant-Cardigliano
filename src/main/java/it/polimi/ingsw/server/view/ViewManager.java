@@ -121,7 +121,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     @Override
     public void onWrongNumberInsertion() {
-        selectedView.send(Messages.errorNumber());
+        firstView.send(Messages.errorNumber());
 
         cleanSelection();
     }

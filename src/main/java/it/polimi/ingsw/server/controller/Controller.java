@@ -28,12 +28,12 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
     @Override
     public void onNumberInsertion(int num) {
 
-        if (model.getCurrState() == Model.State.SETUP_NUMOFPLAYERS && model.getNumberOfPlayers() != 2 ||
-        model.getNumPlayers() != 3) {
+        if (model.getCurrState() == Model.State.SETUP_NUMOFPLAYERS && (model.getNumberOfPlayers() != 2 ||
+        model.getNumberOfPlayers() != 3)) {
 
             if (model.setNumberOfPlayers(num)) {
-                viewManager.askNickAndDate();
                 model.setNextState();
+                viewManager.askNickAndDate();
             } else
                 viewManager.askNumberOfPlayers(); //broadcast message
         }
@@ -46,11 +46,11 @@ public class Controller implements BuilderBuildObserver, BuilderMoveObserver, Ne
     public void onNicknameAndDateInsertion(String nickname, String birthday) {
         if (model.getCurrState() == Model.State.SETUP_PLAYERS) {
 
-            if (model.getPlayers().size() < model.getNumPlayers()){
+            if (model.getPlayers().size() < model.getNumberOfPlayers()){
             model.addPlayer(nickname, birthday);
             }
 
-            if (model.getPlayers().size() == model.getNumPlayers()) {
+            if (model.getPlayers().size() == model.getNumberOfPlayers()) {
                 model.setNextState();
                 //setNextPlayer used to initialize first player :)
                 model.setNextPlayer();
