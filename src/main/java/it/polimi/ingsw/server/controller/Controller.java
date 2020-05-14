@@ -41,8 +41,6 @@ public class Controller extends AbstractController implements ConnectionObserver
     }
 
 
-
-
     @Override
     public void onNicknameAndDateInsertion(String nickname, String birthday) {
         if (model.getCurrState() == Model.State.SETUP_PLAYERS) {
