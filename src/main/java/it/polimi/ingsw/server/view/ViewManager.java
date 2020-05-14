@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacedObserver,
                                     EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver, GodChoiceObserver ,
-        PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver, ChoosenStepObserver{
+        PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver, ChosenStepObserver{
 
     List<VirtualView> views;
 
@@ -222,7 +222,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     }
 
     @Override
-    public void onChoosenStep(String nickname, String step, boolean result) {
+    public void onChosenStep(String nickname, String step, boolean result) {
         selectedView.send(Messages.stepChoice(nickname, step, result));
     }
 

@@ -1,6 +1,5 @@
 package it.polimi.ingsw.client.cli;
 
-import it.polimi.ingsw.client.NetworkHandler;
 import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Builder;
@@ -12,7 +11,7 @@ import java.util.*;
 
 public class Cli extends ViewObservable implements View, BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
         ColorAssignmentObserver, ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver,
-        BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChoosenStepObserver {
+        BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChosenStepObserver {
 
     public final static int mapDimension = 5;
     private static CliGameMap cliGameMap;
@@ -544,7 +543,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     }
 
     @Override
-    public void onChoosenStep(String nickname, String step, boolean result) {
+    public void onChosenStep(String nickname, String step, boolean result) {
         if(result)
             System.out.println(nickname + " chose " + "step");
         else

@@ -22,8 +22,6 @@ public class Controller extends AbstractController implements ConnectionObserver
     }
 
 
-
-
     /**
      * This update of Controller is called by a specific View's notify when the user insert a number
      * @param num is the number entered bu the user

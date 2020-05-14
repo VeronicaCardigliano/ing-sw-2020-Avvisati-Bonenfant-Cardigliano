@@ -22,10 +22,10 @@ public abstract class ModelObservable {
     private ColorAssignmentObserver colorAssignmentObserver;
     private GodChoiceObserver godChoiceObserver;
     private PlayerAddedObserver playerAddedObserver;
-    private ChoosenStepObserver choosenStepObserver;
+    private ChosenStepObserver chosenStepObserver;
 
-    public void setChoosenStepObserver(ChoosenStepObserver newChoosenStepObserver){
-        choosenStepObserver = newChoosenStepObserver;
+    public void setChosenStepObserver(ChosenStepObserver newChosenStepObserver){
+        chosenStepObserver = newChosenStepObserver;
     }
 
     public void setPlayerAddedObserver(PlayerAddedObserver newPlayerAddedObserver) {
@@ -175,9 +175,9 @@ public abstract class ModelObservable {
             System.out.println("player added observer is not set");
     }
 
-    public void notifyChoosenStep(String nickname, String step, boolean result){
-        if (choosenStepObserver != null)
-            choosenStepObserver.onChoosenStep(nickname, step, result);
+    public void notifyChosenStep(String nickname, String step, boolean result){
+        if (chosenStepObserver != null)
+            chosenStepObserver.onChosenStep(nickname, step, result);
         else
             System.out.println("step choice observer is not set");
     }
