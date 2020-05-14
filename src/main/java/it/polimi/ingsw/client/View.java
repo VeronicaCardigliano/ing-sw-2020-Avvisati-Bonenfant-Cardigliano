@@ -10,7 +10,7 @@ public interface View {
     void askNickAndDate ();
     void askGodCard (Map<String, String> godDescriptions, Set<String> chosenGodCards);
     void askBuilderColor (Set<String> chosenColors);
-    void placeBuilders (String nickname);
+    void placeBuilders ();
     void chooseNextStep ();
     void build();
     void move();

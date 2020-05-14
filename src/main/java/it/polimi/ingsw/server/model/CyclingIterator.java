@@ -8,7 +8,7 @@ public class CyclingIterator<T> implements Iterator<T> {
     private int index;
 
     public CyclingIterator (ArrayList<T> data){
-        this.index = 0;
+        this.index = -1;
         this.data = data;
     }
 

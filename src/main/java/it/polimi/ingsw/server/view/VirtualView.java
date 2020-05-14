@@ -64,6 +64,7 @@ public class VirtualView extends ViewObservable implements Runnable {
 
 
             while(connected) {
+
                 String message = in.nextLine();
 
                 System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
@@ -89,6 +90,7 @@ public class VirtualView extends ViewObservable implements Runnable {
     public void send(String message) {
         System.out.println("Sending to " + socket.getRemoteSocketAddress() + " : " + message);
         out.println(message);
+        //out.flush();
     }
 
     /**
@@ -140,7 +142,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     break;
 
 
-                case Messages.SET_COLOR:
+                case Messages.COLOR_UPDATE:
                     try {
                         color = parser.getColor();
                         notifyColorChoice(nickname, color);
@@ -213,7 +215,7 @@ public class VirtualView extends ViewObservable implements Runnable {
 
             }
         } catch (JSONException e) {
-            // TODO REMOVE send(Messages.errorMessage(e.getMessage()));
+            send(Messages.errorMessage(e.getMessage()));
         }
 
         return connected;

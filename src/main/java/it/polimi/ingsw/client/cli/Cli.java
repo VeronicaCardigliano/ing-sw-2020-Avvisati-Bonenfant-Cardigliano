@@ -208,10 +208,10 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     }
 
     /**
-     * @param nickname of the player who's placing its builders
+     *
      */
     @Override
-    public void placeBuilders(String nickname) {
+    public void placeBuilders() {
         Coordinates selectedCellBuilder1, selectedCellBuilder2;
 
         System.out.println("\nInsert the coordinates of the cell in which you want to place your first builder: ");
@@ -377,7 +377,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         if (!result) {
             System.out.println("Invalid builders placement.");
-            placeBuilders(nickname);
+            placeBuilders();
         }
         else {
             ArrayList<Coordinates> selectedCells = new ArrayList<>();

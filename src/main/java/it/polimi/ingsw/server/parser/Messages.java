@@ -22,7 +22,6 @@ public abstract class Messages {
     public static final String ENDGAME = "endGame";
     public static final String SET_BUILDERS = "setBuilders";
     public static final String SET_STEP_CHOICE = "setStepChoice";
-    public static final String SET_COLOR = "setColor";
     public static final String SET_NUMBER_OF_PLAYERS = "setNumberOfPlayers";
     public static final String SET_GOD_CARD = "setGodCard";
     public static final String ADD_PLAYER = "addPlayer";
@@ -260,7 +259,7 @@ public abstract class Messages {
         jsonObject.put(GOD_DESCRIPTIONS, godDescriptions);
         jsonObject.put(CHOSEN_GOD_CARDS, chosenGodCards);
 
-        return (new JSONObject()).put(TYPE, ASK_GOD).toString();
+        return jsonObject.toString();
 
     }
 
@@ -299,8 +298,8 @@ public abstract class Messages {
 
 
 
-    public static String godCardAssigned(String godCard, boolean result){
-        return (new JSONObject()).put(TYPE, GOD_CARD_ASSIGNED).put(GOD_CARD, godCard).put(RESULT, result).toString();
+    public static String godCardAssigned(String nickname, String godCard, boolean result){
+        return (new JSONObject()).put(TYPE, GOD_CARD_ASSIGNED).put(NAME, nickname).put(GOD_CARD, godCard).put(RESULT, result).toString();
     }
 
     public static String setGodCard(String godCardName) {

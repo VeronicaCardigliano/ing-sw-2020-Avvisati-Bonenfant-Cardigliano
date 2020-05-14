@@ -3,6 +3,7 @@ package it.polimi.ingsw.client;
 import it.polimi.ingsw.server.controller.*;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.ModelObservable;
+import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.parser.Messages;
 import it.polimi.ingsw.server.parser.NetworkParser;
@@ -105,6 +106,9 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
                     view.askGodCard(parser.getGodDescriptions(), parser.getSetFromArray(Messages.CHOSEN_GOD_CARDS)); //TODO passare la lista dei god possibili? (specifica di gioco: il primo deve scegliere i 3 god possibili)
                     break;
 
+                case Messages.ASK_BUILDERS:
+                    view.placeBuilders();
+                    break;
                 //notify dal Model
 
                 case Messages.POSSIBLE_BUILD_DESTINATIONS:
@@ -151,6 +155,9 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
 
                 case Messages.STATE_UPDATE:
                     Model.State state;
+
+
+
                     switch (parser.getAttribute(Messages.STATE)) {
                         case "SETUP_NUMBEROFPLAYERS":
                             state = Model.State.SETUP_NUMOFPLAYERS;

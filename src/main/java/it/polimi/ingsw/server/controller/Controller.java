@@ -84,11 +84,12 @@ public class Controller extends AbstractController implements ConnectionObserver
                     //Initialize the turn
                     model.getCurrPlayer().getGodCard().startTurn();
                     model.setNextPlayer();
-                    viewManager.askGod(model.getCurrPlayer().getNickname(), model.getGodDescriptions(), model.getChosenCards());
-                    if (model.getCurrPlayer().equals(model.getPlayers().get(0)))
+                    if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
                         model.setNextState();
-                    else
                         viewManager.askBuilders(model.getCurrPlayer().getNickname());
+                    }
+                    else
+                        viewManager.askGod(model.getCurrPlayer().getNickname(), model.getGodDescriptions(), model.getChosenCards());
                 } else viewManager.askGod(nickname, model.getGodDescriptions(), model.getChosenCards());
             }
         }

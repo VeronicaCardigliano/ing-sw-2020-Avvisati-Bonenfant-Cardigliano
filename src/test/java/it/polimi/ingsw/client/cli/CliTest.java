@@ -11,8 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class CliTest {
 
     Cli cli;
@@ -68,17 +66,17 @@ public class CliTest {
             chosenColors.add("LIGHT_BLUE");
             Cli.setChosenColor("Rick7", "Light_blue");
 
-            cli.placeBuilders("Aldo");
+            cli.placeBuilders();
             selectedCells1.add(new Coordinates(0,0));
             selectedCells1.add(new Coordinates(1,2));
             Cli.setOccupiedCells("Aldo",selectedCells1);
 
-            cli.placeBuilders("Nic");
+            cli.placeBuilders();
             selectedCells2.add(new Coordinates(1,4));
             selectedCells2.add(new Coordinates(1,3));
             Cli.setOccupiedCells("Nic",selectedCells2);
 
-            cli.placeBuilders("Rick7");
+            cli.placeBuilders();
             selectedCells3.add(new Coordinates(4,4));
             selectedCells3.add(new Coordinates(4,3));
             Cli.setOccupiedCells("Rick7",selectedCells3);
@@ -124,7 +122,7 @@ public class CliTest {
             chosenColors.add("MAGENTA");
             Cli.setChosenColor("Anna", "Magenta");
 
-            cli.placeBuilders("Paolo");
+            cli.placeBuilders();
         }
         catch (FileNotFoundException e){
             System.out.println("Input file error during testing!");

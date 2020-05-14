@@ -164,7 +164,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     @Override
     public void onViewSelect(String nickname) {
         for(VirtualView view : views)
-            if(view.getNickname().equals(nickname))
+            if(view.getNickname() != null && view.getNickname().equals(nickname))
                 selectedView = view;
     }
 
@@ -216,9 +216,9 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     public void onGodCardAssigned(String nickname, String card, boolean result) {
         if (result)
             for (VirtualView view : views)
-                view.send(Messages.godCardAssigned(card, true));
+                view.send(Messages.godCardAssigned(nickname, card, true));
         else
-            selectedView.send(Messages.godCardAssigned(card, false));
+            selectedView.send(Messages.godCardAssigned(nickname, card, false));
     }
 
     @Override
