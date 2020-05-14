@@ -1,6 +1,8 @@
 package it.polimi.ingsw.server;
 
+import it.polimi.ingsw.server.controller.AbstractController;
 import it.polimi.ingsw.server.controller.Controller;
+import it.polimi.ingsw.server.parser.Messages;
 import it.polimi.ingsw.server.view.ViewManager;
 import it.polimi.ingsw.server.view.VirtualView;
 
@@ -12,18 +14,18 @@ import java.util.concurrent.Executors;
 
 public class MultiThreadServer {
     private final int port;
-    private final static int maxConnections = 3;
 
     public MultiThreadServer(int port) {
         this.port = port;
     }
 
     public void startServer(ViewManager viewManager, Controller controller) {
-        ExecutorService executor = Executors.newFixedThreadPool(maxConnections);
+        ExecutorService executor = Executors.newFixedThreadPool(5);
         ServerSocket serverSocket;
 
         try {
             serverSocket = new ServerSocket(port);
+
         } catch (IOException e) {
             System.err.println(e.getMessage());
             return;
@@ -38,12 +40,9 @@ public class MultiThreadServer {
                 System.out.println("Connected to " + socket.getRemoteSocketAddress());
 
                 VirtualView view = new VirtualView(socket, controller);
+                view.setConnectionObserver(controller);
 
                 executor.submit(view);
-
-                if(!viewManager.isFirstViewSet())
-                    viewManager.setFirstView(view);
-                viewManager.add(view);
 
 
 

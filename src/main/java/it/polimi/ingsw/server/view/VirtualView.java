@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.view;
 
-import it.polimi.ingsw.server.controller.Controller;
+import it.polimi.ingsw.server.controller.AbstractController;
+import it.polimi.ingsw.server.controller.ConnectionObserver;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.parser.Messages;
 import it.polimi.ingsw.server.parser.NetworkParser;
@@ -21,15 +22,27 @@ public class VirtualView extends ViewObservable implements Runnable {
 
     private final Socket socket;
     private PrintWriter out;
+    private Scanner in;
     private String nickname;
+    private ConnectionObserver connectionObserver;
 
-    public VirtualView(Socket socket, Controller controller) {
+    public VirtualView(Socket socket, AbstractController controller) {
         setObservers(controller);
+
+
         this.socket = socket;
+        try {
+            out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+            in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
 
     }
 
-
+    public void setConnectionObserver(ConnectionObserver obs) {
+        connectionObserver = obs;
+    }
 
     protected void setNickname(String nickname) {
         this.nickname = nickname;
@@ -43,9 +56,12 @@ public class VirtualView extends ViewObservable implements Runnable {
     @Override
     public void run() {
         try {
-            Scanner in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
-            out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+            //Scanner in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
+            //out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
             boolean connected = socket.isConnected();
+
+            notifyConnection(this);
+
 
             while(connected) {
                 String message = in.nextLine();
@@ -57,16 +73,21 @@ public class VirtualView extends ViewObservable implements Runnable {
 
             }
 
-            in.close();
-            out.close();
-            socket.close();
+            disconnect();
 
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
     }
 
+    public void disconnect() throws IOException {
+        in.close();
+        out.close();
+        socket.close();
+    }
+
     public void send(String message) {
+        System.out.println("Sending to " + socket.getRemoteSocketAddress() + " : " + message);
         out.println(message);
     }
 
@@ -144,12 +165,20 @@ public class VirtualView extends ViewObservable implements Runnable {
                     notifyDisconnection(nickname);
                     send(Messages.disconnect());
 
+
             }
         } catch (JSONException e) {
             send(Messages.errorMessage(e.getMessage()));
         }
 
         return connected;
+    }
+
+    /**
+     * Connection notification to connectionObserver (Controller)
+     */
+    public void notifyConnection(VirtualView view) throws IOException{
+        connectionObserver.onConnection(this);
     }
 
 

@@ -31,6 +31,6 @@ public class Client {
 
         (new Thread(nh)).start();
 
-        view.askNumberOfPlayers();
+        //view.askNumberOfPlayers();
     }
 }

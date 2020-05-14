@@ -48,6 +48,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
             boolean connected = socket.isConnected();
 
 
+
             while(connected) {
                 String message = in.nextLine();
 

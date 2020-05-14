@@ -19,11 +19,17 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver, ChoosenStepObserver{
 
     List<VirtualView> views;
-    VirtualView firstView;
 
     VirtualView selectedView;
 
+    public int getNumberOfViews() {
+        return views.size();
+    }
+
+
+
     public ViewManager() {
+
         views = new ArrayList<>();
     }
 
@@ -35,15 +41,6 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         views.removeIf(view -> view.getNickname().equals(nickname));
     }
 
-    public boolean isFirstViewSet() {
-        return firstView != null;
-    }
-
-    public void setFirstView(VirtualView view) {
-        firstView = view;
-        //firstView.send(Messages.askNumberOfPlayers());
-    }
-
     public void askStep(String nickname) {
         for (VirtualView view : views)
             if (view.getNickname().equals(nickname))
@@ -51,12 +48,15 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     }
 
     public void askNumberOfPlayers() {
-        firstView.send(Messages.askNumberOfPlayers());
+        if(views.size() > 1)
+            System.err.println("Error: only one connection allowed");
+        views.get(0).send(Messages.askNumberOfPlayers());
     }
 
     public void askNickAndDate() {
         for(VirtualView view : views)
-            view.send(Messages.askNickAndDate());
+            if(view.getNickname() == null)
+                view.send(Messages.askNickAndDate());
 
     }
 
@@ -121,7 +121,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     @Override
     public void onWrongNumberInsertion() {
-        firstView.send(Messages.errorNumber());
+        views.get(0).send(Messages.errorNumber());
 
         cleanSelection();
     }
@@ -225,4 +225,6 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     public void onChoosenStep(String nickname, String step, boolean result) {
         selectedView.send(Messages.stepChoice(nickname, step, result));
     }
+
+
 }

@@ -12,6 +12,8 @@ public abstract class ModelObservableWithSelect extends ModelObservable{
     public void notifyViewSelection(String nickname) {
         if(viewSelectObserver != null)
             viewSelectObserver.onViewSelect(nickname);
+        else
+            System.out.println("view select observer is not set");
     }
 
 }
