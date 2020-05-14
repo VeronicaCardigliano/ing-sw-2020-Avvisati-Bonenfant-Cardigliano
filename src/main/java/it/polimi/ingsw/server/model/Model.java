@@ -409,8 +409,7 @@ public class Model extends ModelObservableWithSelect {
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
-            notifyWrongInsertion(
-                    "ERROR: you have to continue the turn with the same builder ");
+            notifyWrongInsertion("ERROR: you have to continue the turn with the same builder ");
             correctBuilder = false;
         }
 
@@ -497,7 +496,7 @@ public class Model extends ModelObservableWithSelect {
             notifyViewSelection(currPlayer.getNickname());
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
         }
-        notifyChoosenStep(currPlayer.getNickname(), step, changed);
+        notifyChosenStep(currPlayer.getNickname(), step, changed);
     }
 
 }

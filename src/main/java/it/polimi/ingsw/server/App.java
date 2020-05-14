@@ -19,7 +19,7 @@ public class App
         model.setBuilderBuiltObserver(vm);
         model.setBuilderMovementObserver(vm);
         model.setBuildersPlacedObserver(vm);
-        model.setChoosenStepObserver(vm);
+        model.setChosenStepObserver(vm);
         model.setColorAssignmentObserver(vm);
         model.setEndGameObserver(vm);
         model.setErrorsObserver(vm);

@@ -39,7 +39,7 @@ public abstract class ViewObservable {
         setGodCardChoiceObserver((GodCardChoiceObserver) o);
     }
 
-    private static final boolean DEBUG = false;
+    //private static final boolean DEBUG = false;
 
     public void setBuilderBuildObserver(BuilderBuildObserver o) {
         builderBuildObserver = o;

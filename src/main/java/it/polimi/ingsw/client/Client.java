@@ -17,7 +17,7 @@ public class Client {
         nh.setBuilderBuiltObserver(view);
         nh.setBuilderMovementObserver(view);
         nh.setBuildersPlacedObserver(view);
-        nh.setChoosenStepObserver(view);
+        nh.setChosenStepObserver(view);
         nh.setColorAssignmentObserver(view);
         nh.setEndGameObserver(view);
         nh.setErrorsObserver(view);
