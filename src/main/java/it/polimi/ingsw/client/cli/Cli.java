@@ -16,6 +16,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public final static int mapDimension = 5;
     private static CliGameMap cliGameMap;
     private Scanner input;
+    private String red = Color.ANSI_RED.escape();
 
     //Attributes declared protected to be used by tests
     //Set of GodCards already chosen by a player
@@ -47,7 +48,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         this.input = new Scanner(source);
         cliGameMap = new CliGameMap();
     }
-
 
 
     /**
@@ -90,7 +90,21 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
 
     private void checkLeaving(String string) {
         if (string.equals("quit") || string.equals("QUIT")) {
-            //notifyDisconnection(nickname);
+            notifyDisconnection(nickname);
+        }
+    }
+
+    /**
+     * @param input an integer expected
+     * @return true if is not an integer and it has to be asked again
+     */
+    private boolean isNotInteger(String input) {
+        try {
+            Integer.parseInt(input);
+            return false;
+        } catch (final NumberFormatException e) {
+            System.out.println(red + "ERROR:" + Color.RESET + " coordinates must be integers ");
+            return true;
         }
     }
 
@@ -99,8 +113,17 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
      */
     @Override
     public void askNumberOfPlayers() {
+        int numPlayers;
+        String inputString;
         System.out.println("Insert the number of players ");
-        int numPlayers = Integer.parseInt(input.nextLine());
+        inputString = input.nextLine();
+
+        while (isNotInteger(inputString)) {
+            System.out.println("Insert the number of players ");
+            inputString = input.nextLine();
+        }
+
+        numPlayers = Integer.parseInt(inputString);
         notifyNumberOfPlayers(numPlayers);
     }
 
@@ -110,7 +133,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void askNickAndDate() {
         System.out.println("Insert player name: ");
-        nickname = input.nextLine();
+        this.nickname = input.nextLine();
         checkLeaving(nickname);
 
         System.out.println("Insert birthday date in the form \"yyyy.MM.dd\" ");
@@ -129,7 +152,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public void askGodCard(Map<String, String> godDescriptionsParam, Set<String> chosenGodCardsParam) {
         godDescriptions = godDescriptionsParam;
         chosenGodCards = chosenGodCardsParam;
-        String red = Color.ANSI_RED.escape();
         System.out.println("\nSelect your GodCard from the available ones ");
         System.out.println("-------------------------------------------");
 
@@ -188,32 +210,15 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     /**
      * @param nickname of the player who's placing its builders
      */
-    //TODO: try catch for parseInt
     @Override
     public void placeBuilders(String nickname) {
-        String inputString;
-        int x,y;
-        System.out.println("\nInsert the coordinates of cells in which you want to place your builders \nX1: ");
-        inputString = input.nextLine();
-        checkLeaving(inputString);
-        x = Integer.parseInt(inputString);
+        Coordinates selectedCellBuilder1, selectedCellBuilder2;
 
-        System.out.println("Y1: ");
-        inputString = input.nextLine();
-        checkLeaving(inputString);
-        y = Integer.parseInt(inputString);
-        Coordinates selectedCellBuilder1 = new Coordinates(x,y);
+        System.out.println("\nInsert the coordinates of the cell in which you want to place your first builder: ");
+        selectedCellBuilder1 = coordinatesInsertion();
 
-        System.out.println("X2: ");
-        inputString = input.nextLine();
-        checkLeaving(inputString);
-        x = Integer.parseInt(inputString);
-
-        System.out.println("Y2: ");
-        inputString = input.nextLine();
-        checkLeaving(inputString);
-        y = Integer.parseInt(inputString);
-        Coordinates selectedCellBuilder2 = new Coordinates(x,y);
+        System.out.println("\nInsert the coordinates of the cell in which you want to place your second builder: ");
+        selectedCellBuilder2 = coordinatesInsertion();
 
         notifySetupBuilders(nickname, selectedCellBuilder1, selectedCellBuilder2);
     }
@@ -243,11 +248,21 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         System.out.println("X: ");
         inputString = input.nextLine();
         checkLeaving(inputString);
+        while (isNotInteger(inputString)) {
+            System.out.println("X: ");
+            inputString = input.nextLine();
+            checkLeaving(inputString);
+        }
         x = Integer.parseInt(inputString);
 
         System.out.println("Y: ");
         inputString = input.nextLine();
         checkLeaving(inputString);
+        while (isNotInteger(inputString)) {
+            System.out.println("Y: ");
+            inputString = input.nextLine();
+            checkLeaving(inputString);
+        }
         y = Integer.parseInt(inputString);
 
         return new Coordinates(x,y);
@@ -492,7 +507,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
         if (!result) {
-            System.out.println ("\nERROR: wrong Build.");
+            System.out.println (red + "\nERROR:" + Color.RESET + " wrong Build.");
             build();
         }
         else {
@@ -511,7 +526,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
         if (!result) {
-            System.out.println ("\nERROR: wrong Move.");
+            System.out.println (red + "\nERROR:" + Color.RESET + " wrong Move.");
             move();
         }
         else {
@@ -537,11 +552,20 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         System.out.println("Turn ended. Now playing: " + nickname);
     }
 
+    /**
+     * Notify players after a state change
+     * @param currState is the actual state of the match
+     */
     @Override
     public void onStateUpdate(Model.State currState) {
         System.out.println("State changed: " + currState.toString());
     }
 
+    /**
+     * @param nickname of the player who's choosing his next step
+     * @param step is the step of the turn (move or build)
+     * @param result true if the choice of the step was successful
+     */
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
         if(result)
@@ -549,4 +573,5 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         else
             System.out.println("error choosing step");
     }
+
 }

@@ -1,7 +1,5 @@
 package it.polimi.ingsw.client;
 
-import it.polimi.ingsw.server.view.*;
-
 import java.util.Map;
 import java.util.Set;
 

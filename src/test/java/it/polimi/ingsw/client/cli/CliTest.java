@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class CliTest {
 
     Cli cli;
@@ -103,5 +105,30 @@ public class CliTest {
         }
     }
 
+    @Test
+    public void notIntegersForCoordinates() {
+        File inputTextFile = new File("src/test/java/it/polimi/ingsw/client/cli/cliTestFiles/wrongCoordinates");
+        try {
+            InputStream inputTextStream = new FileInputStream(inputTextFile);
+            cli = new Cli(inputTextStream);
+            Set<String> chosenColors = new HashSet<>();
+
+            cli.askNumberOfPlayers();
+            cli.askNickAndDate();
+            cli.askNickAndDate();
+
+            cli.askBuilderColor(chosenColors);
+            chosenColors.add("WHITE");
+            Cli.setChosenColor("Paolo", "white");
+            cli.askBuilderColor(chosenColors);
+            chosenColors.add("MAGENTA");
+            Cli.setChosenColor("Anna", "Magenta");
+
+            cli.placeBuilders("Paolo");
+        }
+        catch (FileNotFoundException e){
+            System.out.println("Input file error during testing!");
+        }
+    }
 
 }

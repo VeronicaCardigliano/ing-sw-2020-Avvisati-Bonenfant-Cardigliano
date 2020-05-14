@@ -19,12 +19,16 @@ public class CliGameMap {
     private String dome = blue + "\u25CF" + reset;
     private String builder =  " " + "\u2692" + reset;
 
-    private String verticalLine = green + "\u2502" + reset, verticalLeftSeparator = green + "\u251C" + reset,
-            verticalRightSeparator = green + "\u2524" + reset, horizontalAboveSeparator = green + "\u252C" + reset,
+    private String verticalLine = green + "\u2502" + reset,
+            verticalLeftSeparator = green + "\u251C" + reset,
+            verticalRightSeparator = green + "\u2524" + reset,
+            horizontalAboveSeparator = green + "\u252C" + reset,
             horizontalUnderSeparator = green + "\u2534" + reset,
             horizontalLine = green + "\u2500" + "\u2500" + "\u2500"+ "\u2500" + reset,
-            leftAboveCorner = green + "\u250C" + reset, rightAboveCorner = green + "\u2510" + reset,
-            leftUnderCorner = green + "\u2514" + reset, rightUnderCorner = green + "\u2518" + reset,
+            leftAboveCorner = green + "\u250C" + reset,
+            rightAboveCorner = green + "\u2510" + reset,
+            leftUnderCorner = green + "\u2514" + reset,
+            rightUnderCorner = green + "\u2518" + reset,
             centralSeparator = green + "\u253C" + reset;
 
     private Map<Coordinates, Integer> heights = new HashMap<>();
