@@ -110,54 +110,99 @@ public class VirtualView extends ViewObservable implements Runnable {
 
 
             switch (parser.getRequest()) {
-                case Messages.MOVE:
-                    src = parser.getSrcCoordinates();
-                    dst = parser.getDstCoordinates();
-                    notifyMove(nickname, src, dst);
-                    break;
-
-                case Messages.BUILD:
-                    src = parser.getSrcCoordinates();
-                    dst = parser.getDstCoordinates();
-                    notifyBuild(nickname, src, dst, parser.getBuildDome());
-                    break;
-
-                case Messages.SET_BUILDERS:
-                    builder1 = parser.getSrcCoordinates();
-                    builder2 = parser.getDstCoordinates();
-                    notifySetupBuilders(nickname, builder1, builder2);
-                    break;
-
-                case Messages.SET_COLOR:
-                    color = parser.getColor();
-                    notifyColorChoice(nickname, color);
-                    break;
 
                 case Messages.ADD_PLAYER:
                     //drops redundant add player command
                     if(this.nickname == null) {
+                        try {
                         date = parser.getDate();
                         setNickname(parser.getName());
-
                         notifyNewPlayer(this.nickname, date);
+                        } catch (JSONException e) {
+                            send(Messages.errorMessage("Wrong nickname and date format"));
+                            send(Messages.parsErrorPlayer());
+                        }
                     } else {
                         send(Messages.errorMessage("nickname already set"));
                     }
                     break;
 
-                case Messages.SET_GOD_CARD:
-                    notifyGodCardChoice(nickname, parser.getGodCardName());
-                    break;
-
 
                 case Messages.SET_NUMBER_OF_PLAYERS:
-                    numberOfplayers = parser.getNumberOfPlayers();
-                    notifyNumberOfPlayers(numberOfplayers);
+                    try {
+                        numberOfplayers = parser.getNumberOfPlayers();
+                        notifyNumberOfPlayers(numberOfplayers);
+                    }
+                    catch (JSONException numberException) {
+                        send(Messages.errorMessage("Wrong format, be sure to insert coordinates as ints"));
+                        send(Messages.parsErrorNumber());
+                    }
                     break;
 
+
+                case Messages.SET_COLOR:
+                    try {
+                        color = parser.getColor();
+                        notifyColorChoice(nickname, color);
+                    } catch (JSONException colorException){
+                        send(Messages.errorMessage("Error in stream, couldn't get color parameter"));
+                        send(Messages.parsErrorColor());
+                    }
+                    break;
+
+
+                case Messages.SET_GOD_CARD:
+                    try {
+                        notifyGodCardChoice(nickname, parser.getGodCardName());
+                    } catch (JSONException godNameException){
+                        send(Messages.errorMessage("Error in stream, couldn't get godCard name"));
+                        send(Messages.parsErrorGod());
+                    }
+                    break;
+
+
+                case Messages.SET_BUILDERS:
+                    try {
+                    builder1 = parser.getSrcCoordinates();
+                    builder2 = parser.getDstCoordinates();
+                    notifySetupBuilders(nickname, builder1, builder2);
+                    } catch (JSONException coordinatesException){
+                        send(Messages.errorMessage("Invalid format, be sure to insert coordinates as ints"));
+                        send(Messages.parsErrorBuilders());
+                    }
+                    break;
+
+
                 case Messages.SET_STEP_CHOICE:
+                    try{
                     String stepChoice = parser.getStepChoice();
                     notifyStepChoice(nickname, stepChoice);
+                    } catch (JSONException stepException){
+                        send(Messages.errorMessage("Invalid format, be sure to insert coordinates as ints"));
+                        send(Messages.parsErrorStepChoice());
+                    }
+                    break;
+
+
+                case Messages.MOVE:
+                    try {
+                        src = parser.getSrcCoordinates();
+                        dst = parser.getDstCoordinates();
+                        notifyMove(nickname, src, dst);
+                    } catch ( JSONException coordinatesException){
+                        send(Messages.parsErrorMove());
+                    }
+
+                    break;
+
+                case Messages.BUILD:
+                    try{
+                    src = parser.getSrcCoordinates();
+                    dst = parser.getDstCoordinates();
+                    notifyBuild(nickname, src, dst, parser.getBuildDome());
+                    } catch (JSONException e) {
+                        send(Messages.parsErrorBuild());
+                    }
                     break;
 
                 case Messages.DISCONNECT:
@@ -168,7 +213,7 @@ public class VirtualView extends ViewObservable implements Runnable {
 
             }
         } catch (JSONException e) {
-            send(Messages.errorMessage(e.getMessage()));
+            // TODO REMOVE send(Messages.errorMessage(e.getMessage()));
         }
 
         return connected;

@@ -19,22 +19,32 @@ public abstract class Messages {
     public static final String BUILDERS_PLACEMENT = "buildersPlacement";
     public static final String POSSIBLE_BUILD_DESTINATIONS = "possibleBuildDestinations";
     public static final String POSSIBLE_MOVE_DESTINATIONS = "possibleMoveDestinations";
-    public static final String ERROR = "error";
     public static final String ENDGAME = "endGame";
     public static final String SET_BUILDERS = "setBuilders";
     public static final String SET_STEP_CHOICE = "setStepChoice";
     public static final String SET_COLOR = "setColor";
-    public static final String LOST_UPDATE = "lostUpdate";
     public static final String SET_NUMBER_OF_PLAYERS = "setNumberOfPlayers";
+    public static final String SET_GOD_CARD = "setGodCard";
     public static final String ADD_PLAYER = "addPlayer";
     public static final String DISCONNECT = "disconnect";
-    public static final String TURN_UPDATE = "turnUpdate";
+    public static final String ERROR = "error";
     public static final String ERROR_NUMBER = "errorNumber"; //for ERROR
+
+    public static final String PARS_ERROR_COLOR = "parsErrorColor";
+    public static final String PARS_ERROR_MOVE = "parsErrorMove";
+    public static final String PARS_ERROR_BUILD = "parsErrorBuild";
+    public static final String PARS_ERROR_GOD = "parsErrorGod";
+    public static final String PARS_ERROR_STEP_CHOICE = "parsErrorStepChoice";
+    public static final String PARS_ERROR_BUILDERS = "parsErrorBuilders";
+    public static final String PARS_ERROR_NUMBER = "parsErrorNumber";
+    public static final String PARS_ERROR_PLAYER = "parsErrorPlayer";
+
     public static final String COLOR_UPDATE = "colorUpdate";
-    public static final String PLAYER_ADDED = "playerAdded";
+    public static final String TURN_UPDATE = "turnUpdate";
+    public static final String LOST_UPDATE = "lostUpdate";
     public static final String STATE_UPDATE = "stateUpdate";
+    public static final String PLAYER_ADDED = "playerAdded";
     public static final String GOD_CARD_ASSIGNED = "godCardAssigned";
-    public static final String SET_GOD_CARD = "setGodCard";
 
     //request type from controller
     public static final String ASK_NICK_AND_DATE = "askNickAndDate";
@@ -197,9 +207,7 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, DISCONNECT).toString();
     }
 
-    /*public static String deletePlayer() {
-        return (new JSONObject()).put(TYPE, DELETE_PLAYER).toString();
-    }*/
+
 
     public static String stepChoice(String nickname, String choice, boolean result) {
         return (new JSONObject(stepChoice(nickname, choice))).put(RESULT, result).toString();
@@ -262,14 +270,14 @@ public abstract class Messages {
 
     public static String askBuilders(){ return (new JSONObject()).put(TYPE, ASK_BUILDERS).toString(); }
 
-
-    public static String turnUpdate(String nickname){
-        return (new JSONObject()).put(TYPE, TURN_UPDATE).put(NAME, nickname).toString();
+    public static String askStep(){
+        return (new JSONObject()).put(TYPE, ASK_STEP).toString();
     }
 
 
-    public static String errorNumber(){
-        return (new JSONObject()).put(TYPE, ERROR_NUMBER).toString();
+
+    public static String turnUpdate(String nickname){
+        return (new JSONObject()).put(TYPE, TURN_UPDATE).put(NAME, nickname).toString();
     }
 
     public static String colorUpdate(String color) {
@@ -280,19 +288,16 @@ public abstract class Messages {
         return (new JSONObject(colorUpdate(color))).put(NAME, nickname).put(RESULT, result).toString();
     }
 
-    public static String playerAdded(String nickname, boolean result) {
-        return (new JSONObject()).put(TYPE, PLAYER_ADDED).put(NAME, nickname).put(RESULT, result).toString();
-    }
-
     public static String stepUpdate(Model.State state) {
         return (new JSONObject()).put(TYPE, STATE_UPDATE).put(STATE, state.toString()).toString();
     }
 
-
-
-    public static String askStep(){
-        return (new JSONObject()).put(TYPE, ASK_STEP).toString();
+    public static String playerAdded(String nickname, boolean result) {
+        return (new JSONObject()).put(TYPE, PLAYER_ADDED).put(NAME, nickname).put(RESULT, result).toString();
     }
+
+
+
 
     public static String godCardAssigned(String godCard, boolean result){
         return (new JSONObject()).put(TYPE, GOD_CARD_ASSIGNED).put(GOD_CARD, godCard).put(RESULT, result).toString();
@@ -301,5 +306,25 @@ public abstract class Messages {
     public static String setGodCard(String godCardName) {
         return (new JSONObject()).put(TYPE, SET_GOD_CARD).put(GOD_CARD, godCardName).toString();
     }
+
+    public static String errorNumber(){
+        return (new JSONObject()).put(TYPE, ERROR_NUMBER).toString();
+    }
+
+    public static String parsErrorNumber() {return (new JSONObject()).put(TYPE, PARS_ERROR_NUMBER).toString();}
+
+    public static String parsErrorColor() {return (new JSONObject()).put(TYPE, PARS_ERROR_COLOR).toString();}
+
+    public static String parsErrorMove() {return (new JSONObject()).put(TYPE, PARS_ERROR_MOVE).toString();}
+
+    public static String parsErrorBuild() {return (new JSONObject()).put(TYPE, PARS_ERROR_BUILD).toString();}
+
+    public static String parsErrorGod() {return (new JSONObject()).put(TYPE, PARS_ERROR_GOD).toString();}
+
+    public static String parsErrorBuilders() {return (new JSONObject()).put(TYPE, PARS_ERROR_BUILDERS).toString();}
+
+    public static String parsErrorStepChoice() {return (new JSONObject()).put(TYPE, PARS_ERROR_STEP_CHOICE).toString();}
+
+    public static String parsErrorPlayer() {return (new JSONObject()).put(TYPE, PARS_ERROR_PLAYER).toString();}
 
 }

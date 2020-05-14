@@ -26,7 +26,7 @@ public class NetworkParser {
         return jsonObject.getString(Messages.TYPE);
     }
 
-    public String getColor(){
+    public String getColor() {
         return jsonObject.getString(Messages.COLOR);
     }
 
