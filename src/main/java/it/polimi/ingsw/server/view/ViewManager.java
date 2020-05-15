@@ -86,22 +86,25 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
         selectedView.send(Messages.possibleBuildDestinations(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
     public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
         selectedView.send(Messages.possibleMoveDestinations(possibleDstBuilder1, possibleDstBuilder2));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
-        for(VirtualView view : views)
-            view.send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2, result));
+        if(result)
+            for(VirtualView view : views)
+                view.send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2, true));
+        else
+            selectedView.send(Messages.buildersPlacement(nickname, positionBuilder1, positionBuilder2, false));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
@@ -109,28 +112,28 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         for(VirtualView view : views)
             view.send(Messages.endGame(winnerNickname));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
     public void onWrongInsertionUpdate(String error) {
         selectedView.send(Messages.errorMessage(error));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
     public void onWrongNumberInsertion() {
         views.get(0).send(Messages.errorNumber());
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
     public void onLossUpdate(String nickname) {
         selectedView.send(Messages.lostGame());
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
@@ -138,7 +141,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         for(VirtualView view : views)
             view.send(Messages.stepUpdate(currState));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
@@ -147,7 +150,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
             view.send(Messages.turnUpdate(nickname));
 
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
@@ -158,7 +161,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         else
             selectedView.send(Messages.colorUpdate(nickname, color, false));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
@@ -178,7 +181,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         else
             selectedView.send(Messages.build(nickname, src, dst, dome, false));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override
@@ -189,7 +192,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         else
             selectedView.send(Messages.move(nickname, src, dst, false));
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     /**
@@ -209,7 +212,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
             selectedView.send(Messages.playerAdded(nickname, false));
         }
 
-        cleanSelection();
+        //cleanSelection();
     }
 
     @Override

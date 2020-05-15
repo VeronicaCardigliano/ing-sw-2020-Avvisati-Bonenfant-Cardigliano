@@ -422,16 +422,20 @@ public class Model extends ModelObservableWithSelect {
         result = currPlayer.build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
 
         //build method increase the currStep of the player
-        if (result && correctBuilder) {
+        /*if (result && correctBuilder) {
+
+            notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, true);
+
 
             currStep = getCurrStep(currPlayer);
             if (!currStep.equals("END"))
                 findPossibleDestinations();
-            //else
-               // setNextPlayer();
-        }
+
+        } else
+            notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, false);*/
 
         notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result && correctBuilder);
+
         return result && correctBuilder;
     }
 
@@ -453,15 +457,19 @@ public class Model extends ModelObservableWithSelect {
         result = currPlayer.move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
 
         //move method increases the currStep of the player
-        if (result && correctBuilder) {
+        /*if (result && correctBuilder) {
             currStep = getCurrStep(currPlayer);
+            notifyBuilderMovement(currPlayer.getNickname(),src, dst, true);
+
             if (!currStep.equals("END"))
                 findPossibleDestinations();
-            //else
-                //setNextPlayer();
-        }
+
+        } else
+            notifyBuilderMovement(currPlayer.getNickname(),src, dst, false);*/
 
         notifyBuilderMovement(currPlayer.getNickname(),src, dst, result && correctBuilder);
+
+
         return result && correctBuilder;
     }
 

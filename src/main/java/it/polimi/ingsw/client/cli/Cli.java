@@ -290,19 +290,19 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
 
         if (buildType.equals("D")) {
             buildDome = true;
-            if (chosenBuilderNum == '1')
+            if (chosenBuilderNum == 1)
                 possibleDstBuilder = possibleDstBuilder1forDome;
             else
                 possibleDstBuilder = possibleDstBuilder2forDome;
         }
         else {
-            if (chosenBuilderNum == '1')
+            if (chosenBuilderNum == 1)
                 possibleDstBuilder = possibleDstBuilder1;
             else
                 possibleDstBuilder = possibleDstBuilder2;
         }
 
-        if (chosenBuilderNum == '1')
+        if (chosenBuilderNum == 1)
             cliGameMap.print(occupiedCells, possibleDstBuilder, null, chosenBuilderNum);
         else
             cliGameMap.print(occupiedCells, null, possibleDstBuilder, chosenBuilderNum);
@@ -452,7 +452,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public void onGodCardAssigned(String nickname, String godCard, boolean result) {
         if (!result) {
             System.out.println("Invalid insertion of godCard.");
-            askGodCard(godDescriptions, chosenGodCards);
+            //askGodCard(godDescriptions, chosenGodCards);
         }
         else {
             System.out.println ("GodCard assigned correctly.");

@@ -177,6 +177,7 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
         testModel.effectiveMove(new Coordinates(1,1), new Coordinates(2,2)); //move (2,2)
+        testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
         testModel.effectiveBuild(new Coordinates(2,2), new Coordinates(3,3), false); //build (3,3)
         assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
@@ -189,6 +190,7 @@ class ModelTest {
 
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,4)));
         testModel.effectiveMove(new Coordinates(3,4), new Coordinates(2,4));
+        testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
         testModel.effectiveBuild(new Coordinates(2,4), new Coordinates(2,3), false);
         assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
@@ -199,6 +201,7 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
         testModel.effectiveMove(new Coordinates(2,2), new Coordinates(2,3));
+        testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
         testModel.effectiveBuild(new Coordinates(2,3), new Coordinates(2,2), false);
         assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
@@ -211,6 +214,7 @@ class ModelTest {
 
         assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,2)));
         testModel.effectiveMove(new Coordinates(4,3), new Coordinates(4,2));
+        testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,3)));
         testModel.effectiveBuild(new Coordinates(4,2), new Coordinates(4,3), false);
         assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
@@ -221,6 +225,7 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
         testModel.effectiveMove(new Coordinates(2,3), new Coordinates(2,2));
+        testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
         testModel.effectiveBuild(new Coordinates(2,2), new Coordinates(2,3), false);
         assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
@@ -232,6 +237,7 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,1)));
         testModel.effectiveMove(new Coordinates(4,2), new Coordinates(4,1));
+        testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,2)));
         testModel.effectiveBuild(new Coordinates(4,1), new Coordinates(4,2), false);
         assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));

@@ -95,7 +95,7 @@ public class GodCard {
      *
      * @return
      */
-    protected String setNextState(String previousStep) {
+    private void setNextState(String previousStep) {
         step++;
 
         currState = "END";
@@ -127,7 +127,6 @@ public class GodCard {
             }
         }
 
-        return previousStep;
     }
 
     public Player getPlayer() {

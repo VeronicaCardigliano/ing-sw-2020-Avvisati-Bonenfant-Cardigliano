@@ -90,6 +90,8 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
 
                 //richieste Controller
 
+
+
                 case Messages.ASK_NUMBER_OF_PLAYERS:
                     view.askNumberOfPlayers();
                     break;
@@ -110,6 +112,14 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
                     view.placeBuilders();
                     break;
                 //notify dal Model
+
+                case Messages.MOVE:
+                    notifyBuilderMovement(parser.getAttribute(Messages.NAME), parser.getSrcCoordinates(), parser.getDstCoordinates(), parser.getResult());
+                    break;
+
+                case Messages.BUILD:
+                    notifyBuilderBuild(parser.getAttribute(Messages.NAME), parser.getSrcCoordinates(), parser.getDstCoordinates(), parser.getBuildDome(), parser.getResult());
+                    break;
 
                 case Messages.POSSIBLE_BUILD_DESTINATIONS:
                     list = parser.getCoordSetList();

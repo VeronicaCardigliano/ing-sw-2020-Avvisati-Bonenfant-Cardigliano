@@ -50,8 +50,8 @@ public class YourMoveGodCard extends GodCard {
         boolean result = false;
 
         //aggiustare il set di firstSrcCell e il retun via boolean
-
-        if (firstSrcCell == null) {
+        if (step == 0)
+            firstSrcCell = gameMap.getCell(i_src, j_src);
             //here i should not care about secondMoveDiffDst because firstSrcCell is empty!
 
             //cannot move basically
@@ -62,36 +62,27 @@ public class YourMoveGodCard extends GodCard {
                     result = false;
                 } else //can move using pushing power (but there could be a dome anyway or push cannot be completed
                 {
-                    if(askMove(i_src, j_src, i_dst, j_dst) && askPush(i_src, j_src, i_dst, j_dst)) {
-                        push(i_src, j_src, i_dst, j_dst);
-                        //here i can call super.move sure that all previous control are enough to say that this
-                        // is a valid move. Test should assert that this function will return true
-                        super.move(i_src, j_src, i_dst, j_dst);
-                        result = true;
-                        firstSrcCell = gameMap.getCell(i_src, j_src);
+                    if(askMove(i_src, j_src, i_dst, j_dst) && askPush(i_src, j_src, i_dst, j_dst) ) {
+                        if (secondMoveDiffDst && firstSrcCell.getI() != i_dst && firstSrcCell.getJ() != j_dst)
+                            result = false;
+                        else {
+                            push(i_src, j_src, i_dst, j_dst);
+                            //here i can call super.move sure that all previous control are enough to say that this
+                            // is a valid move. Test should assert that this function will return true
+                            super.move(i_src, j_src, i_dst, j_dst);
+                            result = true;
+                        }
                     }
                     else result = false;
                 }
             } else {
                 //getting here means i can move as default
-                result = super.move(i_src, j_src, i_dst, j_dst);
-                firstSrcCell = gameMap.getCell(i_src, j_src);
+                if (firstSrcCell.getJ() == j_dst && secondMoveDiffDst && firstSrcCell.getI() == i_dst)
+                    result = false;
+                else
+                    result = super.move(i_src, j_src, i_dst, j_dst);
             }
-        }
-        //from this line up to the end i know that a move has already been made due to the fact that firstSrcCell
-        // != null
-
-        //here i suppose that secondCellDiffDist could be true
-        else if (secondMoveDiffDst && firstSrcCell.getI() == i_dst && firstSrcCell.getJ() == j_dst) result = false;
-
-            //this else ensures that !(secondMoveDiffDst and src = dst).
-        else {
-            result = this.move(i_src, j_src, i_dst, j_dst);
-            //in this way i "reset" the cell and make a new move
-        }
-
-        setNextState("MOVE");
-        if (currState == "END") firstSrcCell = null;
+        if (currState == "BUILD") firstSrcCell = null;
 
         return result;
     }
