@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class Client {
     public static void main(String[] args) {
-        NetworkHandler nh = new NetworkHandler("localhost", 2033);
+        NetworkHandler nh = new NetworkHandler("cloud.btom.it", 2033);
         Cli view = new Cli(System.in);
 
         nh.setView(view);

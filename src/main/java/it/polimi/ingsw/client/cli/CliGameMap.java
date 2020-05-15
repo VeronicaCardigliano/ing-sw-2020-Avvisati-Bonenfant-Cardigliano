@@ -15,7 +15,7 @@ public class CliGameMap {
     private String builderColor;
     private String reset = Color.RESET;
 
-    private String possibleDst = yellow + " " + "\u25CC" + reset;
+    private String possibleDstSymbol = yellow + " " + "\u25CC" + reset;
     private String dome = blue + "\u25CF" + reset;
     private String builder =  " " + "\u2692" + reset;
 
@@ -77,18 +77,30 @@ public class CliGameMap {
             Coordinates coordinates = new Coordinates(i,j);
             //if I have a builder -> builder, if I have possibleDst -> possibleDst, else empty
             for (String player : occupiedCells.keySet()) {
+
                 if (Coordinates.equals(coordinates, occupiedCells.get(player).get(0)) ||
                         Coordinates.equals(coordinates, occupiedCells.get(player).get(1))) {
-                    switch (Cli.getColor(player).toUpperCase()){
-                        case "MAGENTA":
-                            builderColor = Color.ANSI_MAGENTA.escape();
-                            break;
-                        case "WHITE":
-                            builderColor = "";
-                            break;
-                        case "LIGHT_BLUE":
-                            builderColor = Color.ANSI_LIGHTBLUE.escape();
-                            break;
+
+                    //I could want to print the possible destinations of just one builder or both, or none of them
+                    //With the following 'if' I control whether the builder is also one of the possible destinations
+                    if ((possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
+                            controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
+                            (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates))) {
+                        builderColor = Color.ANSI_YELLOW.escape();
+                    }
+
+                    else {
+                        switch (Cli.getColor(player).toUpperCase()) {
+                            case "MAGENTA":
+                                builderColor = Color.ANSI_MAGENTA.escape();
+                                break;
+                            case "WHITE":
+                                builderColor = "";
+                                break;
+                            case "LIGHT_BLUE":
+                                builderColor = Color.ANSI_LIGHTBLUE.escape();
+                                break;
+                        }
                     }
                     line.append(verticalLine).append(builderColor).append(builder);
                     printed = true;
@@ -97,20 +109,12 @@ public class CliGameMap {
             //possibleDstBuilder sets are null if the match is not still in the Game state
             //if the player has chosen the builder to use, it'll show just the chosenBuilder possible destinations
 
-            if (!printed && possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1)) {
-                String x = controlIfPossibleDst(possibleDstBuilder1, coordinates);
-                if (!x.equals("")) {
-                    line.append(x);
-                    printed = true;
-                }
-            }
+            if (!printed && (possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
+                    controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
+                    (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates))) {
 
-            if (!printed && possibleDstBuilder2 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 2)) {
-                String x = controlIfPossibleDst(possibleDstBuilder2, coordinates);
-                if (!x.equals("")) {
-                    line.append(x);
+                    line.append(verticalLine).append(possibleDstSymbol);
                     printed = true;
-                }
             }
 
             if (!printed)
@@ -118,7 +122,7 @@ public class CliGameMap {
 
             height = heights.get(coordinates);
             if (height == -1)
-                line.append(dome);
+                line.append(dome).append(" ");
             else if (height == 0)
                 line.append("  ");
             else
@@ -127,14 +131,14 @@ public class CliGameMap {
         System.out.print(line + verticalLine + "\n");
     }
 
-    private String controlIfPossibleDst (Set<Coordinates> possibleDstSet, Coordinates coordinates) {
-        String cell = "";
+    private boolean controlIfPossibleDst (Set<Coordinates> possibleDstSet, Coordinates coordinates) {
+        boolean result = false;
         for (Coordinates coord : possibleDstSet) {
             if (Coordinates.equals(coordinates, coord)){
-                cell = verticalLine + possibleDst;
+                result = true;
             }
         }
-        return cell;
+        return result;
     }
 
     private void printLastLine() {
