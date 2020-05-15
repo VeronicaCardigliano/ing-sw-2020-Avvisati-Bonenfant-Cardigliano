@@ -8,7 +8,9 @@ public interface View {
 
     void askNumberOfPlayers ();
     void askNickAndDate ();
+    void chooseMatchGodCards(Map<String, String> godDescriptionsParam, Set<String> chosenGodCards);
     void askGodCard (Map<String, String> godDescriptions, Set<String> chosenGodCards);
+    void chooseStartPlayer ();
     void askBuilderColor (Set<String> chosenColors);
     void placeBuilders ();
     void chooseNextStep ();

@@ -383,6 +383,7 @@ public class Model extends ModelObservableWithSelect {
     public boolean hasLostDuringMove () {
         if (possibleDstBuilder1 == null || possibleDstBuilder2 == null)
             throw new IllegalArgumentException("Possible destinations arrays can't be null ");
+
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) {
 
             notifyLoss(currPlayer.getNickname());

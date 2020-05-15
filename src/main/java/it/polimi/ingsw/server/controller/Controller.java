@@ -21,7 +21,6 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     }
 
-
     /**
      * This update of Controller is called by a specific View's notify when the user insert a number
      * @param num is the number entered bu the user
@@ -39,7 +38,6 @@ public class Controller extends AbstractController implements ConnectionObserver
                 //viewManager.askNumberOfPlayers(); //broadcast message
         }
     }
-
 
     @Override
     public void onNicknameAndDateInsertion(String nickname, String birthday) {
@@ -125,56 +123,48 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
 
-        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname)) {
-            if (model.getCurrPlayer().getGodCard().getCurrState().equals("BUILD"))
-                if (model.effectiveBuild(src, dst, buildDome)) {
-                    if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
-                        model.setNextPlayer();
-                        model.getCurrPlayer().startTurn();
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname) &&
+                model.getCurrPlayer().getGodCard().getCurrState().equals("BUILD") &&
+                model.effectiveBuild(src, dst, buildDome) && !model.hasLostDuringBuild()) {
 
-                        if(model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-                            viewManager.askStep(model.getCurrPlayer().getNickname());
-                        else {
-                            model.findPossibleDestinations();
-                        }
-                    }
-                    else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH")) //check step
-                        viewManager.askStep(nickname);
-                    else
-                        model.findPossibleDestinations();
-                }
-        }
+                manageNextState(nickname);
+            }
     }
 
     @Override
     public void onBuilderMove(String nickname, Coordinates src, Coordinates dst) {
-        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname)) {
-            if (model.getCurrPlayer().getGodCard().getCurrState().equals("MOVE"))
-                if (model.effectiveMove(src, dst)) {
-                    if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
-                        model.setNextPlayer();
-                        model.getCurrPlayer().startTurn();
 
-                        if(model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-                            viewManager.askStep(model.getCurrPlayer().getNickname());
-                        else {
-                            model.findPossibleDestinations();
-                        }
-                    }
-                    else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH")) //check step
-                        viewManager.askStep(nickname);
-                    else
-                        model.findPossibleDestinations();
-                } //if move fails it automatically
-        }
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname) &&
+                model.getCurrPlayer().getGodCard().getCurrState().equals("MOVE") && model.effectiveMove(src, dst) &&
+                !model.hasLostDuringMove() && !model.endGame()) {
+
+                manageNextState(nickname);
+            }
     }
+
+    private void manageNextState(String nickname) {
+        if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
+            model.setNextPlayer();
+            model.getCurrPlayer().startTurn();
+
+            if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
+                viewManager.askStep(model.getCurrPlayer().getNickname());
+            else
+                model.findPossibleDestinations();
+
+        } else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH")) //check step
+            viewManager.askStep(nickname);
+        else
+            model.findPossibleDestinations();
+    }
+
 
 //------------
 
     @Override
     public void onStepChoice(String player, String chosenStep) {
         if (model.getCurrPlayer().getNickname().equals(player) && model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-        model.setStepChoice(chosenStep);
+            model.setStepChoice(chosenStep);
     }
 
     @Override
@@ -204,8 +194,6 @@ public class Controller extends AbstractController implements ConnectionObserver
             view.send(Messages.disconnect());
             view.disconnect();
         }
-
-
 
 
     }

@@ -27,11 +27,13 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     protected static Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
 
     private static Set<String> chosenColors = new HashSet<>();
-    private static Map<String, String> godDescriptions = new HashMap<>();
-    private static Set<String> chosenGodCards = new HashSet<>();
+    private static int validGodChoices;
+    //private static Map<String, String> godDescriptions = new HashMap<>();
+    //private static Set<String> chosenGodCards = new HashSet<>();
 
     //not static attributes which change for each player/client
     private String nickname;
+    int numPlayers;
 
     //Sets of Coordinates to be saved in case you need to ask again for a build/move after a failed one
     Set<Coordinates> possibleDstBuilder1;
@@ -47,6 +49,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public Cli(InputStream source) {
         this.input = new Scanner(source);
         cliGameMap = new CliGameMap();
+        validGodChoices = 0;
     }
 
 
@@ -113,7 +116,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
      */
     @Override
     public void askNumberOfPlayers() {
-        int numPlayers;
         String inputString;
         System.out.println("Insert the number of players ");
         inputString = input.nextLine();
@@ -149,27 +151,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         notifyNewPlayer(nickname, birthday);
     }
 
-    //TODO: selection of GodCards of the match (RANDOM?)
-    //mando solo ad uno tutte le descrizioni di tutti gli dei, lui ne sceglie 2/3 in base al numero di giocatori
-    //e poi GLI ALTRI scelgono il loro dio e il Challenger si prende l'ultimo rimasto
-
-    /*
-    public void chooseMatchGodCards (Map<String, String> godDescriptionsParam){
-    }
-    */
-
-    /**
-     * Asks to choose a GodCard from the still available ones
-     * @param godDescriptionsParam is a Map with God Names as key and descriptions as values
-     * @param chosenGodCardsParam is a Set of the godCards name already chosen
-     */
-    @Override
-    public void askGodCard(Map<String, String> godDescriptionsParam, Set<String> chosenGodCardsParam) {
-        godDescriptions = godDescriptionsParam;
-        chosenGodCards = chosenGodCardsParam;
-        System.out.println("\nSelect your GodCard from the available ones ");
-        System.out.println("-------------------------------------------");
-
+    private void printAvailableGodCards(Map<String, String> godDescriptions, Set<String> chosenGodCards) {
         for (String s : godDescriptions.keySet()) {
             boolean alreadyUsed = false;
             for (String x : chosenGodCards) {
@@ -184,10 +166,56 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
                 System.out.println(godDescriptions.get(s));
             }
         }
+    }
 
-        String chosenCard = input.nextLine();
-        checkLeaving(chosenCard);
+
+    @Override
+    public void chooseMatchGodCards (Map<String, String> godDescriptions, Set<String> chosenMatchGodCards) {
+        String inputString;
+        System.out.println ("\nYou're the Challenger of this match!" + "\u1F451" + "\u1F340");
+        System.out.println ("Choose " + numPlayers + " godCards for the match. ");
+
+        if (validGodChoices < numPlayers) {
+            printAvailableGodCards(godDescriptions, chosenMatchGodCards);
+            System.out.print ("GodCard" + validGodChoices + ": ");
+            inputString = input.nextLine();
+            checkLeaving(inputString);
+            String chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
+            //notifyChosenMatchGod(chosenCard);
+            //dopo questa notify devo avere una update che mi dica se è andata a buon fine -> aggiungo alle chosenGodCards
+            // o meno -> richiedo
+        }
+        else
+            System.out.println ("GodCards correctly chosen. Wait the other players to choose theirs.");
+    }
+
+    /**
+     * Asks to choose a GodCard from the still available ones
+     * @param godDescriptions is a Map with God Names as key and descriptions as values
+     * @param chosenGodCards is a Set of the godCards name already chosen
+     */
+    @Override
+    public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenGodCards) {
+        String inputString;
+        //godDescriptions = godDescriptionsParam;
+        //chosenGodCards = chosenGodCardsParam;
+        System.out.println("\nSelect your GodCard from the available ones ");
+        System.out.println("-------------------------------------------");
+
+        printAvailableGodCards(godDescriptions, chosenGodCards);
+
+        inputString = input.nextLine();
+        checkLeaving(inputString);
+        String chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
         notifyGodCardChoice(nickname, chosenCard);
+    }
+
+    @Override
+    public void chooseStartPlayer() {
+        String inputString;
+        System.out.println("Choose the StartPlayer of the match: ");
+        inputString = input.nextLine();
+        //notifyStartPlayer(inputString);
     }
 
     /**
@@ -292,7 +320,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         boolean buildDome = false;
 
         if ((possibleDstBuilder1forDome != null && chosenBuilderNum == 1) || (possibleDstBuilder2forDome != null && chosenBuilderNum == 2)) {
-            System.out.println("Select what yuo want to build: insert 'D' for dome or 'B' for building ");
+            System.out.println("Select what you want to build: insert 'D' for dome or 'B' for building ");
             buildType = input.nextLine().toUpperCase();
             checkLeaving(buildType);
 
