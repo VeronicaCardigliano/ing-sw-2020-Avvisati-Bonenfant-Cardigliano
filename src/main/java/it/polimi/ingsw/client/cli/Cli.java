@@ -92,7 +92,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     }
 
     private void checkLeaving(String string) {
-        if (string.equals("quit") || string.equals("QUIT")) {
+        if (string.equals("quit") || string.equals("QUIT") || string.equals("Quit")) {
             notifyDisconnection(nickname);
         }
     }
@@ -319,7 +319,8 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         Set<Coordinates> possibleDstBuilder;
         boolean buildDome = false;
 
-        if ((possibleDstBuilder1forDome != null && chosenBuilderNum == 1) || (possibleDstBuilder2forDome != null && chosenBuilderNum == 2)) {
+        if ((!possibleDstBuilder1forDome.isEmpty() && chosenBuilderNum == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
+                chosenBuilderNum == 2)) {
             System.out.println("Select what you want to build: insert 'D' for dome or 'B' for building ");
             buildType = input.nextLine().toUpperCase();
             checkLeaving(buildType);
@@ -349,8 +350,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             cliGameMap.print(occupiedCells, possibleDstBuilder, null, chosenBuilderNum);
         else
             cliGameMap.print(occupiedCells, null, possibleDstBuilder, chosenBuilderNum);
-
-        System.out.println("\nInvalid coordinates. Select a cell from the available ones");
 
         dst = coordinatesInsertion();
 
@@ -432,8 +431,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             //at key nickname, the builders are in order of insertion: builder1 is in position 0 and builder2 in pos 1,
             //in this way I can distinguish the two
             setOccupiedCells(nickname, selectedCells);
-            if (this.nickname.equals(nickname))
-                cliGameMap.print(occupiedCells, null, null, chosenBuilderNum);
+            cliGameMap.print(occupiedCells, null, null, chosenBuilderNum);
         }
     }
 
@@ -595,6 +593,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void onPlayerTurn(String nickname) {
         System.out.println("Turn ended. Now playing: " + nickname);
+        chosenBuilderNum = 0;
     }
 
     /**
@@ -614,9 +613,9 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
         if(result)
-            System.out.println(nickname + " chose " + "step");
+            System.out.println(nickname + " chose " + step);
         else
-            System.out.println("error choosing step");
+            System.out.println(red + "\nERROR:"+ Color.RESET + " wrong step.");
     }
 
 }

@@ -66,6 +66,22 @@ public class CliGameMap {
                 horizontalLine + centralSeparator + horizontalLine + centralSeparator + horizontalLine +verticalRightSeparator);
     }
 
+    private String returnColor (String player) {
+        String color = "";
+        switch (player) {
+            case "MAGENTA":
+                color = Color.ANSI_MAGENTA.escape();
+                break;
+            case "WHITE":
+                color = "";
+                break;
+            case "LIGHT_BLUE":
+                color =  Color.ANSI_LIGHTBLUE.escape();
+                break;
+        }
+        return color;
+    }
+
     //i is the row and j is the column
     private void printContents(int i, Map<String, ArrayList<Coordinates>> occupiedCells, Set<Coordinates> possibleDstBuilder1,
                                Set<Coordinates> possibleDstBuilder2, int chosenBuilderNumber) {
@@ -88,20 +104,8 @@ public class CliGameMap {
                             (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates))) {
                         builderColor = Color.ANSI_YELLOW.escape();
                     }
-
-                    else {
-                        switch (Cli.getColor(player).toUpperCase()) {
-                            case "MAGENTA":
-                                builderColor = Color.ANSI_MAGENTA.escape();
-                                break;
-                            case "WHITE":
-                                builderColor = "";
-                                break;
-                            case "LIGHT_BLUE":
-                                builderColor = Color.ANSI_LIGHTBLUE.escape();
-                                break;
-                        }
-                    }
+                    else
+                        builderColor = returnColor(Cli.getColor(player).toUpperCase());
                     line.append(verticalLine).append(builderColor).append(builder);
                     printed = true;
                 }
@@ -109,9 +113,9 @@ public class CliGameMap {
             //possibleDstBuilder sets are null if the match is not still in the Game state
             //if the player has chosen the builder to use, it'll show just the chosenBuilder possible destinations
 
-            if (!printed && (possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
+            if (!printed && ((possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
                     controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
-                    (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates))) {
+                    (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates)))) {
 
                     line.append(verticalLine).append(possibleDstSymbol);
                     printed = true;
@@ -150,7 +154,10 @@ public class CliGameMap {
     private void printChosenGodCards () {
         Map<String,String> chosenGodCards = Cli.getChosenGodCards();
         for (String player : chosenGodCards.keySet()) {
-            System.out.println("    " + player + " : " + chosenGodCards.get(player));
+
+            String playerColor = returnColor(Cli.getColor(player).toUpperCase());
+            System.out.println("    " + playerColor + player + reset + " : " + chosenGodCards.get(player));
+
         }
     }
 
