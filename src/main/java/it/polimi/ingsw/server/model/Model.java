@@ -166,7 +166,7 @@ public class Model extends ModelObservableWithSelect {
             return true;
         }
         else
-            notifyWrongNumber();
+            notifyWrongNumber(); //notifies the first view in viewmanager
 
         return false;
     }
@@ -231,6 +231,8 @@ public class Model extends ModelObservableWithSelect {
         boolean existing = false;
         boolean assigned = true;
 
+        notifyViewSelection(currPlayer.getNickname());
+
         for (String s: chosenCards) {
             if (chosenGodCard.equals(s)){
                 //notifyWrongInsertion(currPlayer.getNickname(), "ERROR: GodCard name already used ");
@@ -255,7 +257,6 @@ public class Model extends ModelObservableWithSelect {
             currPlayer.getGodCard().setGameMap(gameMap);
         }
 
-        notifyViewSelection(currPlayer.getNickname());
         notifyGodChoice(currPlayer.getNickname(), chosenGodCard, assigned);
 
         return assigned;
@@ -269,6 +270,8 @@ public class Model extends ModelObservableWithSelect {
 
         boolean existing = false;
         boolean assigned = false;
+
+        notifyViewSelection(currPlayer.getNickname());
 
         for (String s: chosenColors) {
             if (chosenColor.equals(s)){
@@ -290,7 +293,6 @@ public class Model extends ModelObservableWithSelect {
                     new Builder(currPlayer, Builder.BuilderColor.valueOf(chosenColor)));
         }
 
-        notifyViewSelection(currPlayer.getNickname());
         notifyColorAssigned(currPlayer.getNickname(),chosenColor, !assigned && existing);
 
         return !assigned && existing ;
@@ -298,6 +300,8 @@ public class Model extends ModelObservableWithSelect {
 
     public boolean setCurrPlayerBuilders(Coordinates builder1Coord, Coordinates builder2Coord) {
         boolean set = false;
+
+        notifyViewSelection(currPlayer.getNickname());
 
         Cell cell1 = gameMap.getCell(builder1Coord);
         Cell cell2 = gameMap.getCell(builder2Coord);
@@ -344,6 +348,8 @@ public class Model extends ModelObservableWithSelect {
         Set<Coordinates> possibleDstBuilder = new HashSet<>();
         Builder builder = currPlayer.getBuilders().get(builderIndex);
 
+        notifyViewSelection(currPlayer.getNickname());
+
         Coordinates src = builder.getCell();
         int x, y;
         int i_src = src.getI();
@@ -355,8 +361,7 @@ public class Model extends ModelObservableWithSelect {
                     case "MOVE":
                         if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
-                            notifyPossibleBuilds(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome
-                                    , possibleDstBuilder2forDome);
+
                         }
                             break;
 
@@ -364,7 +369,6 @@ public class Model extends ModelObservableWithSelect {
                         if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
                                 currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
-                            notifyPossibleMoves(possibleDstBuilder1, possibleDstBuilder2);
                         }
                             break;
                 }
@@ -405,6 +409,8 @@ public class Model extends ModelObservableWithSelect {
     public boolean effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
         boolean result;
         boolean correctBuilder = true;
+        notifyViewSelection(currPlayer.getNickname());
+
         //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
@@ -421,8 +427,8 @@ public class Model extends ModelObservableWithSelect {
             currStep = getCurrStep(currPlayer);
             if (!currStep.equals("END"))
                 findPossibleDestinations();
-            else
-                setNextPlayer();
+            //else
+               // setNextPlayer();
         }
 
         notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result && correctBuilder);
@@ -433,6 +439,7 @@ public class Model extends ModelObservableWithSelect {
 
         boolean result;
         boolean correctBuilder = true;
+        notifyViewSelection(currPlayer.getNickname());
 
         //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
@@ -450,8 +457,8 @@ public class Model extends ModelObservableWithSelect {
             currStep = getCurrStep(currPlayer);
             if (!currStep.equals("END"))
                 findPossibleDestinations();
-            else
-                setNextPlayer();
+            //else
+                //setNextPlayer();
         }
 
         notifyBuilderMovement(currPlayer.getNickname(),src, dst, result && correctBuilder);
@@ -460,13 +467,17 @@ public class Model extends ModelObservableWithSelect {
 
     public void findPossibleDestinations () {
         currStep = getCurrStep(currPlayer);
+
+        notifyViewSelection(currPlayer.getNickname());
+
         switch (currStep) {
             case "MOVE":
                 //View has to obtain the list of the possible moves for both builders
                 possibleDstBuilder1 = possibleDstCells(0, false);
                 possibleDstBuilder2 = possibleDstCells(1, false);
-                if (!hasLostDuringMove())
+                if (!hasLostDuringMove()) {
                     notifyPossibleMoves(possibleDstBuilder1, possibleDstBuilder2);
+                }
                 break;
 
             case "BUILD":
@@ -475,8 +486,9 @@ public class Model extends ModelObservableWithSelect {
                 possibleDstBuilder2 = possibleDstCells(1,false);
                 possibleDstBuilder1forDome = possibleDstCells(0,true);
                 possibleDstBuilder2forDome = possibleDstCells(1,true);
-                if (!hasLostDuringBuild())
+                if (!hasLostDuringBuild()) {
                     notifyPossibleBuilds(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
+                }
                 break;
                 //case END exception
         }
@@ -488,12 +500,13 @@ public class Model extends ModelObservableWithSelect {
      */
     public void setStepChoice (String step) {
         boolean changed = false;
+        notifyViewSelection(currPlayer.getNickname());
+
         if (step.equals("MOVE") || step.equals("BUILD")) {
             currPlayer.forceStep(step);
             changed = true;
         }
         else {
-            notifyViewSelection(currPlayer.getNickname());
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
         }
         notifyChosenStep(currPlayer.getNickname(), step, changed);

@@ -163,13 +163,13 @@ public class VirtualView extends ViewObservable implements Runnable {
                     break;
 
 
-                case Messages.SET_BUILDERS:
+                case Messages.BUILDERS_PLACEMENT:
                     try {
-                    builder1 = parser.getSrcCoordinates();
-                    builder2 = parser.getDstCoordinates();
+                    builder1 = parser.getCoordArray().get(0);
+                    builder2 = parser.getCoordArray().get(1);
                     notifySetupBuilders(nickname, builder1, builder2);
                     } catch (JSONException coordinatesException){
-                        send(Messages.errorMessage("Invalid format, be sure to insert coordinates as ints"));
+                        send(Messages.errorMessage(coordinatesException.getMessage()));
                         send(Messages.parsErrorBuilders());
                     }
                     break;

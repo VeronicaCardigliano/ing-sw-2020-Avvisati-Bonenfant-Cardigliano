@@ -20,7 +20,7 @@ public abstract class Messages {
     public static final String POSSIBLE_BUILD_DESTINATIONS = "possibleBuildDestinations";
     public static final String POSSIBLE_MOVE_DESTINATIONS = "possibleMoveDestinations";
     public static final String ENDGAME = "endGame";
-    public static final String SET_BUILDERS = "setBuilders";
+    //public static final String SET_BUILDERS = "setBuilders";
     public static final String SET_STEP_CHOICE = "setStepChoice";
     public static final String SET_NUMBER_OF_PLAYERS = "setNumberOfPlayers";
     public static final String SET_GOD_CARD = "setGodCard";

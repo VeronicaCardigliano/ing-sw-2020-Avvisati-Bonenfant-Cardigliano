@@ -81,9 +81,8 @@ public class Controller extends AbstractController implements ConnectionObserver
                 model.getCurrPlayer().getGodCard() == null) {
 
                 if (model.assignCard(godCardName)) {
-                    //Initialize the turn
-                    model.getCurrPlayer().getGodCard().startTurn();
                     model.setNextPlayer();
+
                     if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
                         model.setNextState();
                         viewManager.askBuilders(model.getCurrPlayer().getNickname());
@@ -100,43 +99,73 @@ public class Controller extends AbstractController implements ConnectionObserver
 
             if (model.setCurrPlayerBuilders(builder1, builder2)){
                 model.setNextPlayer();
+
+                if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
+                    model.setNextState();
+
+                    //game starts
+                    //Initialize the turn
+                    model.getCurrPlayer().getGodCard().startTurn();
+
+                    if(model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
+                        viewManager.askStep(model.getCurrPlayer().getNickname());
+                    else {
+                        model.findPossibleDestinations();
+                    }
+                } else
+                    viewManager.askBuilders(model.getCurrPlayer().getNickname());
+
+
             } else viewManager.askBuilders(nickname);
 
-        if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
-            model.setNextState();
-        }
     }
 
 //-------------
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
+
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname)) {
             if (model.getCurrPlayer().getGodCard().getCurrState().equals("BUILD"))
-            if (model.effectiveBuild(src, dst, buildDome)) {
-                if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
-                    model.setNextPlayer();
-                    model.getCurrPlayer().startTurn();
+                if (model.effectiveBuild(src, dst, buildDome)) {
+                    if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
+                        model.setNextPlayer();
+                        model.getCurrPlayer().startTurn();
+
+                        if(model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
+                            viewManager.askStep(model.getCurrPlayer().getNickname());
+                        else {
+                            model.findPossibleDestinations();
+                        }
+                    }
+                    else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH")) //check step
+                        viewManager.askStep(nickname);
+                    else
+                        model.findPossibleDestinations();
                 }
-            }
-            else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-                viewManager.askStep(nickname);
         }
     }
-
 
     @Override
     public void onBuilderMove(String nickname, Coordinates src, Coordinates dst) {
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname)) {
             if (model.getCurrPlayer().getGodCard().getCurrState().equals("MOVE"))
-            if (model.effectiveMove(src, dst)) {
-                if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
-                    model.setNextPlayer();
-                    model.getCurrPlayer().startTurn();
-                }
-            }
-            else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-                viewManager.askStep(nickname);
+                if (model.effectiveMove(src, dst)) {
+                    if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
+                        model.setNextPlayer();
+                        model.getCurrPlayer().startTurn();
+
+                        if(model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
+                            viewManager.askStep(model.getCurrPlayer().getNickname());
+                        else {
+                            model.findPossibleDestinations();
+                        }
+                    }
+                    else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH")) //check step
+                        viewManager.askStep(nickname);
+                    else
+                        model.findPossibleDestinations();
+                } //if move fails it automatically
         }
     }
 

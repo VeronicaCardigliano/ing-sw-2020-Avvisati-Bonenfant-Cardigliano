@@ -156,7 +156,7 @@ public abstract class ModelObservable {
 
     public void notifyColorAssigned(String nickname, String color, boolean result){
         if (colorAssignmentObserver != null){
-            colorAssignmentObserver.onColorAssigned(nickname, nickname, result);
+            colorAssignmentObserver.onColorAssigned(nickname, color, result);
         } else
             System.out.println("color assigned observer is not set");
     }
