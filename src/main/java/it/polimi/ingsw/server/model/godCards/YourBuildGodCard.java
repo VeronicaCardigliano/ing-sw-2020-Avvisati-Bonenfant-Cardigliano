@@ -60,7 +60,7 @@ public class YourBuildGodCard extends GodCard {
             else if (secondBuildDiffDest && !secondBuildNotDome)
                 //Demeter GodCard effect
                 extraConditions = dst != firstBuildDst;
-            else if (!secondBuildDiffDest && !secondBuildNotDome && extraBuildNotPerimeter) {
+            else if (!secondBuildDiffDest && extraBuildNotPerimeter) {
                 //Hestia GodCard effect
 
                     extraConditions = (i_dst != 0 && i_dst != IslandBoard.dimension - 1 &&
@@ -75,7 +75,7 @@ public class YourBuildGodCard extends GodCard {
                 canBuildDomeEverywhere && (dst.getHeight() < 3 || buildDome)) ||
                 (src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) && !dst.isDomePresent() &&
                 //adding Zeus possibility to the normal return value, removing distanceOne = true and !isOccupied() flags
-                 buildHeightCondition && blockUnderItself && src.equals(dst))) && extraConditions;
+                 buildHeightCondition && (blockUnderItself && !buildDome && src.getHeight() < 3) && src.equals(dst))) && extraConditions;
     }
 
     /**

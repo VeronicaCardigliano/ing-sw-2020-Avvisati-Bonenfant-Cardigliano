@@ -27,8 +27,7 @@ public class  YourMoveGodCardTest {
     Builder enemyBuilder1 = new Builder(enemyPlayer);
     Builder enemyBuilder2 = new Builder(enemyPlayer);
     Builder enemyBuilder3 = new Builder(enemyPlayer);
-    JSONObject mino = new JSONObject("{}");
-    JSONObject arte = new JSONObject("{}");
+
 
     GodCardParser parser;
 
@@ -102,4 +101,5 @@ public class  YourMoveGodCardTest {
         assertTrue(god.move(1,0,2,0));
 
     }
+
 }

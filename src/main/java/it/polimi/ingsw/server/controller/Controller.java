@@ -113,7 +113,6 @@ public class Controller extends AbstractController implements ConnectionObserver
                 } else
                     viewManager.askBuilders(model.getCurrPlayer().getNickname());
 
-
             } else viewManager.askBuilders(nickname);
 
     }

@@ -320,7 +320,7 @@ public class Model extends ModelObservableWithSelect {
      * Called after every step to verify if the currPlayer won or if a player won remaining the only one who hasn't lost
      * @return true if someone wins, false otherwise
      */
-    public boolean endGame () {
+    public boolean endGame() {
         boolean end = false;
         if (currPlayer.getGodCard().winCondition()) {
             notifyEndGame(currPlayer.getNickname());

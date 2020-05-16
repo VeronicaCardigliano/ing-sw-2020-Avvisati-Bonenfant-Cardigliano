@@ -130,15 +130,20 @@ class YourBuildGodCardTest {
         assertFalse(godCardZeus.askBuild(i_src, j_src, i_src +1, j_src +1, false));
         assertTrue(godCardZeus.askBuild(i_src, j_src, i_src +1, j_src +1, true));
 
+        //Build under itself (Zeus power, not dome)
         assertTrue(godCardZeus.askBuild(i_src, j_src, i_src, j_src, false));
-        assertFalse(godCardAtlas.askBuild(i_src, j_src, i_src, j_src, true));
+        assertFalse(godCardZeus.askBuild(i_src, j_src, i_src, j_src, true));
 
         gameMap.getCell(i_src,j_src).addBlock();
         gameMap.getCell(i_src,j_src).addBlock();
-        gameMap.getCell(i_src,j_src).addBlock();
+        //gameMap.getCell(i_src,j_src).addBlock();
+        assertTrue(godCardZeus.build(i_src, j_src, i_src, j_src, false));
 
-        assertTrue(godCardZeus.askBuild(i_src, j_src, i_src, j_src, true));
-        assertFalse(godCardAtlas.askBuild(i_src, j_src, i_src, j_src, false));
+        //Zeus should not win build under himself
+        assertFalse(godCardZeus.winCondition());
+
+        //Cannot build a dome under himself
+        assertFalse(godCardZeus.askBuild(i_src, j_src, i_src, j_src, true));
     }
 
     /**
