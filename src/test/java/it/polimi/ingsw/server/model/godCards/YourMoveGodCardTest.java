@@ -109,4 +109,17 @@ public class  YourMoveGodCardTest {
 
     }
 
+    @Test
+    public void apolloTest() {
+        GodCard god = parser.createCard(mePlayer, "Apollo");
+
+        god.setGameMap(testBoard);
+        god.startTurn();
+
+        assertEquals(enemyBuilder2, testBoard.getCell(2,2).getBuilder());
+        assertTrue(god.move(1,1,2,2));
+        assertEquals(myBuilder1, testBoard.getCell(2,2).getBuilder());
+        assertEquals(enemyBuilder2, testBoard.getCell(1,1).getBuilder());
+    }
+
 }

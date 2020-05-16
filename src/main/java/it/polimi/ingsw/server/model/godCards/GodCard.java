@@ -16,6 +16,7 @@ import it.polimi.ingsw.server.model.Player;
  * GodCard manages move and build logic interacting with the IslandBoard gameMap.
  */
 public class GodCard {
+    public static int maxHeightDifference = 1;
     private final String name;
     private final String description;
     protected final Player player;
@@ -164,9 +165,6 @@ public class GodCard {
         return built;
     }
 
-    public boolean build(int i_src, int j_src, int i_dst, int j_dst) {
-        return build(i_src, j_src, i_dst, j_dst, false);
-    }
 
     /**
      * @author thomas
@@ -205,8 +203,7 @@ public class GodCard {
      * @return Returns true if the required move has distance of one, height difference between destination cell and
      * source is less than one and there isn't a dome or an occupant on destination Cell.
      */
-    public boolean askMove(int i_src, int j_src, int i_dst, int j_dst)
-    {
+    public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
         Cell src;
         Cell dst;
 
@@ -215,8 +212,9 @@ public class GodCard {
 
         return src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) &&
                 //IslandBoard.distanceOne(src, dst) &&
-                IslandBoard.heightDifference(src, dst) <= 1 && !dst.isDomePresent() && !dst.isOccupied() &&
-                gameMap.check(new Event(Event.EventType.MOVE, src, dst));
+                IslandBoard.heightDifference(src, dst) <= maxHeightDifference &&
+                !dst.isDomePresent() && !dst.isOccupied() && gameMap.check(new Event(Event.EventType.MOVE, src, dst)) &&
+                dst != src;
 
     }
 

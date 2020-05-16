@@ -152,7 +152,7 @@ class YourBuildGodCardTest {
         gameMap.getCell(i_src+1,j_src+1).addBlock();
         godCardDemeter.step = 1;
 
-        godCardDemeter.build(i_src, j_src, i_src +1, j_src+1);
+        godCardDemeter.build(i_src, j_src, i_src +1, j_src+1, false);
 
 
         godCardDemeter.step = 2; // it means it's at the second build
@@ -174,7 +174,7 @@ class YourBuildGodCardTest {
 
         godCardHephaestus.step = 1;
 
-        godCardHephaestus.build(i_src, j_src, i_src +1, j_src+1);
+        godCardHephaestus.build(i_src, j_src, i_src +1, j_src+1, false);
 
         godCardHephaestus.step = 2; // it means it's at the second build
         /*
@@ -206,7 +206,7 @@ class YourBuildGodCardTest {
         godCardHestia.move(i_src,j_src,i_src+1, j_src+1);
 
         assertTrue(godCardHestia.askBuild(i_src+1, j_src+1, i_src,j_src,false));
-        godCardHestia.build(i_src+1, j_src+1, i_src,j_src);
+        godCardHestia.build(i_src+1, j_src+1, i_src,j_src, false);
 
         assertFalse(godCardHestia.askBuild(i_src+1, j_src+1, i_src, j_src+1,false));
 

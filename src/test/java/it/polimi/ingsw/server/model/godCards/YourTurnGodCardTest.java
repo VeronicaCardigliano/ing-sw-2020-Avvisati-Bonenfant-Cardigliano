@@ -44,12 +44,12 @@ public class YourTurnGodCardTest {
         prometheusCard.startTurn();
 
         assertEquals("BOTH", prometheusCard.currState);
-        assertTrue(prometheusCard.build(2,2,2,3));
+        assertTrue(prometheusCard.build(2,2,2,3, false));
         assertEquals("MOVE", prometheusCard.currState);
         assertFalse(prometheusCard.askMove(2,2,2,3));
         assertTrue(prometheusCard.move(2,2,3,2));
         assertEquals("BUILD", prometheusCard.currState);
-        assertTrue(prometheusCard.build(3,2,2,2));
+        assertTrue(prometheusCard.build(3,2,2,2, false));
 
     }
 }

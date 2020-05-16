@@ -139,6 +139,13 @@ public abstract class ModelObservable {
             System.out.println("builder movement observer is not set");
     }
 
+    public void notifyBuilderPushed(String nickname, Coordinates src, Coordinates dst) {
+        if(builderMovementObserver != null)
+            builderMovementObserver.onBuilderPushed(nickname, src, dst);
+        else
+            System.out.println("builder movement observer is not set");
+    }
+
     public void notifyBuilderBuild (String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result){
         if (builderBuiltObserver != null)
             builderBuiltObserver.onBuilderBuild(nickname, src, dst, dome, result);

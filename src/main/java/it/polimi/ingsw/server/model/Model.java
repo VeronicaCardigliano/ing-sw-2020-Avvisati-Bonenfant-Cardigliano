@@ -385,7 +385,7 @@ public class Model extends ModelObservableWithSelect {
     /**
      * This method is called after every move, to control whether the currPlayer has lost (he can't move anywhere)
      */
-    public boolean hasLostDuringMove () {
+    public boolean hasNotLostDuringMove() {
         if (possibleDstBuilder1 == null || possibleDstBuilder2 == null)
             throw new IllegalArgumentException("Possible destinations arrays can't be null ");
 
@@ -393,27 +393,28 @@ public class Model extends ModelObservableWithSelect {
 
             notifyLoss(currPlayer.getNickname());
             deletePlayer(currPlayer.getNickname());
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
      * This method is called after every build, to control whether the currPlayer has lost (he can't build anywhere)
      */
-    public boolean hasLostDuringBuild () {
+    public boolean hasNotLostDuringBuild() {
+
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty() &&
                 possibleDstBuilder1forDome.isEmpty() && possibleDstBuilder2forDome.isEmpty()) {
 
             notifyLoss(currPlayer.getNickname());
             deletePlayer(currPlayer.getNickname());
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     public boolean effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
-        boolean result;
+        boolean result = false;
         boolean correctBuilder = true;
         notifyViewSelection(currPlayer.getNickname());
 
@@ -425,7 +426,8 @@ public class Model extends ModelObservableWithSelect {
             correctBuilder = false;
         }
 
-        result = currPlayer.build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
+        if (correctBuilder)
+            result = currPlayer.build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
 
         //build method increase the currStep of the player
         /*if (result && correctBuilder) {
@@ -440,14 +442,14 @@ public class Model extends ModelObservableWithSelect {
         } else
             notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, false);*/
 
-        notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result && correctBuilder);
+        notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result);
 
-        return result && correctBuilder;
+        return result;
     }
 
     public boolean effectiveMove (Coordinates src, Coordinates dst) {
 
-        boolean result;
+        boolean result = false;
         boolean correctBuilder = true;
         notifyViewSelection(currPlayer.getNickname());
 
@@ -455,12 +457,21 @@ public class Model extends ModelObservableWithSelect {
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
-            notifyWrongInsertion("ERROR: you have to continue the turn with the same " +
-                    "player ");
+            notifyWrongInsertion("ERROR: you have to continue the turn with the same player ");
             correctBuilder = false;
         }
 
-        result = currPlayer.move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
+        if (correctBuilder) {
+            Cell dstCell = gameMap.getCell(dst);
+            Builder possibleEnemyToPush = dstCell.isOccupied() ? dstCell.getBuilder() : null;
+
+            result = currPlayer.move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
+
+            if(result && possibleEnemyToPush != null) {
+               notifyBuilderPushed(possibleEnemyToPush.getPlayer().getNickname(), dst, possibleEnemyToPush.getCell());
+            }
+        }
+
 
         //move method increases the currStep of the player
         /*if (result && correctBuilder) {
@@ -473,10 +484,10 @@ public class Model extends ModelObservableWithSelect {
         } else
             notifyBuilderMovement(currPlayer.getNickname(),src, dst, false);*/
 
-        notifyBuilderMovement(currPlayer.getNickname(),src, dst, result && correctBuilder);
+        notifyBuilderMovement(currPlayer.getNickname(),src, dst, result);
 
 
-        return result && correctBuilder;
+        return result;
     }
 
     public void findPossibleDestinations () {
@@ -489,7 +500,7 @@ public class Model extends ModelObservableWithSelect {
                 //View has to obtain the list of the possible moves for both builders
                 possibleDstBuilder1 = possibleDstCells(0, false);
                 possibleDstBuilder2 = possibleDstCells(1, false);
-                if (!hasLostDuringMove()) {
+                if (hasNotLostDuringMove()) {
                     notifyPossibleMoves(possibleDstBuilder1, possibleDstBuilder2);
                 }
                 break;
@@ -500,7 +511,7 @@ public class Model extends ModelObservableWithSelect {
                 possibleDstBuilder2 = possibleDstCells(1,false);
                 possibleDstBuilder1forDome = possibleDstCells(0,true);
                 possibleDstBuilder2forDome = possibleDstCells(1,true);
-                if (!hasLostDuringBuild()) {
+                if (hasNotLostDuringBuild()) {
                     notifyPossibleBuilds(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
                 }
                 break;

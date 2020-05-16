@@ -26,6 +26,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     //Map of each player and the coordinates of his builders
     protected static Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
 
+    private Coordinates currentTurnBuilderPos;
     private static Set<String> chosenColors = new HashSet<>();
     private static int validGodChoices;
     //private static Map<String, String> godDescriptions = new HashMap<>();
@@ -92,7 +93,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     }
 
     private void checkLeaving(String string) {
-        if (string.equals("quit") || string.equals("QUIT") || string.equals("Quit")) {
+        if (string.toUpperCase().equals("QUIT")) {
             notifyDisconnection(nickname);
         }
     }
@@ -181,7 +182,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             inputString = input.nextLine();
             checkLeaving(inputString);
             String chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
-            //notifyChosenMatchGod(chosenCard);
+            notifyGodCardChoice(null, chosenCard);
             //dopo questa notify devo avere una update che mi dica se è andata a buon fine -> aggiungo alle chosenGodCards
             // o meno -> richiedo
         }
@@ -264,6 +265,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         notifySetupBuilders(nickname, selectedCellBuilder1, selectedCellBuilder2);
     }
 
+    //TODO: same for END or CONTINUE
     /**
      * Asks the player to decide the next step if he can both move or build
      */
@@ -309,6 +311,26 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         return new Coordinates(x,y);
     }
 
+    private Coordinates chooseTurnBuilder () {
+        Coordinates src;
+        System.out.println("\nInsert the coordinates of the builder you want to use ");
+        src = coordinatesInsertion();
+
+        //verifies that the selected cell contains a valid builder
+        while (!(Coordinates.equals(occupiedCells.get(nickname).get(0), src) ||
+                Coordinates.equals(occupiedCells.get(nickname).get(1), src))) {
+
+            System.out.println("\nInvalid coordinates, select a cell with a valid builder");
+            src = coordinatesInsertion();
+        }
+
+        if (Coordinates.equals(occupiedCells.get(nickname).get(0), src))
+            chosenBuilderNum = 1;
+        else
+            chosenBuilderNum = 2;
+        return src;
+    }
+
     /**
      * This method asks the player to decide where and what to build choosing from the possible destinations
      */
@@ -318,6 +340,10 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         Coordinates dst;
         Set<Coordinates> possibleDstBuilder;
         boolean buildDome = false;
+
+        if (chosenBuilderNum == 0) {
+            currentTurnBuilderPos = chooseTurnBuilder();
+        }
 
         if ((!possibleDstBuilder1forDome.isEmpty() && chosenBuilderNum == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
                 chosenBuilderNum == 2)) {
@@ -358,7 +384,10 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             dst = coordinatesInsertion();
         }
 
-        notifyBuild(nickname, dstMove, dst, buildDome);
+        if(currentTurnBuilderPos == null)
+            notifyBuild(nickname, dstMove, dst, buildDome);
+        else
+            notifyBuild(nickname, currentTurnBuilderPos, dst, buildDome);
     }
 
     /**
@@ -371,32 +400,21 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
 
         cliGameMap.print(occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNum);
 
-        System.out.println("\nInsert the coordinates of the builder you want to use ");
+        if (chosenBuilderNum == 0)
+            src = chooseTurnBuilder();
+        else
+            src = currentTurnBuilderPos;
 
-        src = coordinatesInsertion();
 
-        //verifies that the selected cell contains a valid builder
 
-        while (!(Coordinates.equals(occupiedCells.get(nickname).get(0), src) ||
-                Coordinates.equals(occupiedCells.get(nickname).get(1), src))) {
-
-            System.out.println("\nInvalid coordinates, select a cell with a valid builder");
-            src = coordinatesInsertion();
-        }
-
-        if (Coordinates.equals(occupiedCells.get(nickname).get(0), src)) {
-            chosenBuilderNum = 1;
+        if (chosenBuilderNum == 1) {
             possibleDstBuilder = possibleDstBuilder1;
+            cliGameMap.print(occupiedCells, possibleDstBuilder, null, chosenBuilderNum);
         }
         else {
-            chosenBuilderNum = 2;
             possibleDstBuilder = possibleDstBuilder2;
-        }
-
-        if (chosenBuilderNum == 1)
-            cliGameMap.print(occupiedCells, possibleDstBuilder, null, chosenBuilderNum);
-        else
             cliGameMap.print(occupiedCells, null, possibleDstBuilder, chosenBuilderNum);
+        }
 
         System.out.println("Insert the coordinates of where you want to move ");
         dstMove = coordinatesInsertion();
@@ -419,7 +437,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         if (!result) {
             System.out.println("Invalid builders placement.");
-            placeBuilders();
+            //placeBuilders();
         }
         else {
             ArrayList<Coordinates> selectedCells = new ArrayList<>();
@@ -498,7 +516,8 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             //askGodCard(godDescriptions, chosenGodCards);
         }
         else {
-            System.out.println ("GodCard assigned correctly.");
+            if (this.nickname.equals(nickname))
+                System.out.println ("GodCard assigned correctly.");
             setChosenGodCard(nickname, godCard);
         }
     }
@@ -584,6 +603,18 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             }
             occupiedCells.put(nickname, selectedCells);
             cliGameMap.print(occupiedCells, null, null, chosenBuilderNum);
+        }
+    }
+
+    @Override
+    public void onBuilderPushed(String nickname, Coordinates src, Coordinates dst) {
+        if (occupiedCells.get(nickname).get(0).equals(src)) {
+            occupiedCells.get(nickname).remove(0);
+            occupiedCells.get(nickname).add(0, dst);
+        }
+        else if(occupiedCells.get(nickname).get(1).equals(src)) {
+            occupiedCells.get(nickname).remove(1);
+            occupiedCells.get(nickname).add(1, dst);
         }
     }
 

@@ -117,6 +117,10 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
                     notifyBuilderMovement(parser.getAttribute(Messages.NAME), parser.getSrcCoordinates(), parser.getDstCoordinates(), parser.getResult());
                     break;
 
+                case Messages.BUILDER_PUSHED:
+                    notifyBuilderPushed(parser.getAttribute(Messages.NAME), parser.getSrcCoordinates(), parser.getDstCoordinates());
+                    break;
+
                 case Messages.BUILD:
                     notifyBuilderBuild(parser.getAttribute(Messages.NAME), parser.getSrcCoordinates(), parser.getDstCoordinates(), parser.getBuildDome(), parser.getResult());
                     break;

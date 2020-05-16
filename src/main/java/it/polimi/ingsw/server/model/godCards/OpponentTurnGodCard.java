@@ -64,8 +64,8 @@ public class OpponentTurnGodCard extends GodCard {
     }
 
     @Override
-    public boolean build(int i_src, int j_src, int i_dst, int j_dst) {
-        boolean result = super.build(i_src, j_src, i_dst, j_dst);
+    public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
+        boolean result = super.build(i_src, j_src, i_dst, j_dst, buildDome);
 
         check();
 

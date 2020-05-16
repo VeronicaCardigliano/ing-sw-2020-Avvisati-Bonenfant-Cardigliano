@@ -131,7 +131,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     @Override
     public void onLossUpdate(String nickname) {
-        selectedView.send(Messages.lostGame());
+        selectedView.send(Messages.lostGame(nickname));
 
         //cleanSelection();
     }
@@ -193,6 +193,12 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
             selectedView.send(Messages.move(nickname, src, dst, false));
 
         //cleanSelection();
+    }
+
+    @Override
+    public void onBuilderPushed(String nickname, Coordinates src, Coordinates dst) {
+        for(VirtualView view : views)
+            view.send(Messages.builderPushed(nickname, src, dst));
     }
 
     /**

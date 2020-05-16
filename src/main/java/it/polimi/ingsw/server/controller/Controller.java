@@ -124,7 +124,7 @@ public class Controller extends AbstractController implements ConnectionObserver
 
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname) &&
                 model.getCurrPlayer().getGodCard().getCurrState().equals("BUILD") &&
-                model.effectiveBuild(src, dst, buildDome) && !model.hasLostDuringBuild()) {
+                model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild()) {
 
                 manageNextState(nickname);
             }
@@ -135,7 +135,7 @@ public class Controller extends AbstractController implements ConnectionObserver
 
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname) &&
                 model.getCurrPlayer().getGodCard().getCurrState().equals("MOVE") && model.effectiveMove(src, dst) &&
-                !model.hasLostDuringMove() && !model.endGame()) {
+                model.hasNotLostDuringMove() && !model.endGame()) {
 
                 manageNextState(nickname);
             }

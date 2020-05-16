@@ -17,6 +17,7 @@ public abstract class Messages {
     public static final String MOVE = "move";
     public static final String BUILD = "build";
     public static final String BUILDERS_PLACEMENT = "buildersPlacement";
+    public static final String BUILDER_PUSHED = "builderPushed";
     public static final String POSSIBLE_BUILD_DESTINATIONS = "possibleBuildDestinations";
     public static final String POSSIBLE_MOVE_DESTINATIONS = "possibleMoveDestinations";
     public static final String ENDGAME = "endGame";
@@ -129,9 +130,9 @@ public abstract class Messages {
         return message.toString();
     }
 
-    public static String lostGame() {
+    public static String lostGame(String nickname) {
         JSONObject message = new JSONObject();
-        message.put(TYPE, LOST_UPDATE);
+        message.put(TYPE, LOST_UPDATE).put(NAME, nickname);
 
         return message.toString();
     }
@@ -164,6 +165,10 @@ public abstract class Messages {
     public static String move(String nickname, Coordinates src, Coordinates dst, boolean result) {
 
         return (new JSONObject(move(nickname,src, dst))).put(RESULT, result).toString();
+    }
+
+    public static String builderPushed(String nickname, Coordinates src, Coordinates dst) {
+        return (new JSONObject()).put(TYPE, BUILDER_PUSHED).put(NAME, nickname).put(SRC, fromCoordinates(src)).put(DST, fromCoordinates(dst)).toString();
     }
 
 

@@ -57,7 +57,7 @@ public class Player {
     }
 
     public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
-        return godCard.build(i_src, j_src, i_dst, j_dst);
+        return godCard.build(i_src, j_src, i_dst, j_dst, buildDome);
     }
 
     public void setBuilders (Builder builder1, Builder builder2) {
