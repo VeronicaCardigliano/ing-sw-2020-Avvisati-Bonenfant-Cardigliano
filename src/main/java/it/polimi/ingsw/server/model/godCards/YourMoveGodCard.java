@@ -7,8 +7,6 @@ import it.polimi.ingsw.server.model.Player;
 import java.util.ArrayList;
 import java.util.Map;
 
-import static java.lang.Math.max;
-
 /**
  * @author giulio
  *
@@ -17,6 +15,7 @@ import static java.lang.Math.max;
  */
 public class YourMoveGodCard extends GodCard {
 
+    public static int maxHeightDifference = 1;
     private int pushForce;
     private boolean secondMoveDiffDst;
     private Cell firstSrcCell;
@@ -32,57 +31,58 @@ public class YourMoveGodCard extends GodCard {
 
     }
 
+    /*
     private boolean canMoveAgain(){
 
         boolean canMoveAgain = false;
 
-        for (int t = 0; t < this.states.size(); t++) {
-            for (int j = step; j < states.get(t).size(); j++){
-                if (states.get(t).get(j) == "MOVE") canMoveAgain = true;
+        for (ArrayList<String> state : this.states) {
+
+            for (int j = step; j < state.size(); j++) {
+                if (state.get(j).equals("MOVE")) {
+                    canMoveAgain = true;
+                    break;
+                }
             }
         }
         return canMoveAgain;
     }
+    */
 
     @Override
     public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
 
         boolean result = false;
 
-        //aggiustare il set di firstSrcCell e il retun via boolean
-        if (step == 0)
+        if (this.step == 0)
             firstSrcCell = gameMap.getCell(i_src, j_src);
-            //here i should not care about secondMoveDiffDst because firstSrcCell is empty!
 
-            //cannot move basically
-            if (!super.askMove(i_src, j_src, i_dst, j_dst)) {
+        //checks if cannot move for basic rules
+        if (!super.askMove(i_src, j_src, i_dst, j_dst)) {
 
-                //cannot move using pushPower
-                if (!askMove(i_src, j_src, i_dst, j_dst) || pushForce == 0) {
-                    result = false;
-                } else //can move using pushing power (but there could be a dome anyway or push cannot be completed
-                {
-                    if(askMove(i_src, j_src, i_dst, j_dst) && askPush(i_src, j_src, i_dst, j_dst) ) {
-                        if (secondMoveDiffDst && firstSrcCell.getI() != i_dst && firstSrcCell.getJ() != j_dst)
-                            result = false;
-                        else {
-                            push(i_src, j_src, i_dst, j_dst);
-                            //here i can call super.move sure that all previous control are enough to say that this
-                            // is a valid move. Test should assert that this function will return true
-                            super.move(i_src, j_src, i_dst, j_dst);
-                            result = true;
-                        }
+            //checks if can move using pushPower
+            if (pushForce != 0 && askMove(i_src, j_src, i_dst, j_dst) && askPush(i_src, j_src, i_dst, j_dst)) {
+
+                    if (secondMoveDiffDst && firstSrcCell.getI() != i_dst && firstSrcCell.getJ() != j_dst)
+                        result = false;
+                    else {
+                        push(i_src, j_src, i_dst, j_dst);
+                        //here i can call super.move sure that all previous control are enough to say that this
+                        // is a valid move. Test should assert that this function will return true
+                        super.move(i_src, j_src, i_dst, j_dst);
+                        result = true;
                     }
-                    else result = false;
-                }
-            } else {
-                //getting here means i can move as default
-                if (firstSrcCell.getJ() == j_dst && secondMoveDiffDst && firstSrcCell.getI() == i_dst)
-                    result = false;
-                else
-                    result = super.move(i_src, j_src, i_dst, j_dst);
             }
-        if (currState == "BUILD") firstSrcCell = null;
+        }
+        else {
+            //getting here means i can move as default
+            if (secondMoveDiffDst && firstSrcCell.getJ() == j_dst && firstSrcCell.getI() == i_dst)
+                result = false;
+            else
+                result = super.move(i_src, j_src, i_dst, j_dst);
+        }
+        if (this.currState.equals("BUILD"))
+            firstSrcCell = null;
 
         return result;
     }
@@ -129,11 +129,10 @@ public class YourMoveGodCard extends GodCard {
     public boolean askMove(int i_src, int j_src, int i_dst, int j_dst){
 
 
-        return  gameMap.heightDifference(i_src, j_src, i_dst, j_dst) < 2 &&
+        return  gameMap.heightDifference(i_src, j_src, i_dst, j_dst) <= maxHeightDifference &&
                 gameMap.heightDifference(i_src, j_src, i_dst, j_dst) >= 0 &&
-                IslandBoard.distanceOne(i_src, j_src, i_dst, j_dst) &&
-
-                !gameMap.getCell(i_src, i_dst).isDomePresent();
+                IslandBoard.distanceOne(i_src, j_src, i_dst, j_dst) && !gameMap.getCell(i_src, i_dst).isDomePresent() &&
+                !((i_src == i_dst) && (j_src == j_dst));
 
     }
 

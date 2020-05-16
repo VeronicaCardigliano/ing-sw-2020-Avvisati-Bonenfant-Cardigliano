@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,12 +44,6 @@ class YourBuildGodCardTest {
         player2.setBuilders(builder3, builder4);
 
         System.out.println("giving player1 Atlas card...");
-
-        ArrayList<ArrayList<String>> states = new ArrayList<>();
-        ArrayList<String> tmp = new ArrayList<>();
-        tmp.add("MOVE");
-        tmp.add("BUILD");
-        states.add(tmp);
 
         /*godCardAtlas = new YourBuildGodCard(player, "", "", states, 1,
                 true, false, false,false );
@@ -163,9 +156,6 @@ class YourBuildGodCardTest {
 
 
         godCardDemeter.step = 2; // it means it's at the second build
-        /*
-        assertEquals(i_src+1, godCardDemeter.getFirstBuildDst().getI());
-        assertEquals(j_src+1, godCardDemeter.getFirstBuildDst().getJ());*/ //TODO problemi col parser (più facile se uso una godCard
 
         assertFalse(godCardDemeter.askBuild(i_src, j_src, i_src +1, j_src +1, false));
 

@@ -35,10 +35,6 @@ public class YourBuildGodCard extends GodCard {
 
     }
 
-    protected Cell getFirstBuildDst() {
-        return firstBuildDst;
-    }
-
     /**
      * This override adds the powers of Hephaestus and Demeter, which can build two times but in a specific way
      * (the first one in the same space, the second one in a new destination)
@@ -51,7 +47,8 @@ public class YourBuildGodCard extends GodCard {
         Cell src = gameMap.getCell(i_src, j_src);
         Cell dst = gameMap.getCell(i_dst, j_dst);
 
-        boolean buildHeightCondition = (dst.getHeight() < 3 && !buildDome) || (dst.getHeight() == 3 && buildDome);
+        boolean buildHeightCondition = (dst.getHeight() < IslandBoard.maxHeight && !buildDome) ||
+                (dst.getHeight() == IslandBoard.maxHeight && buildDome);
 
         if (super.step == 2){
             if (!secondBuildDiffDest && secondBuildNotDome)
@@ -60,22 +57,23 @@ public class YourBuildGodCard extends GodCard {
             else if (secondBuildDiffDest && !secondBuildNotDome)
                 //Demeter GodCard effect
                 extraConditions = dst != firstBuildDst;
-            else if (!secondBuildDiffDest && extraBuildNotPerimeter) {
+
+            if (!secondBuildDiffDest && !secondBuildNotDome && extraBuildNotPerimeter) {
                 //Hestia GodCard effect
 
                     extraConditions = (i_dst != 0 && i_dst != IslandBoard.dimension - 1 &&
                                        j_dst != 0 && j_dst != IslandBoard.dimension - 1);
-
             }
         }
 
         return (super.askBuild(i_src, j_src, i_dst, j_dst,buildDome) || (src.getBuilder() != null &&
                 src.getBuilder().getPlayer().equals(player) && !dst.isDomePresent() && !dst.isOccupied() && IslandBoard.distanceOne(src, dst) &&
                 //adding Atlas possibility to the normal return value, removing stdBuildHeightCondition flag
-                canBuildDomeEverywhere && (dst.getHeight() < 3 || buildDome)) ||
+                canBuildDomeEverywhere && (dst.getHeight() < IslandBoard.maxHeight || buildDome)) ||
                 (src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) && !dst.isDomePresent() &&
                 //adding Zeus possibility to the normal return value, removing distanceOne = true and !isOccupied() flags
-                 buildHeightCondition && (blockUnderItself && !buildDome && src.getHeight() < 3) && src.equals(dst))) && extraConditions;
+                 buildHeightCondition && blockUnderItself && !buildDome && src.getHeight() < IslandBoard.maxHeight &&
+                        src.equals(dst))) && extraConditions;
     }
 
     /**

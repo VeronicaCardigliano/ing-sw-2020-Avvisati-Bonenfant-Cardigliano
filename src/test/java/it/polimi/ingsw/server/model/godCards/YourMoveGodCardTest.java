@@ -56,7 +56,9 @@ public class  YourMoveGodCardTest {
     public void domeCheck() {
 
         GodCard god = parser.createCard(mePlayer, "Minotaur");
+
         god.setGameMap(testBoard);
+        god.startTurn();
 
         assertFalse(god.move(1, 1, 2, 2)); //in 3,3 there is a dome
 
@@ -66,7 +68,9 @@ public class  YourMoveGodCardTest {
     public void pushAndMove(){
 
         GodCard god = parser.createCard(mePlayer, "Minotaur");
+
         god.setGameMap(testBoard);
+        god.startTurn();
 
         assertTrue(god.move(1,1,2,1)); //this pushes and height difference is ok
 
@@ -80,7 +84,10 @@ public class  YourMoveGodCardTest {
     @Test
     public void pushAtCorner(){
         GodCard god = parser.createCard(mePlayer, "Minotaur");
+
         god.setGameMap(testBoard);
+        god.startTurn();
+
         assertFalse(god.move(1,1,0,0));
         //nothing has changed
         assertSame(testBoard.getCell(0,0).getBuilder(), enemyBuilder1);
@@ -92,8 +99,8 @@ public class  YourMoveGodCardTest {
     public void secondMoveDiffDist(){
 
         GodCard god = parser.createCard(mePlayer, "Artemis");
-        god.setGameMap(testBoard);
 
+        god.setGameMap(testBoard);
         god.startTurn();
 
         assertTrue(god.move(1,1,1,0));

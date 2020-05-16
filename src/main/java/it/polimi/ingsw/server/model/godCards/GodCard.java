@@ -74,7 +74,7 @@ public class GodCard {
 
     public void forceState(String state) {
         if(!state.equals("MOVE") && !state.equals("BUILD"))
-            throw new IllegalArgumentException("State can be etheir MOVE or BUILD");
+            throw new IllegalArgumentException("State must be either MOVE or BUILD");
 
         this.currState = state;
 
@@ -92,8 +92,6 @@ public class GodCard {
      * @author veronica
      *
      * Method that sets the next step according to the previous one.
-     *
-     * @return
      */
     private void setNextState(String previousStep) {
         step++;
@@ -239,8 +237,8 @@ public class GodCard {
 
         Event.EventType type = buildDome ? Event.EventType.BUILD_DOME : Event.EventType.BUILD;
 
-
-        boolean buildHeightCondition = (dst.getHeight() < 3 && !buildDome) || (dst.getHeight() == 3 && buildDome);
+        boolean buildHeightCondition = (dst.getHeight() < IslandBoard.maxHeight && !buildDome) ||
+                (dst.getHeight() == IslandBoard.maxHeight && buildDome);
 
         return src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) &&
                 IslandBoard.distanceOne(src, dst) &&
@@ -255,7 +253,7 @@ public class GodCard {
     public boolean winCondition() {
 
         return event != null && event.getType() == Event.EventType.MOVE && event.heightDifference() == 1 &&
-                event.getDstBlockHeight() == 3;
+                event.getDstBlockHeight() == IslandBoard.maxHeight;
 
     }
 

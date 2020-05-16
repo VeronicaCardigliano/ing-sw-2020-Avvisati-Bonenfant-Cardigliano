@@ -9,7 +9,6 @@ import it.polimi.ingsw.server.parser.GodCardParser;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author veronica
@@ -20,6 +19,8 @@ import java.util.stream.Collectors;
 public class Model extends ModelObservableWithSelect {
     private final static String jsonPath = "src/main/java/it/polimi/ingsw/server/parser/cards.json";
 
+    private static final int maxNumberOfPlayers = 3;
+    private static final int minNumberOfPlayers = 2;
     private final ArrayList<Player> players = new ArrayList<>();
     private int numPlayers;
     private final IslandBoard gameMap;
@@ -117,13 +118,15 @@ public class Model extends ModelObservableWithSelect {
         notifyPlayerTurn(currPlayer.getNickname());
     }
 
+    /*
     /**
      * @return returns a copy of the list of players so that external methods can't modify the ArrayList
-     */
+
 
     public Set<String> getNicknames() {
         return this.players.stream().map(Player::getNickname).collect(Collectors.toSet());
     }
+    */
 
     public ArrayList<Player> getPlayers(){
         return new ArrayList<>(players);
@@ -161,13 +164,15 @@ public class Model extends ModelObservableWithSelect {
     }
 
     public boolean setNumberOfPlayers(int num){
-        if (num == 2 || num == 3) {
-            numPlayers = num;
-            return true;
-        }
-        else
-            notifyWrongNumber(); //notifies the first view in viewmanager
 
+        for (int i = minNumberOfPlayers; i <= maxNumberOfPlayers; i++) {
+            if (num == i) {
+                numPlayers = num;
+                return true;
+            }
+        }
+
+        notifyWrongNumber(); //notifies the first view in viewManager
         return false;
     }
 

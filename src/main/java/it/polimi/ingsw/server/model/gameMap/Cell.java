@@ -4,7 +4,7 @@ package it.polimi.ingsw.server.model.gameMap;
  * @author giulio
  *
  * Mutable Cell class. Each cell has an height and can have an Occupant or a Dome. It's not possible to
- * build an additional block if height = 3 or a dome has been set.
+ * build an additional block if height = IslandBoard.maxHeight or a dome has been set.
  */
 
 public class Cell extends Coordinates{
@@ -39,7 +39,7 @@ public class Cell extends Coordinates{
     public boolean addBlock() {
         boolean added = false;
 
-        if(!domePresent && height < 3) {
+        if(!domePresent && height < IslandBoard.maxHeight) {
             height++;
             added = true;
         }

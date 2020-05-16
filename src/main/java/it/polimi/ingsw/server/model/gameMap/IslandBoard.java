@@ -15,6 +15,7 @@ import java.util.Set;
 public class IslandBoard {
 
     public final static int dimension = 5;
+    public final static int maxHeight = 3;
 
     private Cell[][] matrix = new Cell[dimension][dimension];
     private Set<OpponentTurnGodCard> constraintsList;
@@ -134,7 +135,6 @@ public class IslandBoard {
     public void loadConstraint() {
         if(constraintToActivate != null)
             constraintsList.add(constraintToActivate);
-        constraintToActivate = null;
     }
 
 }
