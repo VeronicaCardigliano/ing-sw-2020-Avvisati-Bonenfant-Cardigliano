@@ -13,29 +13,36 @@ import static org.junit.jupiter.api.Assertions.*;
 public class OpponentTurnGodCardTest {
 
     static GodCard athena;
+    static GodCard limus;
     static GodCard defaultCard;
 
     static IslandBoard gameMap;
     static Player player1;
     static Player player2;
+    static Player player3;
 
     static Builder athena1;
     static Builder athena2;
     static Builder default1;
     static Builder default2;
+    static Builder limus1;
+    static Builder limus2;
 
     @BeforeAll
     public static void setup() {
         player1 = new Player("player1");
         player2 = new Player("player2");
+        player3 = new Player("player3");
 
         GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
 
         athena = parser.createCard(player1, "Athena");
         defaultCard = parser.createCard(player2, "default");
+        limus = parser.createCard(player3, "Limus");
 
         player1.setGodCard(athena);
         player2.setGodCard(defaultCard);
+        player3.setGodCard(limus);
 
         athena1 = new Builder(player1);
         athena2 = new Builder(player1);
@@ -43,6 +50,10 @@ public class OpponentTurnGodCardTest {
         default1 = new Builder(player2);
         default2 = new Builder(player2);
 
+        limus1 = new Builder(player3);
+        limus2 = new Builder(player3);
+
+        player2.setBuilders(default1, default2);
 
     }
 
@@ -52,9 +63,7 @@ public class OpponentTurnGodCardTest {
 
         athena.setGameMap(gameMap);
         defaultCard.setGameMap(gameMap);
-
-        gameMap.getCell(2,2).setOccupant(athena1);
-        gameMap.getCell(4,4).setOccupant(athena2);
+        limus.setGameMap(gameMap);
 
         gameMap.getCell(0,0).setOccupant(default1);
         gameMap.getCell(0,4).setOccupant(default2);
@@ -64,6 +73,9 @@ public class OpponentTurnGodCardTest {
     @Test
     public void athenaTest() {
         System.out.println("#Testing Athena behavior...");
+
+        gameMap.getCell(2,2).setOccupant(athena1);
+        gameMap.getCell(4,4).setOccupant(athena2);
 
         //starting turn for player2
         defaultCard.startTurn();
@@ -99,9 +111,52 @@ public class OpponentTurnGodCardTest {
         assertTrue(gameMap.getCell(0,2).addBlock());
         assertFalse(defaultCard.askMove(0,1,0,2));
 
+    }
 
+    @Test
+    public void limusTest(){
 
+        System.out.println("#Testing Limus behavior...");
 
+        player3.setBuilders(limus1, limus2);
+
+        gameMap.getCell(2,2).setOccupant(limus1);
+        gameMap.getCell(4,4).setOccupant(limus2);
+
+        //Stop a build on neighbourn space, allow only if it is
+        //a dome to complete a tower
+
+        //starting turn for player2
+        defaultCard.startTurn();
+
+        assertTrue(defaultCard.move(0,4, 1, 3));
+        //cannot build near limus
+        assertFalse(defaultCard.askBuild(1,3,2,3, false));
+        assertFalse(defaultCard.askBuild(1,3,1,2, false));
+
+        //now we add 3 blocks in Cell(1,2) to check the build dome
+        gameMap.getCell(1,2).addBlock();
+        gameMap.getCell(1,2).addBlock();
+        gameMap.getCell(1,2).addBlock();
+
+        //now it should build the dome
+        assertTrue(defaultCard.askBuild(1,3, 1,2,true));
+        assertTrue(defaultCard.build(1,3, 1,2,true));
+
+        //now it's limus turn (player 3)
+        limus.startTurn();
+
+        assertTrue(limus.askMove(2,2,1,1));
+        assertTrue(limus.move(2,2,1,1));
+        assertTrue(limus.build(1,1,0,1, false));
+
+        //back to player 2
+        defaultCard.startTurn();
+
+        assertTrue(defaultCard.move(0,0,0,1));
+        assertFalse(defaultCard.build(1,0,1,2,false));
+        //now what? the builder can't do anything?
+        //It should end the game and be removed
     }
 
 }

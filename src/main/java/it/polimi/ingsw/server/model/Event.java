@@ -2,7 +2,13 @@ package it.polimi.ingsw.server.model;
 
 
 import it.polimi.ingsw.server.model.gameMap.Cell;
+import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author thomas
@@ -18,6 +24,7 @@ public class Event {
     }
 
     private final EventType type;
+
     private final Cell srcCell;
     private final Cell dstCell;
 
@@ -47,5 +54,10 @@ public class Event {
     public boolean builtDome() {
         return type == EventType.BUILD_DOME;
     }
+
+    public Cell getSrcCell() { return srcCell; }
+
+    public Cell getDstCell() { return dstCell; }
+
 
 }

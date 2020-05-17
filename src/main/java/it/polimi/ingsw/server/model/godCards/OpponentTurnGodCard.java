@@ -2,6 +2,8 @@ package it.polimi.ingsw.server.model.godCards;
 
 import it.polimi.ingsw.server.model.Event;
 import it.polimi.ingsw.server.model.Player;
+import it.polimi.ingsw.server.model.gameMap.Builder;
+import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -14,10 +16,10 @@ import java.util.Map;
 public class OpponentTurnGodCard extends GodCard {
 
     private final boolean activeOnMoveUp;
-    //private final boolean alwaysActive;
+    private final boolean alwaysActive;
 
     private final boolean blockMoveUp;
-    //private final boolean limusPower;
+    private final boolean limusPower;
 
     /**
      * GodCard constructor. Parses JSON
@@ -29,15 +31,19 @@ public class OpponentTurnGodCard extends GodCard {
                                Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
         super(player, name, description, states);
 
+        //this.event.
         this.activeOnMoveUp = flagParameters.get("activeOnMoveUp");
         this.blockMoveUp = flagParameters.get("blockMoveUp");
+        this.limusPower = flagParameters.get("limusPower");
+        this.alwaysActive = flagParameters.get("alwaysActive");
 
     }
 
     @Override
     public void startTurn() {
         super.startTurn();
-
+        if (blockMoveUp)
+            gameMap.addConstraint(this);
         //when the turn starts previous contraint from this card has to be removed
         gameMap.removeConstraint(this);
     }
@@ -45,14 +51,22 @@ public class OpponentTurnGodCard extends GodCard {
     public void check() {
         boolean addConstraint = false;
 
-        /*if(alwaysActive)
-            addConstraint = true;*/
+        if(alwaysActive)
+            addConstraint = true;
         //athena power activation
-        /*else*/ if(activeOnMoveUp && event.getType() == Event.EventType.MOVE && event.heightDifference() > 0)
+        else if(activeOnMoveUp && event.getType() == Event.EventType.MOVE && event.heightDifference() > 0)
             gameMap.addConstraint(this);
 
 
     }
+
+
+    @Override
+    public void setGameMap(IslandBoard gameMap) throws IllegalArgumentException{
+        super.setGameMap(gameMap);
+        gameMap.addConstraint(this);
+    }
+
 
     @Override
     public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
@@ -82,7 +96,21 @@ public class OpponentTurnGodCard extends GodCard {
                 allowed = false;
         }
 
-        return allowed;
+        //build event
+        if(futureEvent.getType() == Event.EventType.BUILD ||futureEvent.getType() == Event.EventType.BUILD_DOME) {
+
+            if (limusPower){
+                for (Builder b : player.getBuilders()){
+                    if (Math.abs(b.getCell().getI() - futureEvent.getDstCell().getI()) < 2 &&
+                        Math.abs(b.getCell().getJ() - futureEvent.getDstCell().getJ()) < 2 &&
+                            !(futureEvent.getType() ==  Event.EventType.BUILD_DOME && futureEvent.getDstCell().getHeight() == IslandBoard.maxHeight))
+                        allowed = false;
+                }
+            }
+
+        }
+
+            return allowed;
     }
 }
 

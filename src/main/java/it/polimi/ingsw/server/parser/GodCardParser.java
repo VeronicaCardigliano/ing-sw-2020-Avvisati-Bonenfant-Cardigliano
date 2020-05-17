@@ -97,7 +97,14 @@ public class GodCardParser {
                 case "OPPONENT":
                     flagParameters.put("activeOnMoveUp", godObject.opt("activeOnMoveUp") != null && godObject.getBoolean("activeOnMoveUp"));
                     flagParameters.put("blockMoveUp", godObject.opt("blockMoveUp") != null && godObject.getBoolean("blockMoveUp"));
+                    flagParameters.put("limusPower", godObject.opt("limusPower") != null && godObject.getBoolean(
+                            "limusPower"));
+                    flagParameters.put("alwaysActive", godObject.opt("alwaysActive") != null && godObject.getBoolean(
+                            "alwaysActive"));
                     cardCreated = new OpponentTurnGodCard(player, name, description, states, flagParameters, intParameters);
+
+                    //if (godObject.opt("limusPower") != null && godObject.getBoolean("limusPower"))
+                    //    IslandBoard.constraintsList.add((OpponentTurnGodCard)cardCreated);
                     break;
 
                 case "TURN":
