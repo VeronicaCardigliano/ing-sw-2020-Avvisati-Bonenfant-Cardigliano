@@ -156,7 +156,7 @@ class ModelTest {
 
         //player2
         testModel.getCurrPlayer().startTurn();
-        assertEquals("BOTH", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("REQUIRED", testModel.getCurrStep(testModel.getCurrPlayer()));
         testModel.setStepChoice("BUILD");
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
