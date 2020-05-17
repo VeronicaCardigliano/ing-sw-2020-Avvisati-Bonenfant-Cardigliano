@@ -2,6 +2,7 @@ package it.polimi.ingsw.server.model.godCards;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.Event;
@@ -27,6 +28,7 @@ public class GodCard {
 
     protected ArrayList<ArrayList<String>> states;
     protected ArrayList<ArrayList<String>> statesCopy;
+    protected ArrayList<String> currStateList;
 
     protected Event event;
 
@@ -46,6 +48,7 @@ public class GodCard {
         this.states = states;
 
         statesCopy = new ArrayList<>();
+        currStateList = new ArrayList<>();
 
     }
 
@@ -63,7 +66,7 @@ public class GodCard {
 
         for(ArrayList<String> list : statesCopy)
             if (!currState.equals(list.get(0))) {
-                currState = "BOTH";
+                currState = "REQUIRED";
                 break;
             }
 
@@ -89,6 +92,9 @@ public class GodCard {
         return this.description;
     }
 
+
+    public ArrayList<String> getCurrStateList(){ return currStateList; }
+
     /**
      * @author veronica
      *
@@ -96,6 +102,8 @@ public class GodCard {
      */
     private void setNextState(String previousStep) {
         step++;
+
+        currStateList.clear();
 
         currState = "END";
 
@@ -112,9 +120,14 @@ public class GodCard {
 
                     if (!tmp) {
                         currState = list.get(step);
+                        currStateList.add(list.get(i));
                         tmp = true;
-                    } else if (!currState.equals(list.get(step)))
-                        currState = "BOTH";
+                    } else if (!currState.equals(list.get(step))) {
+                        currState = "REQUIRED";
+                        //This should prevent from saving clones, TODO verify
+                        if (!currStateList.contains(list.get(i)))
+                        currStateList.add(list.get(i));
+                    }
 
                 } else {
                     statesCopy.remove(list);

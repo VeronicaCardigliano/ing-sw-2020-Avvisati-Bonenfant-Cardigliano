@@ -5,6 +5,7 @@ import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +22,6 @@ public abstract class Messages {
     public static final String POSSIBLE_BUILD_DESTINATIONS = "possibleBuildDestinations";
     public static final String POSSIBLE_MOVE_DESTINATIONS = "possibleMoveDestinations";
     public static final String ENDGAME = "endGame";
-    //public static final String SET_BUILDERS = "setBuilders";
     public static final String SET_STEP_CHOICE = "setStepChoice";
     public static final String SET_NUMBER_OF_PLAYERS = "setNumberOfPlayers";
     public static final String SET_GOD_CARD = "setGodCard";
@@ -54,6 +54,7 @@ public abstract class Messages {
     public static final String ASK_NUMBER_OF_PLAYERS = "askNumberOfPlayers";
     public static final String ASK_BUILDERS = "askBuilders";
     public static final String ASK_STEP = "askStep";
+    public static final String POSSIBLE_STEPS = "possibleSteps";
 
 
     //key values
@@ -276,8 +277,12 @@ public abstract class Messages {
 
     public static String askBuilders(){ return (new JSONObject()).put(TYPE, ASK_BUILDERS).toString(); }
 
-    public static String askStep(){
-        return (new JSONObject()).put(TYPE, ASK_STEP).toString();
+    public static String askStep(ArrayList<String> stateList){
+        JSONObject message = new JSONObject();
+        JSONArray arr = new JSONArray();
+        for (String s : stateList)
+            arr.put(s);
+        return message.put(TYPE, ASK_STEP).put(POSSIBLE_STEPS, arr).toString();
     }
 
 

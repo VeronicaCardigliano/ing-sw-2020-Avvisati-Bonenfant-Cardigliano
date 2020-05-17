@@ -33,9 +33,8 @@ public class Controller extends AbstractController implements ConnectionObserver
 
             if (model.setNumberOfPlayers(num)) {
                 model.setNextState();
-                //viewManager.askNickAndDate();
-            } //else
-                //viewManager.askNumberOfPlayers(); //broadcast message
+            }
+
         }
     }
 
@@ -106,7 +105,7 @@ public class Controller extends AbstractController implements ConnectionObserver
                     model.getCurrPlayer().getGodCard().startTurn();
 
                     if(model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-                        viewManager.askStep(model.getCurrPlayer().getNickname());
+                        viewManager.askStep(model.getCurrPlayer().getNickname(), model.getCurrPlayer().getGodCard().getCurrStateList());
                     else {
                         model.findPossibleDestinations();
                     }
@@ -142,17 +141,19 @@ public class Controller extends AbstractController implements ConnectionObserver
     }
 
     private void manageNextState(String nickname) {
+        //here the player must end the turn
         if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
             model.setNextPlayer();
             model.getCurrPlayer().startTurn();
 
-            if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-                viewManager.askStep(model.getCurrPlayer().getNickname());
+            if (model.getCurrPlayer().getGodCard().getCurrState().equals("REQUIRED"))
+                viewManager.askStep(model.getCurrPlayer().getNickname(),
+                        model.getCurrPlayer().getGodCard().getCurrStateList());
             else
                 model.findPossibleDestinations();
 
-        } else if (model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH")) //check step
-            viewManager.askStep(nickname);
+        } else if (model.getCurrPlayer().getGodCard().getCurrState().equals("REQUIRED")) //check step
+            viewManager.askStep(nickname, model.getCurrPlayer().getGodCard().getCurrStateList());
         else
             model.findPossibleDestinations();
     }
@@ -162,9 +163,14 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     @Override
     public synchronized void onStepChoice(String player, String chosenStep) {
-        if (model.getCurrPlayer().getNickname().equals(player) && model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH")) {
-            if(model.setStepChoice(chosenStep))
-                model.findPossibleDestinations();
+        if (model.getCurrPlayer().getNickname().equals(player) && model.getCurrPlayer().getGodCard().getCurrState().equals("REQUIRED")) {
+            if(!chosenStep.equals("END"))
+                if(model.setStepChoice(chosenStep))
+                    model.findPossibleDestinations();
+            else {
+                model.setNextPlayer();
+                model.getCurrPlayer().startTurn();
+            }
         }
     }
 
