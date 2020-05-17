@@ -7,12 +7,15 @@ import it.polimi.ingsw.server.view.ViewManager;
 import it.polimi.ingsw.server.view.VirtualView;
 
 import java.io.IOException;
+import java.util.Set;
 
 
 public class Controller extends AbstractController implements ConnectionObserver{
 
     private final Model model;
     private final ViewManager viewManager;
+    private String startPlayerNickname;
+    private String challenger;
 
     public Controller (Model model, ViewManager viewManager) {
 
@@ -51,7 +54,9 @@ public class Controller extends AbstractController implements ConnectionObserver
                 model.setNextState();
                 //setNextPlayer used to initialize first player :)
                 model.setNextPlayer();
-                viewManager.askColor(model.getCurrPlayer().getNickname(), model.getChosenColors());
+                challenger = model.getCurrPlayer().getNickname();
+                viewManager.chooseMatchGodCards(challenger, model.getNumberOfPlayers(), model.getGodDescriptions());
+
             }
         }
     }
@@ -63,9 +68,9 @@ public class Controller extends AbstractController implements ConnectionObserver
         if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(nickname)) {
             if (model.assignColor(color)) {
                 model.setNextPlayer();
-                if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
+                if (model.getCurrPlayer().getNickname().equals(startPlayerNickname)) {
                     model.setNextState();
-                    viewManager.askGod(model.getCurrPlayer().getNickname(), model.getGodDescriptions(), model.getChosenCards());
+                    viewManager.askBuilders(model.getCurrPlayer().getNickname());
                 } else
                     viewManager.askColor(model.getCurrPlayer().getNickname(), model.getChosenColors());
             }
@@ -76,20 +81,33 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onGodCardChoice(String nickname, String godCardName) {
         if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().getNickname().equals(nickname) &&
-                model.getCurrPlayer().getGodCard() == null) {
+            model.getCurrPlayer().getGodCard() == null) {
 
-                if (model.assignCard(godCardName)) {
-                    model.setNextPlayer();
+            if (model.assignCard(godCardName)) {
+                model.setNextPlayer();
 
-                    if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
-                        model.setNextState();
-                        viewManager.askBuilders(model.getCurrPlayer().getNickname());
-                    }
-                    else
-                        viewManager.askGod(model.getCurrPlayer().getNickname(), model.getGodDescriptions(), model.getChosenCards());
-                } else viewManager.askGod(nickname, model.getGodDescriptions(), model.getChosenCards());
-            }
+                if (model.getCurrPlayer().getGodCard() != null) {
+                    viewManager.chooseStartPlayer(challenger, model.getPlayersNickname());
+                }
+                else
+                    viewManager.askGod(model.getCurrPlayer().getNickname(), model.getMatchGodCardsDescriptions(), model.getChosenCards());
+            } else viewManager.askGod(nickname, model.getMatchGodCardsDescriptions(), model.getChosenCards());
         }
+    }
+
+    @Override
+    public synchronized void onMatchGodCardsChoice(String nickname, Set<String> godNames) {
+        if(model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().getNickname().equals(nickname)) {
+
+            if(model.setMatchCards(godNames)) {
+                model.setNextPlayer();
+                viewManager.askGod(model.getCurrPlayer().getNickname(), model.getMatchGodCardsDescriptions(), model.getChosenCards());
+
+            }
+            else
+                viewManager.chooseMatchGodCards(nickname, model.getNumberOfPlayers(), model.getGodDescriptions());
+        }
+    }
 
     @Override
     public synchronized void onBuilderSetup(String nickname, Coordinates builder1, Coordinates builder2){
@@ -98,7 +116,7 @@ public class Controller extends AbstractController implements ConnectionObserver
             if (model.setCurrPlayerBuilders(builder1, builder2)){
                 model.setNextPlayer();
 
-                if (model.getCurrPlayer().equals(model.getPlayers().get(0))) {
+                if (model.getCurrPlayer().getNickname().equals(startPlayerNickname)) {
                     model.setNextState();
 
                     //game starts
@@ -197,5 +215,17 @@ public class Controller extends AbstractController implements ConnectionObserver
         }
 
 
+    }
+
+    @Override
+    public void onSetStartPlayer(String nickname, String startPlayer) {
+        if(model.getCurrState().equals(Model.State.SETUP_CARDS) && challenger.equals(nickname)) {
+            if(model.setStartPlayer(nickname, startPlayer)) {
+                startPlayerNickname = startPlayer;
+                model.setNextState();
+                viewManager.askColor(model.getCurrPlayer().getNickname(), model.getChosenColors());
+            }
+        } else
+            viewManager.chooseStartPlayer(nickname, model.getPlayersNickname());
     }
 }

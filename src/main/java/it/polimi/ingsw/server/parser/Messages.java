@@ -21,7 +21,6 @@ public abstract class Messages {
     public static final String POSSIBLE_BUILD_DESTINATIONS = "possibleBuildDestinations";
     public static final String POSSIBLE_MOVE_DESTINATIONS = "possibleMoveDestinations";
     public static final String ENDGAME = "endGame";
-    //public static final String SET_BUILDERS = "setBuilders";
     public static final String SET_STEP_CHOICE = "setStepChoice";
     public static final String SET_NUMBER_OF_PLAYERS = "setNumberOfPlayers";
     public static final String SET_GOD_CARD = "setGodCard";
@@ -30,6 +29,8 @@ public abstract class Messages {
     public static final String ERROR = "error";
     public static final String ERROR_NUMBER = "errorNumber"; //for ERROR
     public static final String INFO = "info";
+    public static final String SET_MATCH_GOD_CARDS = "setMatchGodCards";
+    public static final String SET_START_PLAYER = "setStartPlayer";
 
     public static final String PARSE_ERROR_COLOR = "parseErrorColor";
     public static final String PARSE_ERROR_MOVE = "parseErrorMove";
@@ -54,28 +55,31 @@ public abstract class Messages {
     public static final String ASK_NUMBER_OF_PLAYERS = "askNumberOfPlayers";
     public static final String ASK_BUILDERS = "askBuilders";
     public static final String ASK_STEP = "askStep";
+    public static final String CHOOSE_MATCH_GOD_CARDS = "chooseMatchGodCards"; //
+    public static final String CHOOSE_START_PLAYER = "chooseStartPlayer";
 
 
     //key values
-    public static final String COLOR = "color"; //for SET_COLOR
-    public static final String WINNER = "winner"; //for END_GAME
+    public static final String COLOR = "color";                             //for SET_COLOR
+        public static final String WINNER = "winner";                       //for END_GAME
     public static final String SRC = "src";
     public static final String DST = "dst";
     public static final String BUILD_DOME = "buildDome";
-    public static final String NUMBER_OF_PLAYERS = "numberOfPlayers"; //FOR SET_NUMBER_OF_PLAYERS
-    public static final String DATE = "date"; //for ADD_PLAYER
-    public static final String NAME = "name"; //for ADD_PLAYER
-    public static final String DESCRIPTION = "description"; //for ERROR
+    public static final String NUMBER_OF_PLAYERS = "numberOfPlayers";       //FOR SET_NUMBER_OF_PLAYERS
+    public static final String DATE = "date";                               //for ADD_PLAYER
+    public static final String NAME = "name";                               //for ADD_PLAYER
+    public static final String DESCRIPTION = "description";                 //for ERROR
     public static final String POSSIBLE_DST = "possibleDst";
     public static final String STEP_CHOICE = "stepChoice";
-    public static final String POSITIONS = "positions"; //for SET_BUILDERS
+    public static final String POSITIONS = "positions";                     //for SET_BUILDERS
     public static final String RESULT = "result";
-    public static final String STATE = "state"; //for STATE_UPDATE
-    public static final String GOD_CARD = "godCard"; //for SET_GOD_CARD
-    public static final String GOD_DESCRIPTIONS = "godDescriptions"; //for ASK_GOD
-    public static final String CHOSEN_GOD_CARDS = "chosenGodCards"; //for ASK_GOD
-    public static final String CHOSEN_COLORS = "chosenColors"; //for ASK_COLOR
-    public static final String MESSAGE = "message"; //for INFO
+    public static final String STATE = "state";                             //for STATE_UPDATE
+    public static final String GOD_CARD = "godCard";                        //for SET_GOD_CARD
+    public static final String GOD_DESCRIPTIONS = "godDescriptions";        //for ASK_GOD
+    public static final String CHOSEN_GOD_CARDS = "chosenGodCards";         //for ASK_GOD
+    public static final String CHOSEN_COLORS = "chosenColors";              //for ASK_COLOR
+    public static final String MESSAGE = "message";                         //for INFO
+    public static final String PLAYERS = "players";                         //for CHOOSE_START_PLAYER
 
 
     private static JSONObject fromCoordinates(Coordinates coord) {
@@ -93,6 +97,7 @@ public abstract class Messages {
 
         return array;
     }
+
 
     public static String possibleBuildDestinations(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
         JSONObject message = new JSONObject();
@@ -280,6 +285,17 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, ASK_STEP).toString();
     }
 
+    public static String chooseStartPlayer(Set<String> players) {
+        return (new JSONObject()).put(TYPE, CHOOSE_START_PLAYER).put(PLAYERS, players).toString();
+    }
+
+    public static String setStartPlayer(String nickname, boolean result) {
+        return (new JSONObject(setStartPlayer(nickname))).put(RESULT, result).toString();
+    }
+
+    public static String setStartPlayer(String nickname) {
+        return (new JSONObject()).put(TYPE, SET_START_PLAYER).put(NAME, nickname).toString();
+    }
 
 
     public static String turnUpdate(String nickname){
@@ -315,6 +331,26 @@ public abstract class Messages {
 
     public static String info(String message) {
         return ((new JSONObject()).put(TYPE, INFO).put(MESSAGE, message).toString());
+    }
+
+    public static String chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptions) {
+        return (new JSONObject()).put(NUMBER_OF_PLAYERS, numOfPlayers).put(GOD_DESCRIPTIONS, godDescriptions).put(TYPE, CHOOSE_MATCH_GOD_CARDS).toString();
+    }
+
+    public static String setGodCardsToUse(String nickname, Set<String> godNames, boolean result) {
+        return (new JSONObject(setGodCardsToUse(nickname, godNames))).put(RESULT, result).toString();
+    }
+
+    public static String setGodCardsToUse(String nickname, Set<String> godNames) {
+        JSONObject message = new JSONObject();
+        JSONArray arr = new JSONArray(godNames);
+
+        message.put(TYPE, SET_MATCH_GOD_CARDS);
+        message.put(GOD_DESCRIPTIONS, arr);
+        message.put(NAME, nickname);
+
+        return message.toString();
+
     }
 
     public static String errorNumber(){

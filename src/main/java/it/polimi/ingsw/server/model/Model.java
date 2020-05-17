@@ -9,6 +9,7 @@ import it.polimi.ingsw.server.parser.GodCardParser;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author veronica
@@ -35,6 +36,7 @@ public class Model extends ModelObservableWithSelect {
 
     private Player currPlayer;
     private Builder chosenBuilder;
+    Set<String> matchGodCards;
     Set<String> chosenCards = new HashSet<>();
     Set<String> chosenColors = new HashSet<>();
 
@@ -45,6 +47,7 @@ public class Model extends ModelObservableWithSelect {
     protected Set<Coordinates> possibleDstBuilder2;
     protected Set<Coordinates> possibleDstBuilder1forDome;
     protected Set<Coordinates> possibleDstBuilder2forDome;
+
 
     /**
      * The constructor initialises the GameMap and assigns it to the GodCard as a static attribute, common to each card.
@@ -68,12 +71,12 @@ public class Model extends ModelObservableWithSelect {
                 currState = State.SETUP_PLAYERS;
                 break;
             case SETUP_PLAYERS:
-                currState = State.SETUP_COLOR;
-                break;
-            case SETUP_COLOR:
                 currState = State.SETUP_CARDS;
                 break;
             case SETUP_CARDS:
+                currState = State.SETUP_COLOR;
+                break;
+            case SETUP_COLOR:
                 currState = State.SETUP_BUILDERS;
                 break;
             case SETUP_BUILDERS:
@@ -101,6 +104,18 @@ public class Model extends ModelObservableWithSelect {
 
     public Map<String, String> getGodDescriptions() {
         return this.cardsParser.getGodDescriptions();
+    }
+
+    public Map<String, String> getMatchGodCardsDescriptions() {
+        Map<String, String> result = new HashMap<>();
+
+        Map<String, String> godDescriptions = getGodDescriptions();
+
+        for(String godName : matchGodCards) {
+            result.put(godName, godDescriptions.get(godName));
+        }
+
+        return result;
     }
 
     public Set<String> getChosenCards () {
@@ -132,14 +147,16 @@ public class Model extends ModelObservableWithSelect {
         return new ArrayList<>(players);
     }
 
+
+    public Set<String> getPlayersNickname() {
+        return players.stream().map(Player::getNickname).collect(Collectors.toSet());
+    }
+
     /**
      * deletes a player if he loses the match (if the number of players is three, the match will go on)
      * @param playerName who has lost the match
      * @exception IllegalArgumentException is thrown if the player isn't in the list of players of the match
      */
-
-    //notifyViewSelection
-
     public void deletePlayer (String playerName) throws IllegalArgumentException {
 
         boolean found = false;
@@ -228,6 +245,22 @@ public class Model extends ModelObservableWithSelect {
         return canAdd;
     }
 
+
+    public boolean setMatchCards(Set<String> matchGodCards) {
+        boolean set = true;
+
+        if(getGodDescriptions().keySet().containsAll(matchGodCards) && matchGodCards.size() == numPlayers) {
+            this.matchGodCards = matchGodCards;
+        }
+        else {
+            set = false;
+        }
+
+        notifyMatchGodCards(currPlayer.getNickname(), Set.copyOf(matchGodCards), set);
+
+        return set;
+    }
+
     /** This method is used by game() to assign a godCard to a player
      * @param chosenGodCard the name of the GodCard the current player has chosen
      * It gives an error whether the player choose a different name from the ones printed (available)*/
@@ -240,7 +273,7 @@ public class Model extends ModelObservableWithSelect {
 
         for (String s: chosenCards) {
             if (chosenGodCard.equals(s)){
-                //notifyWrongInsertion(currPlayer.getNickname(), "ERROR: GodCard name already used ");
+                notifyWrongInsertion("ERROR: GodCard name already used ");
                 assigned = false;
                 break;
             }
@@ -265,6 +298,23 @@ public class Model extends ModelObservableWithSelect {
         notifyGodChoice(currPlayer.getNickname(), chosenGodCard, assigned);
 
         return assigned;
+    }
+
+    public boolean setStartPlayer(String challenger, String startPlayer) {
+        boolean result = true;
+        Set<String> nicknames = getPlayersNickname();
+
+        notifyViewSelection(challenger);
+
+        if(nicknames.contains(startPlayer))
+            while(!currPlayer.getNickname().equals(startPlayer))
+                currPlayer = turnManager.next();
+        else
+            result = false;
+
+        notifyStartPlayerSet(startPlayer, result);
+
+        return result;
     }
 
     /** This method is used by game() to create 2 builders for current player and assign the chosen color to them

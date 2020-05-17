@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacedObserver,
                                     EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver, GodChoiceObserver ,
-        PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver, ChosenStepObserver{
+        PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver, ChosenStepObserver, StartPlayerSetObserver{
 
     List<VirtualView> views;
 
@@ -60,6 +60,12 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     }
 
+    public void chooseMatchGodCards(String nickname, int numOfPlayers, Map<String, String> godDescriptions) {
+        for(VirtualView view : views)
+            if(view.getNickname().equals(nickname))
+                view.send(Messages.chooseMatchGodCards(numOfPlayers, godDescriptions));
+    }
+
     public void askColor(String player, Set<String> chosenColors) {
         for(VirtualView view : views)
             if(view.getNickname().equals(player))
@@ -77,6 +83,12 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         for(VirtualView view : views)
             if(view.getNickname().equals(nickname))
                 view.send(Messages.askGod(godDescriptions, chosenGodCards));
+    }
+
+    public void chooseStartPlayer(String nickname, Set<String> players) {
+        for(VirtualView view : views)
+            if(view.getNickname().equals(nickname))
+                view.send(Messages.chooseStartPlayer(players));
     }
 
     //Observer Methods are multiplexed to the right VirtualViews
@@ -231,9 +243,22 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     }
 
     @Override
+    public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
+        selectedView.send(Messages.setGodCardsToUse(nickname, godCardsToUse, result));
+    }
+
+    @Override
     public void onChosenStep(String nickname, String step, boolean result) {
         selectedView.send(Messages.stepChoice(nickname, step, result));
     }
 
 
+    @Override
+    public void onStartPlayerSet(String nickname, boolean result) {
+        if(result)
+            for(VirtualView view : views)
+                view.send(Messages.setStartPlayer(nickname, true));
+        else
+            selectedView.send(Messages.setStartPlayer(nickname, false));
+    }
 }
