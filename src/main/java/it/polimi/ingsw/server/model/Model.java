@@ -522,8 +522,9 @@ public class Model extends ModelObservableWithSelect {
     /**
      * This method is called when Step in currPlayer.GodCard is BOTH
      * @param step is the effective step the user decides to do
+     * @return if the step has been effectively set
      */
-    public void setStepChoice (String step) {
+    public boolean setStepChoice (String step) {
         boolean changed = false;
         notifyViewSelection(currPlayer.getNickname());
 
@@ -535,6 +536,8 @@ public class Model extends ModelObservableWithSelect {
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
         }
         notifyChosenStep(currPlayer.getNickname(), step, changed);
+
+        return changed;
     }
 
 }

@@ -3,7 +3,6 @@ package it.polimi.ingsw.client;
 import it.polimi.ingsw.server.controller.*;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.ModelObservable;
-import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.parser.Messages;
 import it.polimi.ingsw.server.parser.NetworkParser;
@@ -24,8 +23,8 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     private Socket socket;
     private PrintWriter out;
     private View view;
-    private int port;
-    private String ip;
+    private final int port;
+    private final String ip;
 
     public NetworkHandler(String ip, int port) {
         this.ip = ip;
@@ -111,6 +110,10 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
                 case Messages.ASK_BUILDERS:
                     view.placeBuilders();
                     break;
+
+                case Messages.ASK_STEP:
+                    view.chooseNextStep();
+                    break;
                 //notify dal Model
 
                 case Messages.MOVE:
@@ -168,35 +171,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
                     break;
 
                 case Messages.STATE_UPDATE:
-                    Model.State state;
-
-
-
-                    switch (parser.getAttribute(Messages.STATE)) {
-                        case "SETUP_NUMBEROFPLAYERS":
-                            state = Model.State.SETUP_NUMOFPLAYERS;
-                            break;
-                        case "SETUP_PLAYERS":
-                            state = Model.State.SETUP_PLAYERS;
-                            break;
-                        case "SETUP_COLOR":
-                            state = Model.State.SETUP_COLOR;
-                            break;
-                        case "SETUP_CARDS":
-                            state = Model.State.SETUP_CARDS;
-                            break;
-                        case "SETUP_BUILDERS":
-                            state = Model.State.SETUP_BUILDERS;
-                            break;
-                        case "GAME":
-                            state = Model.State.GAME;
-                            break;
-                        case "ENDGAME":
-                            state = Model.State.ENDGAME;
-                            break;
-                        default:
-                            state = Model.State.SETUP_NUMOFPLAYERS;
-                    }
+                    Model.State state = Model.State.valueOf(parser.getAttribute(Messages.STATE));
 
                     notifyState(state);
                     break;
@@ -221,54 +196,6 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
         }
         return connected;
     }
-
-
-    //------------------------------------- OBSERVER METHODS -----------------------------------------------------------
-/*
-    @Override
-    public void onBuilderBuild(String player, Coordinates src, Coordinates dst, boolean buildDome) {
-
-    }
-
-    @Override
-    public void onBuilderMove(String player, Coordinates src, Coordinates dst) {
-
-    }
-
-    @Override
-    public void onBuilderSetup(String player, Coordinates pos1, Coordinates pos2) {
-
-    }
-
-    @Override
-    public void onColorChoice(String player, String chosenColor) {
-
-    }
-
-    @Override
-    public void onGodCardChoice(String player, String godCardName) {
-
-    }
-
-    @Override
-    public void onNicknameAndDateInsertion(String nickname, String birthday) {
-        send(Messages.addPlayer(nickname, birthday));
-    }
-
-    @Override
-    public void onNumberInsertion(int num) {
-        send(Messages.setNumberOfPlayers(num));
-    }
-
-    @Override
-    public void onStepChoice(String player, String step) {
-        send(Messages.stepChoice(step));
-    }
-
-    @Override
-    public void onDisconnection(String player) {
-        send(Messages.disconnect());
-    }*/
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {

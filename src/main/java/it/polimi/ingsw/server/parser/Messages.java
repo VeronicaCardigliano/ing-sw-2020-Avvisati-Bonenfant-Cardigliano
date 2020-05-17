@@ -29,15 +29,16 @@ public abstract class Messages {
     public static final String DISCONNECT = "disconnect";
     public static final String ERROR = "error";
     public static final String ERROR_NUMBER = "errorNumber"; //for ERROR
+    public static final String INFO = "info";
 
-    public static final String PARS_ERROR_COLOR = "parsErrorColor";
-    public static final String PARS_ERROR_MOVE = "parsErrorMove";
-    public static final String PARS_ERROR_BUILD = "parsErrorBuild";
-    public static final String PARS_ERROR_GOD = "parsErrorGod";
-    public static final String PARS_ERROR_STEP_CHOICE = "parsErrorStepChoice";
-    public static final String PARS_ERROR_BUILDERS = "parsErrorBuilders";
-    public static final String PARS_ERROR_NUMBER = "parsErrorNumber";
-    public static final String PARS_ERROR_PLAYER = "parsErrorPlayer";
+    public static final String PARSE_ERROR_COLOR = "parseErrorColor";
+    public static final String PARSE_ERROR_MOVE = "parseErrorMove";
+    public static final String PARSE_ERROR_BUILD = "parseErrorBuild";
+    public static final String PARSE_ERROR_GOD = "parseErrorGod";
+    public static final String PARSE_ERROR_STEP_CHOICE = "parseErrorStepChoice";
+    public static final String PARSE_ERROR_BUILDERS = "parseErrorBuilders";
+    public static final String PARSE_ERROR_NUMBER = "parseErrorNumber";
+    public static final String PARSE_ERROR_PLAYER = "parseErrorPlayer";
 
     public static final String COLOR_UPDATE = "colorUpdate";
     public static final String TURN_UPDATE = "turnUpdate";
@@ -74,6 +75,7 @@ public abstract class Messages {
     public static final String GOD_DESCRIPTIONS = "godDescriptions"; //for ASK_GOD
     public static final String CHOSEN_GOD_CARDS = "chosenGodCards"; //for ASK_GOD
     public static final String CHOSEN_COLORS = "chosenColors"; //for ASK_COLOR
+    public static final String MESSAGE = "message"; //for INFO
 
 
     private static JSONObject fromCoordinates(Coordinates coord) {
@@ -311,24 +313,28 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, SET_GOD_CARD).put(GOD_CARD, godCardName).toString();
     }
 
+    public static String info(String message) {
+        return ((new JSONObject()).put(TYPE, INFO).put(MESSAGE, message).toString());
+    }
+
     public static String errorNumber(){
         return (new JSONObject()).put(TYPE, ERROR_NUMBER).toString();
     }
 
-    public static String parsErrorNumber() {return (new JSONObject()).put(TYPE, PARS_ERROR_NUMBER).toString();}
+    public static String parseErrorNumber() {return (new JSONObject()).put(TYPE, PARSE_ERROR_NUMBER).toString();}
 
-    public static String parsErrorColor() {return (new JSONObject()).put(TYPE, PARS_ERROR_COLOR).toString();}
+    public static String parseErrorColor() {return (new JSONObject()).put(TYPE, PARSE_ERROR_COLOR).toString();}
 
-    public static String parsErrorMove() {return (new JSONObject()).put(TYPE, PARS_ERROR_MOVE).toString();}
+    public static String parseErrorMove() {return (new JSONObject()).put(TYPE, PARSE_ERROR_MOVE).toString();}
 
-    public static String parsErrorBuild() {return (new JSONObject()).put(TYPE, PARS_ERROR_BUILD).toString();}
+    public static String parseErrorBuild() {return (new JSONObject()).put(TYPE, PARSE_ERROR_BUILD).toString();}
 
-    public static String parsErrorGod() {return (new JSONObject()).put(TYPE, PARS_ERROR_GOD).toString();}
+    public static String parseErrorGod() {return (new JSONObject()).put(TYPE, PARSE_ERROR_GOD).toString();}
 
-    public static String parsErrorBuilders() {return (new JSONObject()).put(TYPE, PARS_ERROR_BUILDERS).toString();}
+    public static String parseErrorBuilders() {return (new JSONObject()).put(TYPE, PARSE_ERROR_BUILDERS).toString();}
 
-    public static String parsErrorStepChoice() {return (new JSONObject()).put(TYPE, PARS_ERROR_STEP_CHOICE).toString();}
+    public static String parseErrorStepChoice() {return (new JSONObject()).put(TYPE, PARSE_ERROR_STEP_CHOICE).toString();}
 
-    public static String parsErrorPlayer() {return (new JSONObject()).put(TYPE, PARS_ERROR_PLAYER).toString();}
+    public static String parseErrorPlayer() {return (new JSONObject()).put(TYPE, PARSE_ERROR_PLAYER).toString();}
 
 }

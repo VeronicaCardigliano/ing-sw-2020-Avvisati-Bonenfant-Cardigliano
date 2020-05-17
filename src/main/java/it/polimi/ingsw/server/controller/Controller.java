@@ -26,7 +26,7 @@ public class Controller extends AbstractController implements ConnectionObserver
      * @param num is the number entered bu the user
      */
     @Override
-    public void onNumberInsertion(int num) {
+    public synchronized void onNumberInsertion(int num) {
 
         if (model.getCurrState() == Model.State.SETUP_NUMOFPLAYERS && (model.getNumberOfPlayers() != 2 ||
         model.getNumberOfPlayers() != 3)) {
@@ -40,7 +40,7 @@ public class Controller extends AbstractController implements ConnectionObserver
     }
 
     @Override
-    public void onNicknameAndDateInsertion(String nickname, String birthday) {
+    public synchronized void onNicknameAndDateInsertion(String nickname, String birthday) {
         if (model.getCurrState() == Model.State.SETUP_PLAYERS) {
 
             if (model.getPlayers().size() < model.getNumberOfPlayers()){
@@ -58,7 +58,7 @@ public class Controller extends AbstractController implements ConnectionObserver
 
 
     @Override
-    public void onColorChoice(String nickname, String color){
+    public synchronized void onColorChoice(String nickname, String color){
 
         if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(nickname)) {
             if (model.assignColor(color)) {
@@ -74,7 +74,7 @@ public class Controller extends AbstractController implements ConnectionObserver
 
 
     @Override
-    public void onGodCardChoice(String nickname, String godCardName) {
+    public synchronized void onGodCardChoice(String nickname, String godCardName) {
         if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().getNickname().equals(nickname) &&
                 model.getCurrPlayer().getGodCard() == null) {
 
@@ -92,7 +92,7 @@ public class Controller extends AbstractController implements ConnectionObserver
         }
 
     @Override
-    public void onBuilderSetup(String nickname, Coordinates builder1, Coordinates builder2){
+    public synchronized void onBuilderSetup(String nickname, Coordinates builder1, Coordinates builder2){
         if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().getNickname().equals(nickname))
 
             if (model.setCurrPlayerBuilders(builder1, builder2)){
@@ -120,7 +120,7 @@ public class Controller extends AbstractController implements ConnectionObserver
 //-------------
 
     @Override
-    public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
+    public synchronized void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
 
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname) &&
                 model.getCurrPlayer().getGodCard().getCurrState().equals("BUILD") &&
@@ -131,7 +131,7 @@ public class Controller extends AbstractController implements ConnectionObserver
     }
 
     @Override
-    public void onBuilderMove(String nickname, Coordinates src, Coordinates dst) {
+    public synchronized void onBuilderMove(String nickname, Coordinates src, Coordinates dst) {
 
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname) &&
                 model.getCurrPlayer().getGodCard().getCurrState().equals("MOVE") && model.effectiveMove(src, dst) &&
@@ -161,19 +161,21 @@ public class Controller extends AbstractController implements ConnectionObserver
 //------------
 
     @Override
-    public void onStepChoice(String player, String chosenStep) {
-        if (model.getCurrPlayer().getNickname().equals(player) && model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH"))
-            model.setStepChoice(chosenStep);
+    public synchronized void onStepChoice(String player, String chosenStep) {
+        if (model.getCurrPlayer().getNickname().equals(player) && model.getCurrPlayer().getGodCard().getCurrState().equals("BOTH")) {
+            if(model.setStepChoice(chosenStep))
+                model.findPossibleDestinations();
+        }
     }
 
     @Override
-    public void onDisconnection(String nickname) {
+    public synchronized void onDisconnection(String nickname) {
         viewManager.remove(nickname);
         model.deletePlayer(nickname);
     }
 
     @Override
-    public void onConnection(VirtualView view) throws IOException {
+    public synchronized void onConnection(VirtualView view) throws IOException {
         //boolean acceptConnection = true;
 
         if(viewManager.getNumberOfViews() == 0 && model.getCurrState().equals(Model.State.SETUP_NUMOFPLAYERS)) {

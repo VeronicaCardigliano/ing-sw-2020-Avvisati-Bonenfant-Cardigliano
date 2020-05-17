@@ -122,7 +122,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                         notifyNewPlayer(this.nickname, date);
                         } catch (JSONException e) {
                             send(Messages.errorMessage("Wrong nickname and date format"));
-                            send(Messages.parsErrorPlayer());
+                            send(Messages.parseErrorPlayer());
                         }
                     } else {
                         send(Messages.errorMessage("nickname already set"));
@@ -137,7 +137,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     }
                     catch (JSONException numberException) {
                         send(Messages.errorMessage("Wrong format, be sure to insert coordinates as ints"));
-                        send(Messages.parsErrorNumber());
+                        send(Messages.parseErrorNumber());
                     }
                     break;
 
@@ -148,7 +148,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                         notifyColorChoice(nickname, color);
                     } catch (JSONException colorException){
                         send(Messages.errorMessage("Error in stream, couldn't get color parameter"));
-                        send(Messages.parsErrorColor());
+                        send(Messages.parseErrorColor());
                     }
                     break;
 
@@ -158,7 +158,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                         notifyGodCardChoice(nickname, parser.getGodCardName());
                     } catch (JSONException godNameException){
                         send(Messages.errorMessage("Error in stream, couldn't get godCard name"));
-                        send(Messages.parsErrorGod());
+                        send(Messages.parseErrorGod());
                     }
                     break;
 
@@ -170,7 +170,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     notifySetupBuilders(nickname, builder1, builder2);
                     } catch (JSONException coordinatesException){
                         send(Messages.errorMessage(coordinatesException.getMessage()));
-                        send(Messages.parsErrorBuilders());
+                        send(Messages.parseErrorBuilders());
                     }
                     break;
 
@@ -181,7 +181,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     notifyStepChoice(nickname, stepChoice);
                     } catch (JSONException stepException){
                         send(Messages.errorMessage("Invalid format, be sure to insert coordinates as ints"));
-                        send(Messages.parsErrorStepChoice());
+                        send(Messages.parseErrorStepChoice());
                     }
                     break;
 
@@ -192,7 +192,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                         dst = parser.getDstCoordinates();
                         notifyMove(nickname, src, dst);
                     } catch ( JSONException coordinatesException){
-                        send(Messages.parsErrorMove());
+                        send(Messages.parseErrorMove());
                     }
 
                     break;
@@ -203,7 +203,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     dst = parser.getDstCoordinates();
                     notifyBuild(nickname, src, dst, parser.getBuildDome());
                     } catch (JSONException e) {
-                        send(Messages.parsErrorBuild());
+                        send(Messages.parseErrorBuild());
                     }
                     break;
 
