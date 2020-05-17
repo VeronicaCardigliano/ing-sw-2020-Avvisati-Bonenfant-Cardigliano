@@ -23,6 +23,11 @@ public abstract class ModelObservable {
     private GodChoiceObserver godChoiceObserver;
     private PlayerAddedObserver playerAddedObserver;
     private ChosenStepObserver chosenStepObserver;
+    private StartPlayerSetObserver startPlayerSetObserver;
+
+    public void setStartPlayerSetObserver(StartPlayerSetObserver o) {
+        startPlayerSetObserver = o;
+    }
 
     public void setChosenStepObserver(ChosenStepObserver newChosenStepObserver){
         chosenStepObserver = newChosenStepObserver;
@@ -175,6 +180,14 @@ public abstract class ModelObservable {
             System.out.println("color assigned observer is not set");
     }
 
+    public void notifyMatchGodCards(String nickname, Set<String> matchGodCards, boolean result) {
+        if(godChoiceObserver != null) {
+            godChoiceObserver.onMatchGodCardsAssigned(nickname, matchGodCards, result);
+        } else
+            System.out.println("color assigned observer is not set");
+
+    }
+
     public void notifyPlayerAdded(String nickname, boolean result) {
         if(playerAddedObserver != null)
             playerAddedObserver.onPlayerAdded(nickname, result);
@@ -187,5 +200,10 @@ public abstract class ModelObservable {
             chosenStepObserver.onChosenStep(nickname, step, result);
         else
             System.out.println("step choice observer is not set");
+    }
+
+    public void notifyStartPlayerSet(String startPlayer, boolean result) {
+        if(startPlayerSetObserver != null)
+            startPlayerSetObserver.onStartPlayerSet(startPlayer, result);
     }
 }

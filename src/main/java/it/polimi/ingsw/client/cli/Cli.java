@@ -11,7 +11,7 @@ import java.util.*;
 
 public class Cli extends ViewObservable implements View, BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
         ColorAssignmentObserver, ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver,
-        BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChosenStepObserver {
+        BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChosenStepObserver, StartPlayerSetObserver {
 
     public final static int mapDimension = 5;
     private static CliGameMap cliGameMap;
@@ -34,7 +34,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
 
     //not static attributes which change for each player/client
     private String nickname;
-    int numPlayers;
 
     //Sets of Coordinates to be saved in case you need to ask again for a build/move after a failed one
     Set<Coordinates> possibleDstBuilder1;
@@ -45,6 +44,8 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     //The destination of the move step is saved since the build'll have that source
     private int chosenBuilderNum = 0;
     private Coordinates dstMove;
+
+    private static Set<String> matchGodCards = new HashSet<>();
 
 
     public Cli(InputStream source) {
@@ -134,8 +135,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             inputString = input.nextLine();
         }
 
-        numPlayers = Integer.parseInt(inputString);
-        notifyNumberOfPlayers(numPlayers);
+        notifyNumberOfPlayers(Integer.parseInt(inputString));
     }
 
     /**
@@ -161,70 +161,85 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     }
 
     private void printAvailableGodCards(Map<String, String> godDescriptions, Set<String> chosenGodCards) {
-        for (String s : godDescriptions.keySet()) {
-            boolean alreadyUsed = false;
-            for (String x : chosenGodCards) {
-                if (s.equals(x)) {
-                    alreadyUsed = true;
-                    break;
-                }
-            }
-            if (!alreadyUsed) {
+        for (String s : godDescriptions.keySet())
+            if (!chosenGodCards.contains(s)) {
                 System.out.println(red + s + Color.RESET);
                 //the second element of godDescriptions is the description, the key is the godName
                 System.out.println(godDescriptions.get(s));
             }
-        }
     }
 
-
     @Override
-    public void chooseMatchGodCards (Map<String, String> godDescriptions, Set<String> chosenMatchGodCards) {
+    public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptions) {
         String inputString;
-        System.out.println ("\nYou're the Challenger of this match!" + "\u1F451" + "\u1F340");
-        System.out.println ("Choose " + numPlayers + " godCards for the match. ");
+        String crown = "\u2654";
+        String chosenCard;
+        System.out.println ("\n" + crown + "  You're the Challenger of this match!  " + crown);
+        System.out.println ("Choose " + numOfPlayers + " godCards for the match. ");
 
-        if (validGodChoices < numPlayers) {
-            printAvailableGodCards(godDescriptions, chosenMatchGodCards);
+        while (validGodChoices < numOfPlayers) {
+            printAvailableGodCards(godDescriptions, matchGodCards);
+
             System.out.print ("GodCard" + validGodChoices + ": ");
             inputString = input.nextLine();
             checkLeaving(inputString);
-            String chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
-            notifyGodCardChoice(null, chosenCard);
-            //dopo questa notify devo avere una update che mi dica se è andata a buon fine -> aggiungo alle chosenGodCards
-            // o meno -> richiedo
+            chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
+
+            while(matchGodCards.contains(chosenCard) && !godDescriptions.containsKey(chosenCard)) {
+                System.out.println("ERROR: Invalid Choice");
+
+                inputString = input.nextLine();
+                checkLeaving(inputString);
+                chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
+            }
+
+
+            matchGodCards.add(chosenCard);
+            validGodChoices ++;
         }
-        else
-            System.out.println ("GodCards correctly chosen. Wait the other players to choose theirs.");
+
+        notifyMatchGodCardsChoice(nickname, matchGodCards);
     }
 
     /**
      * Asks to choose a GodCard from the still available ones
-     * @param godDescriptions is a Map with God Names as key and descriptions as values
+     * @param matchGodDescriptions is a Map with God Names as key and descriptions as values
      * @param chosenGodCards is a Set of the godCards name already chosen
      */
     @Override
-    public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenGodCards) {
+    public void askGodCard(Map<String, String> matchGodDescriptions, Set<String> chosenGodCards) {
         String inputString;
-        //godDescriptions = godDescriptionsParam;
-        //chosenGodCards = chosenGodCardsParam;
+        String chosenCard;
+
         System.out.println("\nSelect your GodCard from the available ones ");
         System.out.println("-------------------------------------------");
 
-        printAvailableGodCards(godDescriptions, chosenGodCards);
+        printAvailableGodCards(matchGodDescriptions, chosenGodCards);
 
         inputString = input.nextLine();
         checkLeaving(inputString);
-        String chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
+        chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
+
+        while (!matchGodDescriptions.containsKey(chosenCard) && !chosenGodCards.contains(chosenCard)) {
+
+            System.out.println("ERROR: Invalid Choice");
+
+            inputString = input.nextLine();
+            checkLeaving(inputString);
+            chosenCard = inputString.substring(0,1).toUpperCase() + inputString.substring(1).toLowerCase();
+        }
+
         notifyGodCardChoice(nickname, chosenCard);
     }
 
     @Override
-    public void chooseStartPlayer() {
+    public void chooseStartPlayer(Set<String> players) {
         String inputString;
+        //TODO stampare i players
         System.out.println("Choose the StartPlayer of the match: ");
         inputString = input.nextLine();
-        //notifyStartPlayer(inputString);
+        checkLeaving(inputString);
+        notifySetStartPlayer(nickname, inputString);
     }
 
     /**
@@ -530,6 +545,14 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         }
     }
 
+    @Override
+    public void onMatchGodCardsAssigned (String nickname, Set<String> godCardsToUse, boolean result) {
+        if (result)
+            System.out.println ("GodCards correctly chosen. Wait the other players to choose theirs.");
+        else
+            System.out.println (red + "\nERROR:" + Color.RESET + " wrong godCards choice.");
+    }
+
     /**
      * Sends a message of defeat
      * @param currPlayer is the player who's currently playing and who has lost
@@ -657,4 +680,12 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             System.out.println(red + "\nERROR:"+ Color.RESET + " wrong step.");
     }
 
+
+    @Override
+    public void onStartPlayerSet(String nickname, boolean result) {
+        if(result)
+            System.out.println("The starting player is" + nickname);
+        else
+            System.out.println(red + "\nERROR:"+ Color.RESET + " could not set starting player.");
+    }
 }

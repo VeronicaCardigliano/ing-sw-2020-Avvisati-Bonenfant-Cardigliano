@@ -18,7 +18,7 @@ import java.util.Set;
 
 public class NetworkHandler extends ModelObservable implements Runnable, BuilderBuildObserver, BuilderMoveObserver,
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
-        StepChoiceObserver, DisconnectionObserver {
+        StepChoiceObserver, DisconnectionObserver, StartPlayerObserver {
 
     private Socket socket;
     private PrintWriter out;
@@ -107,12 +107,20 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
                     view.askGodCard(parser.getGodDescriptions(), parser.getSetFromArray(Messages.CHOSEN_GOD_CARDS)); //TODO passare la lista dei god possibili? (specifica di gioco: il primo deve scegliere i 3 god possibili)
                     break;
 
+                case Messages.CHOOSE_MATCH_GOD_CARDS:
+                    view.chooseMatchGodCards(parser.getNumberOfPlayers(), parser.getGodDescriptions());
+                    break;
+
                 case Messages.ASK_BUILDERS:
                     view.placeBuilders();
                     break;
 
                 case Messages.ASK_STEP:
                     view.chooseNextStep();
+                    break;
+
+                case Messages.CHOOSE_START_PLAYER:
+                    view.chooseStartPlayer(parser.getSetFromArray(Messages.PLAYERS));
                     break;
                 //notify dal Model
 
@@ -223,6 +231,11 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     }
 
     @Override
+    public void onMatchGodCardsChoice(String nickname, Set<String> godNames) {
+        send(Messages.setGodCardsToUse(nickname, godNames));
+    }
+
+    @Override
     public void onNicknameAndDateInsertion(String nickname, String birthday) {
         send(Messages.addPlayer(nickname, birthday));
     }
@@ -241,5 +254,10 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     public void onDisconnection(String nickname) {
         send(Messages.disconnect());
 
+    }
+
+    @Override
+    public void onSetStartPlayer(String nickname, String startPlayer) {
+        send(Messages.setStartPlayer(startPlayer));
     }
 }

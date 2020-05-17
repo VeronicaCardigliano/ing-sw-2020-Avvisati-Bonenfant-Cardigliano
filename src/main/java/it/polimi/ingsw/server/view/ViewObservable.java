@@ -3,6 +3,8 @@ package it.polimi.ingsw.server.view;
 import it.polimi.ingsw.server.controller.*;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 
+import java.util.Set;
+
 public abstract class ViewObservable {
     BuilderBuildObserver builderBuildObserver;
     BuilderMoveObserver builderMoveObserver;
@@ -13,19 +15,8 @@ public abstract class ViewObservable {
     BuilderSetupObserver builderSetupObserver;
     DisconnectionObserver disconnectionObserver;
     GodCardChoiceObserver godCardChoiceObserver;
+    StartPlayerObserver startPlayerObserver;
 
-    /*public ViewObservable(Object c) {
-
-        builderBuildObserver = (BuilderBuildObserver) c;
-        builderMoveObserver = (BuilderMoveObserver) c;
-        colorChoiceObserver = (ColorChoiceObserver) c;
-        newPlayerObserver =(NewPlayerObserver) c;
-        numberOfPlayersObserver = (NumberOfPlayersObserver) c;
-        stepChoiceObserver = (StepChoiceObserver) c;
-        builderSetupObserver = (BuilderSetupObserver) c;
-        disconnectionObserver = (DisconnectionObserver) c;
-        godCardChoiceObserver = (GodCardChoiceObserver) c;
-    }*/
 
     public void setObservers(Object o) {
         setBuilderBuildObserver((BuilderBuildObserver) o);
@@ -37,9 +28,12 @@ public abstract class ViewObservable {
         setBuilderSetupObserver((BuilderSetupObserver) o);
         setDisconnectionObserver((DisconnectionObserver) o);
         setGodCardChoiceObserver((GodCardChoiceObserver) o);
+        setStartPlayerObserver((StartPlayerObserver) o);
+
     }
 
-    //private static final boolean DEBUG = false;
+
+    public void setStartPlayerObserver(StartPlayerObserver o) { startPlayerObserver = o;}
 
     public void setBuilderBuildObserver(BuilderBuildObserver o) {
         builderBuildObserver = o;
@@ -122,5 +116,14 @@ public abstract class ViewObservable {
             godCardChoiceObserver.onGodCardChoice(player, godCard);
     }
 
+    protected void notifyMatchGodCardsChoice(String nickname, Set<String> chosenGodCards) {
+        if(godCardChoiceObserver != null)
+            godCardChoiceObserver.onMatchGodCardsChoice(nickname, chosenGodCards);
+    }
+
+    protected void notifySetStartPlayer(String nickname, String startPlayer) {
+        if(startPlayerObserver != null)
+            startPlayerObserver.onSetStartPlayer(nickname, startPlayer);
+    }
 
 }

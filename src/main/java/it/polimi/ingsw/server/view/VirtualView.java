@@ -162,6 +162,9 @@ public class VirtualView extends ViewObservable implements Runnable {
                     }
                     break;
 
+                case Messages.SET_MATCH_GOD_CARDS:
+                    notifyMatchGodCardsChoice(nickname, parser.getSetFromArray(Messages.GOD_DESCRIPTIONS));
+                    break;
 
                 case Messages.BUILDERS_PLACEMENT:
                     try {
@@ -185,6 +188,11 @@ public class VirtualView extends ViewObservable implements Runnable {
                     }
                     break;
 
+
+                case Messages.SET_START_PLAYER:
+                    //TODO try catch mancanti
+                    notifySetStartPlayer(nickname, parser.getAttribute(Messages.NAME));
+                    break;
 
                 case Messages.MOVE:
                     try {
