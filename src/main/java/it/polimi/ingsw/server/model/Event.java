@@ -2,13 +2,8 @@ package it.polimi.ingsw.server.model;
 
 
 import it.polimi.ingsw.server.model.gameMap.Cell;
-import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @author thomas

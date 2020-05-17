@@ -103,8 +103,6 @@ public class GodCardParser {
                             "alwaysActive"));
                     cardCreated = new OpponentTurnGodCard(player, name, description, states, flagParameters, intParameters);
 
-                    //if (godObject.opt("limusPower") != null && godObject.getBoolean("limusPower"))
-                    //    IslandBoard.constraintsList.add((OpponentTurnGodCard)cardCreated);
                     break;
 
                 case "TURN":
