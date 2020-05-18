@@ -13,7 +13,7 @@ public interface View {
     void chooseStartPlayer (Set<String> players);
     void askBuilderColor (Set<String> chosenColors);
     void placeBuilders ();
-    void chooseNextStep ();
+    void chooseNextStep (Set<String> possibleSteps);
     void build();
     void move();
 }

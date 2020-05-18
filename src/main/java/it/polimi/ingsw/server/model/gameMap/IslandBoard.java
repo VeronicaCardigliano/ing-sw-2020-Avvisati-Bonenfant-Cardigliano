@@ -133,8 +133,10 @@ public class IslandBoard {
     }
 
     public void loadConstraint() {
-        if(constraintToActivate != null)
+        if(constraintToActivate != null) {
             constraintsList.add(constraintToActivate);
+            constraintToActivate = null;
+        }
     }
 
 }

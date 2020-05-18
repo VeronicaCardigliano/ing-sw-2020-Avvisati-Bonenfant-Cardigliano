@@ -53,7 +53,7 @@ public class Controller extends AbstractController implements ConnectionObserver
                 model.setNextState();
                 //setNextPlayer used to initialize first player :)
                 model.setNextPlayer();
-                challenger = model.getCurrPlayer().getNickname();
+                challenger = model.getCurrPlayer();
                 viewManager.chooseMatchGodCards(challenger, model.getNumberOfPlayers(), model.getGodDescriptions());
 
             }
@@ -64,14 +64,14 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onColorChoice(String nickname, String color){
 
-        if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().getNickname().equals(nickname)) {
+        if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().equals(nickname)) {
             if (model.assignColor(color)) {
                 model.setNextPlayer();
-                if (model.getCurrPlayer().getNickname().equals(startPlayerNickname)) {
+                if (model.getCurrPlayer().equals(startPlayerNickname)) {
                     model.setNextState();
-                    viewManager.askBuilders(model.getCurrPlayer().getNickname());
+                    viewManager.askBuilders(model.getCurrPlayer());
                 } else
-                    viewManager.askColor(model.getCurrPlayer().getNickname(), model.getChosenColors());
+                    viewManager.askColor(model.getCurrPlayer(), model.getChosenColors());
             }
         }
     }
@@ -79,28 +79,28 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     @Override
     public synchronized void onGodCardChoice(String nickname, String godCardName) {
-        if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().getNickname().equals(nickname) &&
-            model.getCurrPlayer().getGodCard() == null) {
+        if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().equals(nickname) &&
+            model.currPlayerNullGodCard()) {
 
             if (model.assignCard(godCardName)) {
                 model.setNextPlayer();
 
-                if (model.getCurrPlayer().getGodCard() != null) {
+                if (!model.currPlayerNullGodCard()) {
                     viewManager.chooseStartPlayer(challenger, model.getPlayersNickname());
                 }
                 else
-                    viewManager.askGod(model.getCurrPlayer().getNickname(), model.getMatchGodCardsDescriptions(), model.getChosenCards());
+                    viewManager.askGod(model.getCurrPlayer(), model.getMatchGodCardsDescriptions(), model.getChosenCards());
             } else viewManager.askGod(nickname, model.getMatchGodCardsDescriptions(), model.getChosenCards());
         }
     }
 
     @Override
     public synchronized void onMatchGodCardsChoice(String nickname, Set<String> godNames) {
-        if(model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().getNickname().equals(nickname)) {
+        if(model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().equals(nickname)) {
 
             if(model.setMatchCards(godNames)) {
                 model.setNextPlayer();
-                viewManager.askGod(model.getCurrPlayer().getNickname(), model.getMatchGodCardsDescriptions(), model.getChosenCards());
+                viewManager.askGod(model.getCurrPlayer(), model.getMatchGodCardsDescriptions(), model.getChosenCards());
 
             }
             else
@@ -110,25 +110,25 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     @Override
     public synchronized void onBuilderSetup(String nickname, Coordinates builder1, Coordinates builder2){
-        if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().getNickname().equals(nickname))
+        if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().equals(nickname))
 
             if (model.setCurrPlayerBuilders(builder1, builder2)){
                 model.setNextPlayer();
 
-                if (model.getCurrPlayer().getNickname().equals(startPlayerNickname)) {
+                if (model.getCurrPlayer().equals(startPlayerNickname)) {
                     model.setNextState();
 
                     //game starts
                     //Initialize the turn
-                    model.getCurrPlayer().getGodCard().startTurn();
+                    model.startTurn();
 
-                    if(model.getCurrPlayer().getGodCard().getCurrState().equals("REQUIRED"))
-                        viewManager.askStep(model.getCurrPlayer().getNickname(), model.getCurrPlayer().getGodCard().getCurrStateList());
+                    if(model.getCurrStep().equals("REQUIRED"))
+                        viewManager.askStep(model.getCurrPlayer(), model.getCurrStateList());
                     else {
                         model.findPossibleDestinations();
                     }
                 } else
-                    viewManager.askBuilders(model.getCurrPlayer().getNickname());
+                    viewManager.askBuilders(model.getCurrPlayer());
 
             } else viewManager.askBuilders(nickname);
 
@@ -139,9 +139,9 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
 
-        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname) &&
-                model.getCurrPlayer().getGodCard().getCurrState().equals("BUILD") &&
-                model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild()) {
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().equals(nickname) &&
+                model.getCurrStep().equals("BUILD") &&
+                model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild() && !model.endGame()) {
 
                 manageNextState(nickname);
             }
@@ -150,8 +150,8 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onBuilderMove(String nickname, Coordinates src, Coordinates dst) {
 
-        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().getNickname().equals(nickname) &&
-                model.getCurrPlayer().getGodCard().getCurrState().equals("MOVE") && model.effectiveMove(src, dst) &&
+        if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().equals(nickname) &&
+                model.getCurrStep().equals("MOVE") && model.effectiveMove(src, dst) &&
                 model.hasNotLostDuringMove() && !model.endGame()) {
 
                 manageNextState(nickname);
@@ -160,18 +160,18 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     private void manageNextState(String nickname) {
         //here the player must end the turn
-        if (model.getCurrPlayer().getGodCard().getCurrState().equals("END")) {
+        if (model.getCurrStep().equals("END")) {
             model.setNextPlayer();
-            model.getCurrPlayer().startTurn();
+            model.startTurn();
 
-            if (model.getCurrPlayer().getGodCard().getCurrState().equals("REQUIRED"))
-                viewManager.askStep(model.getCurrPlayer().getNickname(),
-                        model.getCurrPlayer().getGodCard().getCurrStateList());
+            if (model.getCurrStep().equals("REQUIRED"))
+                viewManager.askStep(model.getCurrPlayer(),
+                        model.getCurrStateList());
             else
                 model.findPossibleDestinations();
 
-        } else if (model.getCurrPlayer().getGodCard().getCurrState().equals("REQUIRED")) //check step
-            viewManager.askStep(nickname, model.getCurrPlayer().getGodCard().getCurrStateList());
+        } else if (model.getCurrStep().equals("REQUIRED")) //check step
+            viewManager.askStep(nickname, model.getCurrStateList());
         else
             model.findPossibleDestinations();
     }
@@ -181,13 +181,13 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     @Override
     public synchronized void onStepChoice(String player, String chosenStep) {
-        if (model.getCurrPlayer().getNickname().equals(player) && model.getCurrPlayer().getGodCard().getCurrState().equals("REQUIRED")) {
+        if (model.getCurrPlayer().equals(player) && model.getCurrStep().equals("REQUIRED")) {
             if(!chosenStep.equals("END"))
                 if(model.setStepChoice(chosenStep))
                     model.findPossibleDestinations();
             else {
                 model.setNextPlayer();
-                model.getCurrPlayer().startTurn();
+                model.startTurn();
             }
         }
     }
@@ -229,7 +229,7 @@ public class Controller extends AbstractController implements ConnectionObserver
             if(model.setStartPlayer(nickname, startPlayer)) {
                 startPlayerNickname = startPlayer;
                 model.setNextState();
-                viewManager.askColor(model.getCurrPlayer().getNickname(), model.getChosenColors());
+                viewManager.askColor(model.getCurrPlayer(), model.getChosenColors());
             }
         } else
             viewManager.chooseStartPlayer(nickname, model.getPlayersNickname());

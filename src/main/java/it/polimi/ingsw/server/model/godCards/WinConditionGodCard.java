@@ -41,12 +41,12 @@ public class WinConditionGodCard extends GodCard {
 
         for(int i = 0; i < IslandBoard.dimension && completeTowers < completeTowersToWin; i++)
             for(int j = 0; j < IslandBoard.dimension && completeTowers < completeTowersToWin; j++)
-                if(gameMap.getCell(i, j).isDomePresent() && gameMap.getCell(i, j).isDomePresent())
+                if(gameMap.getCell(i, j).isDomePresent() && gameMap.getCell(i, j).getHeight() == 3)
                     completeTowers++;
 
         return  super.winCondition() ||
                 completeTowers >= completeTowersToWin ||
-                (event.getType() == Event.EventType.MOVE && event.heightDifference() <= - minimumDownStepsToWin);
+                (event != null && event.getType() == Event.EventType.MOVE && event.heightDifference() <= - minimumDownStepsToWin);
 
     }
 }

@@ -295,18 +295,22 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
      * Asks the player to decide the next step if he can both move or build
      */
     @Override
-    public void chooseNextStep() {
-        System.out.println("Insert MOVE to move or BUILD to build ");
-        String step = input.nextLine().toUpperCase();
-        checkLeaving(step);
+    public void chooseNextStep(Set<String> possibleSteps) {
+        System.out.println("How do you want to continue?\nOptions:");
 
-        while (!(step.equals("MOVE") || step.equals("BUILD"))) {
-            System.out.println("Wrong insertion. Insert \"MOVE\" to move or \"BUILD\" to build ");
-            step = input.nextLine().toUpperCase();
-            checkLeaving(step);
+        for(String step : possibleSteps)
+            System.out.println(step);
+
+        String chosenStep = input.nextLine().toUpperCase();
+        checkLeaving(chosenStep);
+
+        while (!possibleSteps.contains(chosenStep)) {
+            System.out.println("Wrong insertion.");
+            chosenStep = input.nextLine().toUpperCase();
+            checkLeaving(chosenStep);
         }
 
-        notifyStepChoice(nickname, step);
+        notifyStepChoice(nickname, chosenStep);
     }
 
     private Coordinates coordinatesInsertion() {

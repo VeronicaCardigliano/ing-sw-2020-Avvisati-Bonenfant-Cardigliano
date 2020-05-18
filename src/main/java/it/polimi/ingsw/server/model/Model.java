@@ -391,13 +391,17 @@ public class Model extends ModelObservableWithSelect {
      */
     public boolean endGame() {
         boolean end = false;
-        if (currPlayer.getGodCard().winCondition()) {
-            notifyEndGame(currPlayer.getNickname());
+        if(players.size() == 1) {
             end = true;
-        }
-        else if (players.size() == 1) {
             notifyEndGame(players.get(0).getNickname());
-            end = true;
+        } else {
+            for(Player p : players)
+                if(p.getGodCard().winCondition()) {
+                    notifyEndGame(p.getNickname());
+                    currState = State.ENDGAME;
+                    end = true;
+                    break;
+                }
         }
 
         return end;

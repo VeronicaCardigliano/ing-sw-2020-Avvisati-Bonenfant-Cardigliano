@@ -62,6 +62,8 @@ public class GodCard {
 
         step = 0;
 
+        event = null;
+
         statesCopy = new ArrayList<>(states);
         currState = statesCopy.get(0).get(0);
 
