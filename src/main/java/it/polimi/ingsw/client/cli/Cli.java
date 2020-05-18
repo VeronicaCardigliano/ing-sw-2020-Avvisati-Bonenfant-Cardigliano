@@ -17,6 +17,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     private static CliGameMap cliGameMap;
     private Scanner input;
     private String red = Color.ANSI_RED.escape();
+    private String yellow = Color.ANSI_YELLOW.escape();
 
     //Attributes declared protected to be used by tests
     //Set of GodCards already chosen by a player
@@ -29,8 +30,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     private Coordinates currentTurnBuilderPos;
     private static Set<String> chosenColors = new HashSet<>();
     private static int validGodChoices;
-    //private static Map<String, String> godDescriptions = new HashMap<>();
-    //private static Set<String> chosenGodCards = new HashSet<>();
 
     //not static attributes which change for each player/client
     private String nickname;
@@ -172,10 +171,10 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptions) {
         String inputString;
-        String crown = "\u2654";
+        String crown = yellow + "\u2654" + Color.RESET;
         String chosenCard;
-        System.out.println ("\n" + crown + "  You're the Challenger of this match!  " + crown);
-        System.out.println ("Choose " + numOfPlayers + " godCards for the match. ");
+        System.out.println ("\n" + crown + "  You're the " + yellow + "Challenger" + Color.RESET + " of this match!  " + crown + "\n");
+        System.out.println ("Choose " + numOfPlayers + " godCards for the match: ");
 
         while (validGodChoices < numOfPlayers) {
             printAvailableGodCards(godDescriptions, matchGodCards);
@@ -235,8 +234,11 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     @Override
     public void chooseStartPlayer(Set<String> players) {
         String inputString;
-        //TODO stampare i players
-        System.out.println("Choose the StartPlayer of the match: ");
+        System.out.print ("List of players: ");
+        for(String player: players) {
+            System.out.print (player + " ");
+        }
+        System.out.println("\nAs Challenger, choose the StartPlayer of the match: ");
         inputString = input.nextLine();
         checkLeaving(inputString);
         notifySetStartPlayer(nickname, inputString);
@@ -340,10 +342,12 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         src = coordinatesInsertion();
 
         //verifies that the selected cell contains a valid builder
-        while (!(Coordinates.equals(occupiedCells.get(nickname).get(0), src) ||
-                Coordinates.equals(occupiedCells.get(nickname).get(1), src))) {
+        while (!((Coordinates.equals(occupiedCells.get(nickname).get(0), src) &&
+                (!possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty())) ||
+                (Coordinates.equals(occupiedCells.get(nickname).get(1), src) &&
+                        (!possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty())))) {
 
-            System.out.println("\nInvalid coordinates, select a cell with a valid builder");
+            System.out.println("\nInvalid coordinates, select a cell with a valid builder \n");
             src = coordinatesInsertion();
         }
 
@@ -400,6 +404,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         else
             cliGameMap.print(occupiedCells, null, possibleDstBuilder, chosenBuilderNum);
 
+        System.out.println("Insert the coordinates of where you want to build ");
         dst = coordinatesInsertion();
 
         while (!possibleDstBuilder.contains(dst)){

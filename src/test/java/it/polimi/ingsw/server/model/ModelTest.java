@@ -142,49 +142,49 @@ class ModelTest {
         System.out.println("GAME");
 
         testModel.setNextPlayer();
-        testModel.getCurrPlayer().startTurn();
+        testModel.startTurn();
         //player1
-        assertEquals("MOVE", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("MOVE", testModel.getCurrStep());
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(1,1)));
         testModel.effectiveMove(new Coordinates(0,0), new Coordinates(1,1));
-        assertEquals("BUILD", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("BUILD", testModel.getCurrStep());
         testModel.effectiveBuild(new Coordinates(1,1), new Coordinates(2,2), false);
-        assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("END", testModel.getCurrStep());
         testModel.setNextPlayer();
 
 
         //player2
-        testModel.getCurrPlayer().startTurn();
-        assertEquals("BOTH", testModel.getCurrStep(testModel.getCurrPlayer()));
+        testModel.startTurn();
+        assertEquals("BOTH", testModel.getCurrStep());
         testModel.setStepChoice("BUILD");
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
         testModel.effectiveBuild(new Coordinates(4,4), new Coordinates(3,3), false);
-        assertEquals("MOVE", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("MOVE", testModel.getCurrStep());
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,4)));
         testModel.effectiveMove(new Coordinates(4,4), new Coordinates(3,4));
-        assertEquals("BUILD", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("BUILD", testModel.getCurrStep());
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
         testModel.effectiveBuild(new Coordinates(3,4), new Coordinates(3,3), false);
-        assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("END", testModel.getCurrStep());
         testModel.setNextPlayer();
 
         //player1
-        testModel.getCurrPlayer().startTurn();
+        testModel.startTurn();
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
         testModel.effectiveMove(new Coordinates(1,1), new Coordinates(2,2)); //move (2,2)
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
         testModel.effectiveBuild(new Coordinates(2,2), new Coordinates(3,3), false); //build (3,3)
-        assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("END", testModel.getCurrStep());
         testModel.setNextPlayer();
 
         //player2
-        testModel.getCurrPlayer().startTurn();
+        testModel.startTurn();
         testModel.setStepChoice("MOVE");
         testModel.findPossibleDestinations(); //in questo caso deve avvenire dopo la setStepChoice()
 
@@ -193,22 +193,22 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
         testModel.effectiveBuild(new Coordinates(2,4), new Coordinates(2,3), false);
-        assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("END", testModel.getCurrStep());
         testModel.setNextPlayer();
 
         //player1
-        testModel.getCurrPlayer().startTurn();
+        testModel.startTurn();
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
         testModel.effectiveMove(new Coordinates(2,2), new Coordinates(2,3));
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
         testModel.effectiveBuild(new Coordinates(2,3), new Coordinates(2,2), false);
-        assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("END", testModel.getCurrStep());
         testModel.setNextPlayer();
 
         //player2
-        testModel.getCurrPlayer().startTurn();
+        testModel.startTurn();
         testModel.setStepChoice("MOVE");
         testModel.findPossibleDestinations();
 
@@ -217,22 +217,22 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,3)));
         testModel.effectiveBuild(new Coordinates(4,2), new Coordinates(4,3), false);
-        assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("END", testModel.getCurrStep());
         testModel.setNextPlayer();
 
         //player 1
-        testModel.getCurrPlayer().startTurn();
+        testModel.startTurn();
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,2)));
         testModel.effectiveMove(new Coordinates(2,3), new Coordinates(2,2));
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,3)));
         testModel.effectiveBuild(new Coordinates(2,2), new Coordinates(2,3), false);
-        assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("END", testModel.getCurrStep());
         testModel.setNextPlayer();
 
         //player2
-        testModel.getCurrPlayer().startTurn();
+        testModel.startTurn();
         testModel.setStepChoice("MOVE");
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,1)));
@@ -240,11 +240,11 @@ class ModelTest {
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder2.contains(new Coordinates(4,2)));
         testModel.effectiveBuild(new Coordinates(4,1), new Coordinates(4,2), false);
-        assertEquals("END", testModel.getCurrStep(testModel.getCurrPlayer()));
+        assertEquals("END", testModel.getCurrStep());
         testModel.setNextPlayer();
 
         //player 1
-        testModel.getCurrPlayer().startTurn();
+        testModel.startTurn();
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
         testModel.effectiveMove(new Coordinates(2,2), new Coordinates(3,3));

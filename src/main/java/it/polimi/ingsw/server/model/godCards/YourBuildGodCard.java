@@ -84,7 +84,6 @@ public class YourBuildGodCard extends GodCard {
     public boolean build (int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
 
         if (numberOfBuilds == 2 && super.step == 1)
-
             firstBuildDst = gameMap.getCell(i_dst, j_dst);
 
         return super.build(i_src, j_src, i_dst, j_dst, buildDome);

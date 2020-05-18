@@ -94,8 +94,15 @@ public class Model extends ModelObservableWithSelect {
         return this.currState;
     }
 
-    public Player getCurrPlayer () {
-        return currPlayer;
+    public String getCurrPlayer () {
+        return currPlayer.getNickname();
+    }
+
+    public String getCurrStep () {return currStep;}
+
+    public void startTurn () {
+        currPlayer.startTurn();
+        currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
     }
 
     public Set<String> getGodNames() {
@@ -134,15 +141,14 @@ public class Model extends ModelObservableWithSelect {
     }
 
     /*
-    /**
-     * @return returns a copy of the list of players so that external methods can't modify the ArrayList
-
-
     public Set<String> getNicknames() {
         return this.players.stream().map(Player::getNickname).collect(Collectors.toSet());
     }
     */
 
+    /**
+     * @return returns a copy of the list of players so that external methods can't modify the ArrayList
+    */
     public ArrayList<Player> getPlayers(){
         return new ArrayList<>(players);
     }
@@ -150,6 +156,10 @@ public class Model extends ModelObservableWithSelect {
 
     public Set<String> getPlayersNickname() {
         return players.stream().map(Player::getNickname).collect(Collectors.toSet());
+    }
+
+    public boolean currPlayerNullGodCard() {
+        return currPlayer.getGodCard() == null;
     }
 
     /**
@@ -389,10 +399,6 @@ public class Model extends ModelObservableWithSelect {
         return end;
     }
 
-    public String getCurrStep (Player currPlayer) {
-        return currPlayer.getGodCard().getCurrState().toUpperCase();
-    }
-
 
     /**
      * This method is called to find the possible destinations for both the builders of the currPlayer
@@ -479,6 +485,8 @@ public class Model extends ModelObservableWithSelect {
         if (correctBuilder)
             result = currPlayer.build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
 
+        if(result)
+            currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
         //build method increase the currStep of the player
         /*if (result && correctBuilder) {
 
@@ -506,6 +514,7 @@ public class Model extends ModelObservableWithSelect {
         //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
+
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
             notifyWrongInsertion("ERROR: you have to continue the turn with the same player ");
             correctBuilder = false;
@@ -520,6 +529,9 @@ public class Model extends ModelObservableWithSelect {
             if(result && possibleEnemyToPush != null) {
                notifyBuilderPushed(possibleEnemyToPush.getPlayer().getNickname(), dst, possibleEnemyToPush.getCell());
             }
+
+            if(result)
+                currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
         }
 
 
@@ -541,7 +553,8 @@ public class Model extends ModelObservableWithSelect {
     }
 
     public void findPossibleDestinations () {
-        currStep = getCurrStep(currPlayer);
+        currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
+        //boolean result = false;
 
         notifyViewSelection(currPlayer.getNickname());
 
@@ -565,10 +578,77 @@ public class Model extends ModelObservableWithSelect {
                     notifyPossibleBuilds(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
                 }
                 break;
+                /*
+            //for the following two cases, I'm not in the first step, so chosenBuilder is set
+            case "ENDORBUILD":
+                //View has to obtain the list of the possible build destinations for both builders and for the possible build of a dome
+                possibleDstBuilder1 = possibleDstCells(0, false);
+                possibleDstBuilder2 = possibleDstCells(1,false);
+                possibleDstBuilder1forDome = possibleDstCells(0,true);
+                possibleDstBuilder2forDome = possibleDstCells(1,true);
+                if (canBuild())
+                    result = true; //-> il controller chiede END or CONTINUE
+                else
+                    currPlayer.forceStep("END"); // + messaggio
+                break;
+            case "ENDORMOVE":
+                //View has to obtain the list of the possible build destinations for both builders and for the possible build of a dome
+                possibleDstBuilder1 = possibleDstCells(0, false);
+                possibleDstBuilder2 = possibleDstCells(1,false);
+
+                if (canMove())
+                    result = true; //-> il controller chiede END or CONTINUE
+                else
+                    currPlayer.forceStep("END"); // + messaggio
+                break;
+            //in both case I have to consider the two possibilities and if just one of these is possible, avoid the choice
+            case "BOTH":
+                boolean canMove, canBuild;
+                currStep = "MOVE";
+                possibleDstBuilder1 = possibleDstCells(0, false);
+                possibleDstBuilder2 = possibleDstCells(1, false);
+
+                //checking if there are possible destinations to move
+                canMove = canMove();
+
+                currStep = "BUILD";
+                possibleDstBuilder1 = possibleDstCells(0, false);
+                possibleDstBuilder2 = possibleDstCells(1,false);
+                possibleDstBuilder1forDome = possibleDstCells(0,true);
+                possibleDstBuilder2forDome = possibleDstCells(1,true);
+
+                //checking if there are possible destinations to build
+                canBuild = canBuild();
+
+                if (canBuild && canMove)
+                    result = true;
+                else if (canBuild)
+                    currPlayer.forceStep("BUILD");
+                else if (canMove)
+                    currPlayer.forceStep("MOVE");
+                else {
+                    notifyLoss(currPlayer.getNickname());
+                    deletePlayer(currPlayer.getNickname());
+                }
+
+                currStep = getCurrStep(currPlayer); */
                 //case END exception
         }
+        //return result;
     }
 
+    /*
+    private boolean canBuild() {
+
+        return (currPlayer.getBuilders().get(0).equals(chosenBuilder) && (!possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty())) ||
+                (currPlayer.getBuilders().get(1).equals(chosenBuilder) && (!possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty()));
+    }
+
+    private boolean canMove() {
+        return currPlayer.getBuilders().get(0).equals(chosenBuilder) && !possibleDstBuilder1.isEmpty() ||
+                currPlayer.getBuilders().get(1).equals(chosenBuilder) && !possibleDstBuilder2.isEmpty();
+    }
+    */
     /**
      * This method is called when Step in currPlayer.GodCard is BOTH
      * @param step is the effective step the user decides to do
