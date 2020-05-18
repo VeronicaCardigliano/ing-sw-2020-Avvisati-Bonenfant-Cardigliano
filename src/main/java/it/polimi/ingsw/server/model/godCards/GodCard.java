@@ -4,6 +4,7 @@ package it.polimi.ingsw.server.model.godCards;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.Event;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
@@ -95,21 +96,19 @@ public class GodCard {
 
     public ArrayList<String> getCurrStateList(){ return currStateList; }
 
-    /**
-     * @author veronica
-     *
-     * Method that sets the next step according to the previous one.
-     */
+
+
+
     private void setNextState(String previousStep) {
         step++;
 
         currStateList.clear();
-
         currState = "END";
 
         //search for possible paths removing the ones with a different previous step (from the one passed by argument)
-
+        //and if there are multiple choices for the next step add them to a List
         boolean tmp = false;
+        boolean locking = false;
         ArrayList<String> list;
 
         for(int i = 0; i < statesCopy.size(); i++) {
@@ -126,20 +125,58 @@ public class GodCard {
                         currState = "REQUIRED";
                         //This should prevent from saving clones, TODO verify
                         if (!currStateList.contains(list.get(i)))
-                        currStateList.add(list.get(i));
+
+                            currStateList.add(list.get(i));
                     }
 
                 } else {
                     statesCopy.remove(list);
                     i--;
                 }
-            } else {
+            } else if(step == list.size() && !currStateList.contains("END")) {
+                currStateList.add("END");
+            } else{
                 statesCopy.remove(list);
                 i--;
+            }
+
+            if (currStateList.size()>1)
+                currState = "REQUIRED";
+        }
+
+        //here test that the step can be really performed and is not locking the player
+        for (String step : currStateList) {
+
+            if (!step.equals("END"))
+            for (Builder builder : player.getBuilders()) {
+                int i_src = builder.getCell().getI();
+                int j_src = builder.getCell().getJ();
+
+                for (int h = -1; h < 1; h++)
+                    for (int k = -1; k < 1; k++) {
+                        int i_dst = i_src + h;
+                        int j_dst = j_src + k;
+
+                        if (i_dst < IslandBoard.dimension && i_dst >= 0 &&
+                                j_dst < IslandBoard.dimension && j_dst >= 0) {
+                            switch (step) {
+                                case "MOVE":
+                                    locking = !askMove(i_src,j_src,i_dst,j_dst);
+                                    break;
+                                case "BUILD":
+                                    locking = !askBuild(i_src,j_src,i_dst,j_dst);
+                                    break;
+                            }
+
+
+                        }
+
+                    }
             }
         }
 
     }
+
 
     public Player getPlayer() {
         return player;

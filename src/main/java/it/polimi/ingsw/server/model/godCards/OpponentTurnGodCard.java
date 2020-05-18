@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * GodCard with powers that are applied during enemies turns.
  */
-public class OpponentTurnGodCard extends GodCard {
+public class @OpponentTurnGodCard extends GodCard {
 
     private final boolean activeOnMoveUp;
     private final boolean alwaysActive;
