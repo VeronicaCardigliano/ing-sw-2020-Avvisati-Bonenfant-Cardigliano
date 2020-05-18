@@ -158,6 +158,10 @@ public class Model extends ModelObservableWithSelect {
         return players.stream().map(Player::getNickname).collect(Collectors.toSet());
     }
 
+    public ArrayList<String> getCurrStateList() {
+        return currPlayer.getGodCard().getCurrStateList();
+    }
+
     public boolean currPlayerNullGodCard() {
         return currPlayer.getGodCard() == null;
     }

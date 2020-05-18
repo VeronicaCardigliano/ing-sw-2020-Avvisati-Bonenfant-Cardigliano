@@ -156,7 +156,7 @@ class ModelTest {
 
         //player2
         testModel.startTurn();
-        assertEquals("BOTH", testModel.getCurrStep());
+        assertEquals("REQUIRED", testModel.getCurrStep());
         testModel.setStepChoice("BUILD");
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,3)));
@@ -186,7 +186,7 @@ class ModelTest {
         //player2
         testModel.startTurn();
         testModel.setStepChoice("MOVE");
-        testModel.findPossibleDestinations(); //in questo caso deve avvenire dopo la setStepChoice()
+        testModel.findPossibleDestinations();
 
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(2,4)));
         testModel.effectiveMove(new Coordinates(3,4), new Coordinates(2,4));
