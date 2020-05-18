@@ -5,6 +5,7 @@ import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -55,6 +56,7 @@ public abstract class Messages {
     public static final String ASK_NUMBER_OF_PLAYERS = "askNumberOfPlayers";
     public static final String ASK_BUILDERS = "askBuilders";
     public static final String ASK_STEP = "askStep";
+    public static final String POSSIBLE_STEPS = "possibleSteps";
     public static final String CHOOSE_MATCH_GOD_CARDS = "chooseMatchGodCards"; //
     public static final String CHOOSE_START_PLAYER = "chooseStartPlayer";
 
@@ -80,6 +82,8 @@ public abstract class Messages {
     public static final String CHOSEN_COLORS = "chosenColors";              //for ASK_COLOR
     public static final String MESSAGE = "message";                         //for INFO
     public static final String PLAYERS = "players";                         //for CHOOSE_START_PLAYER
+
+
 
 
     private static JSONObject fromCoordinates(Coordinates coord) {
@@ -273,6 +277,14 @@ public abstract class Messages {
 
         return jsonObject.toString();
 
+    }
+
+    public static String askStep(ArrayList<String> stateList){
+        JSONObject message = new JSONObject();
+        JSONArray arr = new JSONArray();
+        for (String s : stateList)
+            arr.put(s);
+        return message.put(TYPE, ASK_STEP).put(POSSIBLE_STEPS, arr).toString();
     }
 
     public static String askNumberOfPlayers() {

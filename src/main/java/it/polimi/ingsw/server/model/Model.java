@@ -662,6 +662,7 @@ public class Model extends ModelObservableWithSelect {
             currPlayer.forceStep(step);
             changed = true;
         }
+
         else {
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
         }

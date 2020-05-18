@@ -41,10 +41,10 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         views.removeIf(view -> view.getNickname().equals(nickname));
     }
 
-    public void askStep(String nickname) {
+    public void askStep(String nickname, ArrayList<String> stateList) {
         for (VirtualView view : views)
             if (view.getNickname().equals(nickname))
-                view.send(Messages.askStep());
+                view.send(Messages.askStep(stateList));
     }
 
     public void askNumberOfPlayers() {
