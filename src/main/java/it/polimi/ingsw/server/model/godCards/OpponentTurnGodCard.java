@@ -42,21 +42,16 @@ public class OpponentTurnGodCard extends GodCard {
     @Override
     public void startTurn() {
         super.startTurn();
-        if (blockMoveUp)
-            gameMap.addConstraint(this);
-        //when the turn starts previous contraint from this card has to be removed
-        gameMap.removeConstraint(this);
+
+        //when the turn starts previous constraint from this card has to be removed
+        if(!alwaysActive)
+            gameMap.removeConstraint(this);
     }
 
     public void check() {
-        boolean addConstraint = false;
-
-        if(alwaysActive)
-            addConstraint = true;
-        //athena power activation
-        else if(activeOnMoveUp && event.getType() == Event.EventType.MOVE && event.heightDifference() > 0)
+        //Athena activation
+        if(activeOnMoveUp && event.getType() == Event.EventType.MOVE && event.heightDifference() > 0)
             gameMap.addConstraint(this);
-
 
     }
 
@@ -64,7 +59,8 @@ public class OpponentTurnGodCard extends GodCard {
     @Override
     public void setGameMap(IslandBoard gameMap) throws IllegalArgumentException{
         super.setGameMap(gameMap);
-        gameMap.addConstraint(this);
+        if(alwaysActive)
+            gameMap.addConstraint(this);
     }
 
 
@@ -99,12 +95,14 @@ public class OpponentTurnGodCard extends GodCard {
         //build event
         if(futureEvent.getType() == Event.EventType.BUILD ||futureEvent.getType() == Event.EventType.BUILD_DOME) {
 
-            if (limusPower){
+            if (limusPower && !futureEvent.getSrcCell().getBuilder().getPlayer().equals(player)){
                 for (Builder b : player.getBuilders()){
                     if (Math.abs(b.getCell().getI() - futureEvent.getDstCell().getI()) < 2 &&
-                        Math.abs(b.getCell().getJ() - futureEvent.getDstCell().getJ()) < 2 &&
-                            !(futureEvent.getType() ==  Event.EventType.BUILD_DOME && futureEvent.getDstCell().getHeight() == IslandBoard.maxHeight))
+                            Math.abs(b.getCell().getJ() - futureEvent.getDstCell().getJ()) < 2 &&
+                            !(futureEvent.getType() == Event.EventType.BUILD_DOME && futureEvent.getDstCell().getHeight() == IslandBoard.maxHeight)) {
                         allowed = false;
+                        break;
+                    }
                 }
             }
 

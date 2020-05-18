@@ -116,7 +116,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
                     break;
 
                 case Messages.ASK_STEP:
-                    view.chooseNextStep();
+                    view.chooseNextStep(parser.getSetFromArray(Messages.POSSIBLE_STEPS));
                     break;
 
                 case Messages.CHOOSE_START_PLAYER:

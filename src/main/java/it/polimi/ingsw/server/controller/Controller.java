@@ -122,7 +122,7 @@ public class Controller extends AbstractController implements ConnectionObserver
                     //Initialize the turn
                     model.startTurn();
 
-                    if(model.getCurrStep().equals("BOTH"))
+                    if(model.getCurrStep().equals("REQUIRED"))
                         viewManager.askStep(model.getCurrPlayer(), model.getCurrStateList());
                     else {
                         model.findPossibleDestinations();
@@ -141,7 +141,7 @@ public class Controller extends AbstractController implements ConnectionObserver
 
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().equals(nickname) &&
                 model.getCurrStep().equals("BUILD") &&
-                model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild()) {
+                model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild() && !model.endGame()) {
 
                 manageNextState(nickname);
             }

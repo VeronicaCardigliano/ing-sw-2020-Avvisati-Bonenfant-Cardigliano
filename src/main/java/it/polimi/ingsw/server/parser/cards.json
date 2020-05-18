@@ -62,7 +62,7 @@
   {"name": "Chronus",
     "type": "WIN",
     "description": "You also win when there are at least five complete towers on the board",
-    "completeTowersToWin": 2},
+    "completeTowersToWin": 5},
 
   "Prometheus":
   {"name": "Prometheus",
