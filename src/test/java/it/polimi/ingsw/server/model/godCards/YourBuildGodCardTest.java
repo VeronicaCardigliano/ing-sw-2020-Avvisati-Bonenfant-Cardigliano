@@ -45,15 +45,6 @@ class YourBuildGodCardTest {
 
         System.out.println("giving player1 Atlas card...");
 
-        /*godCardAtlas = new YourBuildGodCard(player, "", "", states, 1,
-                true, false, false,false );
-        godCardDemeter = new YourBuildGodCard(player, "", "", states, 2,
-                false, true, false, false );
-        godCardHephaestus = new YourBuildGodCard(player2, "", "", states, 2,
-                false, false, true, false );
-        godCardZeus = new YourBuildGodCard(player2, "", "", states, 1,
-                false, false, false, true );*/
-
         GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
 
         godCardAtlas = parser.createCard(player, "Atlas");
@@ -153,7 +144,6 @@ class YourBuildGodCardTest {
         godCardDemeter.step = 1;
 
         godCardDemeter.build(i_src, j_src, i_src +1, j_src+1, false);
-
 
         godCardDemeter.step = 2; // it means it's at the second build
 

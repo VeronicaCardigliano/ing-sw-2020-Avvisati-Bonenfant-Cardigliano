@@ -158,7 +158,7 @@ public class Model extends ModelObservableWithSelect {
         return players.stream().map(Player::getNickname).collect(Collectors.toSet());
     }
 
-    public ArrayList<String> getCurrStateList() {
+    public ArrayList<String> getCurrStateList(){
         return currPlayer.getGodCard().getCurrStateList();
     }
 
@@ -430,7 +430,6 @@ public class Model extends ModelObservableWithSelect {
                     case "MOVE":
                         if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
-
                         }
                             break;
 
@@ -522,7 +521,6 @@ public class Model extends ModelObservableWithSelect {
         //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
-
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
             notifyWrongInsertion("ERROR: you have to continue the turn with the same player ");
             correctBuilder = false;

@@ -16,11 +16,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class GodCardTest {
 
     static GodCard godCard;
+    static GodCard opponentGodCard;
     static IslandBoard gameMap;
+    static int maxCoordinate = IslandBoard.dimension - 1;
     static Player player;
     static Builder builder1;
     static Builder builder2;
-    static int maxCoordinate = IslandBoard.dimension - 1;
+    static Player opponent;
+    static Builder builder3;
+    static Builder builder4;
 
     /**
      * create a map with 2 builders from one player
@@ -39,10 +43,19 @@ class GodCardTest {
         builder2 = new Builder(player, Builder.BuilderColor.WHITE);
         player.setBuilders(builder1, builder2);
 
+        opponent = new Player("player2");
+        builder3 = new Builder(opponent, Builder.BuilderColor.MAGENTA);
+        builder4 = new Builder(opponent, Builder.BuilderColor.MAGENTA);
+        opponent.setBuilders(builder3, builder4);
+
         System.out.println("giving player1 a default card...");
         GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
         godCard = parser.createCard(player, "default");
         player.setGodCard(godCard);
+
+        //Demeter is used to check the choice after REQUIRED state
+        opponentGodCard = parser.createCard(opponent, "Demeter");
+        opponent.setGodCard(opponentGodCard);
 
     }
 
@@ -234,6 +247,66 @@ class GodCardTest {
 
 
     }
+
+    @Test
+    public void requiredConditionLockingFeature(){
+        System.out.println("\nChecking steps choices, not showing BUILD option after the first build of Demeter...");
+        opponentGodCard.setGameMap(gameMap);
+        opponentGodCard.startTurn();
+
+        Cell cell3 = gameMap.getCell(maxCoordinate - 4,maxCoordinate - 4);
+        Cell cell4 = gameMap.getCell(maxCoordinate -3 ,maxCoordinate - 2);
+
+        cell3.setOccupant(builder3);
+        cell4.setOccupant(builder4);
+        //check non locking feature of setNextState
+
+        assertFalse(opponentGodCard.currState.equals("REQUIRED"));
+        assertTrue(opponentGodCard.askMove(0,0, 1, 1));
+        assertTrue(opponentGodCard.move(0,0, 1, 1));
+
+        gameMap.getCell(0,1).addDome();
+        gameMap.getCell(0,2).addDome();
+        gameMap.getCell(1,0).addDome();
+        gameMap.getCell(2,0).addDome();
+        gameMap.getCell(2,1).addDome();
+        gameMap.getCell(3,1).addDome();
+        gameMap.getCell(0,0).addBlock();
+        gameMap.getCell(0,0).addBlock();
+        gameMap.getCell(0,0).addBlock();
+        //All cells nearby have dome except the one in 0,0 which has height 3. Only one build will be allowed
+
+        assertTrue(gameMap.getCell(0,0).getHeight()==3);
+        assertTrue(opponentGodCard.askBuild(1,1, 0, 0, true));
+        assertTrue(opponentGodCard.build(1,1, 0, 0, true));
+        assertFalse(opponentGodCard.currState.equals("REQUIRED"));
+        assertTrue(opponentGodCard.currStateList.contains("END"));
+
+    }
+
+    @Test
+    public void requiredCondition(){
+        System.out.println("\nChecking steps choices...");
+        opponentGodCard.setGameMap(gameMap);
+        opponentGodCard.startTurn();
+
+        Cell cell3 = gameMap.getCell(maxCoordinate - 4,maxCoordinate - 4);
+        Cell cell4 = gameMap.getCell(maxCoordinate -3 ,maxCoordinate - 2);
+
+        cell3.setOccupant(builder3);
+        cell4.setOccupant(builder4);
+
+        assertFalse(opponentGodCard.currState.equals("REQUIRED"));
+        assertTrue(opponentGodCard.askMove(0,0, 1, 1));
+        assertTrue(opponentGodCard.move(0,0, 1, 1));
+        assertTrue(opponentGodCard.askBuild(1,1, 0, 0, false));
+        assertTrue(opponentGodCard.build(1,1, 0, 0, false));
+        assertTrue(opponentGodCard.currState.equals("REQUIRED"));
+        assertTrue(opponentGodCard.currStateList.contains("END"));
+        assertTrue(opponentGodCard.currStateList.contains("BUILD"));
+
+    }
+
 
     @AfterEach
     @Test

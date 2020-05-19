@@ -37,15 +37,6 @@ public class Player {
 
     }
 
-    /*
-    public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
-        return godCard.askMove(i_src, j_src, i_dst, j_dst);
-    }
-
-    public boolean askBuild(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
-        return godCard.askBuild(i_src, j_src, i_dst, j_dst, buildDome);
-    }
-    */
 
     public boolean move(Coordinates src, Coordinates dst){
     return godCard.move(src.getI(), src.getJ(), dst.getI(), dst.getJ());

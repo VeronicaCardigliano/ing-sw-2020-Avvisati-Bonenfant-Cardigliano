@@ -2,11 +2,11 @@ package it.polimi.ingsw.server.model.godCards;
 
 
 import java.util.ArrayList;
-import java.util.List;
 
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.Event;
+import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
 
@@ -26,6 +26,7 @@ public class GodCard {
 
     protected String currState;
     protected int step;
+    protected Builder currBuilder;
 
     protected ArrayList<ArrayList<String>> states;
     protected ArrayList<ArrayList<String>> statesCopy;
@@ -61,7 +62,7 @@ public class GodCard {
     public void startTurn() {
 
         step = 0;
-
+        currBuilder = null;
         event = null;
 
         statesCopy = new ArrayList<>(states);
@@ -95,10 +96,7 @@ public class GodCard {
         return this.description;
     }
 
-
     public ArrayList<String> getCurrStateList(){ return currStateList; }
-
-
 
 
     private void setNextState(String previousStep) {
@@ -110,7 +108,6 @@ public class GodCard {
         //search for possible paths removing the ones with a different previous step (from the one passed by argument)
         //and if there are multiple choices for the next step add them to a List
         boolean tmp = false;
-        boolean locking = false;
         ArrayList<String> list;
 
         for(int i = 0; i < statesCopy.size(); i++) {
@@ -121,13 +118,12 @@ public class GodCard {
 
                     if (!tmp) {
                         currState = list.get(step);
-                        currStateList.add(list.get(i));
+                        currStateList.add(list.get(step));
                         tmp = true;
                     } else if (!currState.equals(list.get(step))) {
                         currState = "REQUIRED";
                         //This should prevent from saving clones, TODO verify
                         if (!currStateList.contains(list.get(i)))
-
                             currStateList.add(list.get(i));
                     }
 
@@ -141,42 +137,46 @@ public class GodCard {
                 statesCopy.remove(list);
                 i--;
             }
-
-            if (currStateList.size()>1)
-                currState = "REQUIRED";
         }
 
-        //here test that the step can be really performed and is not locking the player
-        for (String step : currStateList) {
+        if (currStateList.size()>1){
 
-            if (!step.equals("END"))
-            for (Builder builder : player.getBuilders()) {
-                int i_src = builder.getCell().getI();
-                int j_src = builder.getCell().getJ();
+            currState = "REQUIRED";
+            //here test that the step can be really performed and is not locking the player
+            int i_src = currBuilder.getCell().getI();
+            int j_src = currBuilder.getCell().getJ();
+            boolean canMove = false;
+            boolean canBuild = false;
 
-                for (int h = -1; h < 1; h++)
-                    for (int k = -1; k < 1; k++) {
-                        int i_dst = i_src + h;
-                        int j_dst = j_src + k;
+            for (String step : currStateList) {
+                if (!step.equals("END"))
+                for (int x = 0; x < IslandBoard.dimension; x++)
+                    for (int y = 0; y < IslandBoard.dimension; y++){
 
-                        if (i_dst < IslandBoard.dimension && i_dst >= 0 &&
-                                j_dst < IslandBoard.dimension && j_dst >= 0) {
-                            switch (step) {
-                                case "MOVE":
-                                    locking = !askMove(i_src,j_src,i_dst,j_dst);
-                                    break;
-                                case "BUILD":
-                                    locking = !askBuild(i_src,j_src,i_dst,j_dst);
-                                    break;
-                            }
+                        switch (step) {
+                            case "MOVE":
+                                if (IslandBoard.distanceOne(i_src, j_src, x, y) && askMove(i_src, j_src, x, y)) {
+                                    canMove = true;
+                                }
+                                break;
 
-
+                            case "BUILD":
+                                if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
+                                        (askBuild(i_src, j_src, x, y, false) || askBuild(i_src, j_src, x, y, true))) {
+                                    canBuild = true;
+                                }
+                                break;
                         }
-
                     }
-            }
         }
 
+            if (!canBuild)
+                currStateList.remove("BUILD");
+            if (!canMove)
+                currStateList.remove("MOVE");
+            if (currStateList.size() == 1)
+                currState = currStateList.get(0);
+        }
     }
 
 
@@ -199,6 +199,7 @@ public class GodCard {
 
         if(askBuild(i_src, j_src, i_dst, j_dst, buildDome)) {
             dst = gameMap.getCell(i_dst, j_dst);
+            currBuilder = gameMap.getCell(i_src, j_src).getBuilder();
             built = true;
 
             if(buildDome) {
@@ -234,6 +235,7 @@ public class GodCard {
 
         if(this.askMove(i_src, j_src, i_dst, j_dst)) {
             moved = true;
+            currBuilder = gameMap.getCell(i_src, j_src).getBuilder();
             src = gameMap.getCell(i_src, j_src);
             dst = gameMap.getCell(i_dst, j_dst);
 
