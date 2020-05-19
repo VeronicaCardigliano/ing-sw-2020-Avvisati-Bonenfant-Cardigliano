@@ -67,12 +67,17 @@ public class GodCard {
 
         statesCopy = new ArrayList<>(states);
         currState = statesCopy.get(0).get(0);
+        currStateList.clear();
+        currStateList.add(currState);
 
         for(ArrayList<String> list : statesCopy)
             if (!currState.equals(list.get(0))) {
                 currState = "REQUIRED";
-                break;
+                if(!currStateList.contains(list.get(0)))
+                currStateList.add(list.get(0));
             }
+
+        filterNextState();
 
         //activate pending constraint
         if(gameMap == null)
@@ -139,6 +144,12 @@ public class GodCard {
             }
         }
 
+        filterNextState();
+
+    }
+
+
+    private void filterNextState(){
         if (currStateList.size()>1){
 
             currState = "REQUIRED";
@@ -150,25 +161,25 @@ public class GodCard {
 
             for (String step : currStateList) {
                 if (!step.equals("END"))
-                for (int x = 0; x < IslandBoard.dimension; x++)
-                    for (int y = 0; y < IslandBoard.dimension; y++){
+                    for (int x = 0; x < IslandBoard.dimension; x++)
+                        for (int y = 0; y < IslandBoard.dimension; y++){
 
-                        switch (step) {
-                            case "MOVE":
-                                if (IslandBoard.distanceOne(i_src, j_src, x, y) && askMove(i_src, j_src, x, y)) {
-                                    canMove = true;
-                                }
-                                break;
+                            switch (step) {
+                                case "MOVE":
+                                    if (IslandBoard.distanceOne(i_src, j_src, x, y) && askMove(i_src, j_src, x, y)) {
+                                        canMove = true;
+                                    }
+                                    break;
 
-                            case "BUILD":
-                                if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
-                                        (askBuild(i_src, j_src, x, y, false) || askBuild(i_src, j_src, x, y, true))) {
-                                    canBuild = true;
-                                }
-                                break;
+                                case "BUILD":
+                                    if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
+                                            (askBuild(i_src, j_src, x, y, false) || askBuild(i_src, j_src, x, y, true))) {
+                                        canBuild = true;
+                                    }
+                                    break;
+                            }
                         }
-                    }
-        }
+            }
 
             if (!canBuild)
                 currStateList.remove("BUILD");
