@@ -15,6 +15,8 @@ public class CliGameMap {
     private String builderColor;
     private String reset = Color.RESET;
 
+    private Map<Coordinates, Integer> heights = new HashMap<>();
+
     private String possibleDstSymbol = yellow + " " + "\u25CC" + reset;
     private String dome = blue + "\u25CF" + reset;
     private String builder =  " " + "\u2692" + reset;
@@ -30,8 +32,6 @@ public class CliGameMap {
             leftUnderCorner = green + "\u2514" + reset,
             rightUnderCorner = green + "\u2518" + reset,
             centralSeparator = green + "\u253C" + reset;
-
-    private Map<Coordinates, Integer> heights = new HashMap<>();
 
     //initialize the heights to zero for each cell
     public CliGameMap() {

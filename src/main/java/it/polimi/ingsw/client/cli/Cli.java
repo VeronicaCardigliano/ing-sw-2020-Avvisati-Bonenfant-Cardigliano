@@ -26,8 +26,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     protected static Map<String,String> chosenColorsForPlayer = new HashMap<>();
     //Map of each player and the coordinates of his builders
     protected static Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
-
-    private Coordinates currentTurnBuilderPos;
+    private static Set<String> matchGodCards = new HashSet<>();
     private static Set<String> chosenColors = new HashSet<>();
     private static int validGodChoices;
 
@@ -35,16 +34,14 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
     private String nickname;
 
     //Sets of Coordinates to be saved in case you need to ask again for a build/move after a failed one
-    Set<Coordinates> possibleDstBuilder1;
-    Set<Coordinates> possibleDstBuilder2;
-    Set<Coordinates> possibleDstBuilder1forDome;
-    Set<Coordinates> possibleDstBuilder2forDome;
+    private Set<Coordinates> possibleDstBuilder1;
+    private Set<Coordinates> possibleDstBuilder2;
+    private Set<Coordinates> possibleDstBuilder1forDome;
+    private Set<Coordinates> possibleDstBuilder2forDome;
 
     //The destination of the move step is saved since the build'll have that source
+    private Coordinates currentTurnBuilderPos;
     private int chosenBuilderNum = 0;
-    private Coordinates dstMove;
-
-    private static Set<String> matchGodCards = new HashSet<>();
 
 
     public Cli(InputStream source) {
@@ -197,6 +194,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             validGodChoices ++;
         }
 
+        validGodChoices = 0;
         notifyMatchGodCardsChoice(nickname, matchGodCards);
     }
 
@@ -221,7 +219,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
 
         while (!matchGodDescriptions.containsKey(chosenCard) && !chosenGodCards.contains(chosenCard)) {
 
-            System.out.println("ERROR: Invalid Choice");
+            System.out.println("ERROR: invalid choice");
 
             inputString = input.nextLine();
             checkLeaving(inputString);
@@ -241,6 +239,11 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         System.out.println("\nAs Challenger, choose the StartPlayer of the match: ");
         inputString = input.nextLine();
         checkLeaving(inputString);
+        while (!players.contains(inputString)) {
+            System.out.println("ERROR: non-existent player, insert a valid one");
+            inputString = input.nextLine();
+            checkLeaving(inputString);
+        }
         notifySetStartPlayer(nickname, inputString);
     }
 
@@ -290,7 +293,6 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         notifySetupBuilders(nickname, selectedCellBuilder1, selectedCellBuilder2);
     }
 
-    //TODO: same for END or CONTINUE
     /**
      * Asks the player to decide the next step if he can both move or build
      */
@@ -372,9 +374,8 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         Set<Coordinates> possibleDstBuilder;
         boolean buildDome = false;
 
-        if (chosenBuilderNum == 0) {
+        if (chosenBuilderNum == 0)
             currentTurnBuilderPos = chooseTurnBuilder();
-        }
 
         if ((!possibleDstBuilder1forDome.isEmpty() && chosenBuilderNum == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
                 chosenBuilderNum == 2)) {
@@ -416,10 +417,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             dst = coordinatesInsertion();
         }
 
-        if(currentTurnBuilderPos == null)
-            notifyBuild(nickname, dstMove, dst, buildDome);
-        else
-            notifyBuild(nickname, currentTurnBuilderPos, dst, buildDome);
+        notifyBuild(nickname, currentTurnBuilderPos, dst, buildDome);
     }
 
     /**
@@ -427,17 +425,12 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
      */
     @Override
     public void move() {
-        Coordinates src;
         Set<Coordinates> possibleDstBuilder;
 
         cliGameMap.print(occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNum);
 
         if (chosenBuilderNum == 0)
-            src = chooseTurnBuilder();
-        else
-            src = currentTurnBuilderPos;
-
-
+            currentTurnBuilderPos = chooseTurnBuilder();
 
         if (chosenBuilderNum == 1) {
             possibleDstBuilder = possibleDstBuilder1;
@@ -449,7 +442,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
         }
 
         System.out.println("Insert the coordinates of where you want to move ");
-        dstMove = coordinatesInsertion();
+        Coordinates dstMove = coordinatesInsertion();
 
         //verifies that the selected cell contains a valid builder
         while (!possibleDstBuilder.contains(dstMove)){
@@ -457,7 +450,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
             dstMove = coordinatesInsertion();
         }
 
-        notifyMove(nickname, src, dstMove);
+        notifyMove(nickname, currentTurnBuilderPos, dstMove);
     }
 
     /**
@@ -641,6 +634,7 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
                 selectedCells.add(0, occupiedCells.get(nickname).get(0));
                 selectedCells.add(1, dst);
             }
+            currentTurnBuilderPos = dst;
             occupiedCells.put(nickname, selectedCells);
             cliGameMap.print(occupiedCells, null, null, chosenBuilderNum);
         }
@@ -663,7 +657,8 @@ public class Cli extends ViewObservable implements View, BuilderPossibleMoveObse
      */
     @Override
     public void onPlayerTurn(String nickname) {
-        System.out.println("Turn ended. Now playing: " + nickname);
+        if (!this.nickname.equals(nickname))
+            System.out.println("Turn ended. Now playing: " + nickname);
         chosenBuilderNum = 0;
     }
 
