@@ -24,6 +24,12 @@ public class YourTurnGodCard extends GodCard {
     }
 
     @Override
+    public void startTurn(){
+        super.startTurn();
+        built = false;
+    }
+
+    @Override
     public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
 
         //Prometheus power

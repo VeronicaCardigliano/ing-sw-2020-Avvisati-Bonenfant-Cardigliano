@@ -182,12 +182,14 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onStepChoice(String player, String chosenStep) {
         if (model.getCurrPlayer().equals(player) && model.getCurrStep().equals("REQUIRED")) {
-            if(!chosenStep.equals("END"))
-                if(model.setStepChoice(chosenStep))
+            if(!chosenStep.equals("END")) {
+                if (model.setStepChoice(chosenStep))
                     model.findPossibleDestinations();
+            }
             else {
                 model.setNextPlayer();
                 model.startTurn();
+                model.findPossibleDestinations();
             }
         }
     }

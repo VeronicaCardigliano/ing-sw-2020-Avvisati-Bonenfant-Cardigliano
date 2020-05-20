@@ -17,14 +17,21 @@ class GodCardTest {
 
     static GodCard godCard;
     static GodCard opponentGodCard;
+    static GodCard opponentGodCard2;
     static IslandBoard gameMap;
     static int maxCoordinate = IslandBoard.dimension - 1;
+
     static Player player;
     static Builder builder1;
     static Builder builder2;
+
     static Player opponent;
     static Builder builder3;
     static Builder builder4;
+
+    static Player opponent2;
+    static Builder builder5;
+    static Builder builder6;
 
     /**
      * create a map with 2 builders from one player
@@ -38,6 +45,7 @@ class GodCardTest {
         System.out.println("\nGODCARD TESTS");
 
         System.out.println("creating test player 1...");
+
         player = new Player("player1");
         builder1 = new Builder(player, Builder.BuilderColor.WHITE);
         builder2 = new Builder(player, Builder.BuilderColor.WHITE);
@@ -48,6 +56,11 @@ class GodCardTest {
         builder4 = new Builder(opponent, Builder.BuilderColor.MAGENTA);
         opponent.setBuilders(builder3, builder4);
 
+        opponent2 = new Player("player3");
+        builder5 = new Builder(opponent2, Builder.BuilderColor.LIGHT_BLUE);
+        builder6 = new Builder(opponent2, Builder.BuilderColor.LIGHT_BLUE);
+        opponent2.setBuilders(builder5, builder6);
+
         System.out.println("giving player1 a default card...");
         GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
         godCard = parser.createCard(player, "default");
@@ -56,6 +69,10 @@ class GodCardTest {
         //Demeter is used to check the choice after REQUIRED state
         opponentGodCard = parser.createCard(opponent, "Demeter");
         opponent.setGodCard(opponentGodCard);
+
+        //Prometheus is used to check the choice before REQUIRED state (startTurn)
+        opponentGodCard2 = parser.createCard(opponent2, "Prometheus");
+        opponent2.setGodCard(opponentGodCard2);
 
     }
 
@@ -245,6 +262,33 @@ class GodCardTest {
         assertTrue(godCard.move(4,4,4,3));
         assertFalse(godCard.winCondition());
 
+
+    }
+
+    @Test
+    public void startTurnRequiredCondition(){
+        System.out.println("\nChecking steps choices, not showing MOVE option at first for Prometheus...");
+        opponentGodCard2.setGameMap(gameMap);
+
+        Cell cell3 = gameMap.getCell(maxCoordinate - 4,maxCoordinate - 4);
+        Cell cell4 = gameMap.getCell(maxCoordinate -3 ,maxCoordinate - 2);
+
+        cell3.setOccupant(builder5);
+        cell4.setOccupant(builder6);
+
+        //should not display MOVE
+        gameMap.getCell(1,0).addDome();
+        gameMap.getCell(0,1).addDome();
+        gameMap.getCell(1,1).addBlock();
+        gameMap.getCell(1,1).addBlock();
+        //builder 5 can only perform a build
+        opponentGodCard2.startTurn();
+
+        assertTrue(opponentGodCard2.currStateList.size()==1);
+        assertTrue(opponentGodCard2.currStateList.contains("BUILD"));
+        assertTrue(opponentGodCard2.currState.equals("BUILD"));
+        assertFalse(opponentGodCard2.currStateList.contains("MOVE"));
+        assertFalse(opponentGodCard2.currState.equals("END"));
 
     }
 

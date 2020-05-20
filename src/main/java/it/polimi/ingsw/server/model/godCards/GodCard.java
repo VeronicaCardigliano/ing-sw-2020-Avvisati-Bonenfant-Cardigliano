@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.Event;
-import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
 
@@ -35,7 +34,6 @@ public class GodCard {
     protected Event event;
 
 
-
     /**
      * GodCard constructor.
      * @param player whose card is
@@ -62,7 +60,6 @@ public class GodCard {
     public void startTurn() {
 
         step = 0;
-        currBuilder = null;
         event = null;
 
         statesCopy = new ArrayList<>(states);
@@ -77,7 +74,12 @@ public class GodCard {
                 currStateList.add(list.get(0));
             }
 
-        filterNextState();
+        for (Builder  b : player.getBuilders()){
+            currBuilder = b;
+                filterNextState();
+        }
+
+        currBuilder = null;
 
         //activate pending constraint
         if(gameMap == null)
