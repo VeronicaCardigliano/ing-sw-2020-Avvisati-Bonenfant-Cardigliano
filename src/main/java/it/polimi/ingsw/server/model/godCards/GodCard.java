@@ -138,7 +138,7 @@ public class GodCard {
                     statesCopy.remove(list);
                     i--;
                 }
-            } else if(step == list.size() && !currStateList.contains("END")) {
+            } else if(step == list.size() && list.get(step-1).equals(previousStep) && !currStateList.contains("END")) {
                 currStateList.add("END");
             } else{
                 statesCopy.remove(list);
