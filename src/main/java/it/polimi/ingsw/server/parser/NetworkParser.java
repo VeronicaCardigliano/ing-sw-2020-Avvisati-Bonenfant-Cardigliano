@@ -4,8 +4,10 @@ package it.polimi.ingsw.server.parser;
 
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class NetworkParser {
@@ -52,8 +54,31 @@ public class NetworkParser {
     }
 
 
-    public String getDate(){
-        return jsonObject.getString(Messages.DATE);
+    public String getDate() throws JSONException {
+        String date = jsonObject.getString(Messages.DATE);
+
+        List<String> components = Arrays.asList(date.split("\\."));
+
+        int thisYear = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
+        int thisMonth = Integer.parseInt(new SimpleDateFormat("MM").format(new Date()));
+        int thisDay = Integer.parseInt(new SimpleDateFormat("dd").format(new Date()));
+
+        int inputYear, inputMonth, inputDay;
+
+        //MUST VERIFY THAT DATE CONTAINS ONLY DOTS AND NUMBERS
+        if (date.matches("\\d{4}\\.\\d{2}\\.\\d{2}")){
+            inputYear = Integer.parseInt(components.get(0));
+            inputMonth = Integer.parseInt(components.get(1));
+            inputDay = Integer.parseInt(components.get(2));
+
+            if (inputYear < thisYear && inputYear > 0)
+                if (inputMonth < thisMonth && inputMonth > 0 && inputMonth < 13)
+                    if(inputDay < thisDay && inputDay > 0 && inputDay < 31)
+                        return date;
+                        //SHOULD SWITCH CASE TO VERIFY THAT DAY IS CORRECT
+        }
+        throw new JSONException("");
+
     }
 
     public boolean getResult() {
