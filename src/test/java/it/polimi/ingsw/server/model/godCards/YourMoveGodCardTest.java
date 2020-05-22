@@ -95,6 +95,55 @@ public class  YourMoveGodCardTest {
     }
 
 
+
+    @Test
+    public void tritonTest(){
+        GodCard god = parser.createCard(mePlayer, "Triton");
+        god.setGameMap(testBoard);
+        god.startTurn();
+
+        assertTrue(god.statesCopy.size()==1);
+        assertTrue(god.currStateList.get(0).equals("MOVE"));
+
+
+
+        //--------
+        assertTrue(god.askMove(1,1,0,1));
+        assertTrue(god.move(1,1,0,1));
+        //this happens in YourBuild -> move
+        assertTrue(god.statesCopy.size()==2);
+
+        assertTrue(god.currStateList.size()==2);
+        assertTrue(god.currStateList.contains("MOVE"));
+        assertTrue(god.currStateList.contains("BUILD"));
+        assertTrue(god.currState.equals("REQUIRED"));
+
+
+
+        //---------
+        assertTrue(god.askMove(0,1,0,2));
+        assertTrue(god.move(0,1,0,2));
+        //this happens in YourBuild -> move
+        assertTrue(god.statesCopy.size()==2);
+
+        assertTrue(god.currStateList.size()==2);
+        assertTrue(god.currStateList.contains("MOVE"));
+        assertTrue(god.currStateList.contains("BUILD"));
+        assertTrue(god.currState.equals("REQUIRED"));
+
+        assertFalse(god.askMove(0,2,1,2));
+        assertFalse(god.move(0,2,1,2));
+
+
+
+        assertTrue(god.askBuild(0,2,0,3, false));
+        assertTrue(god.build(0,2,0,3,false));
+
+    }
+
+
+
+
     @Test
     public void secondMoveDiffDist(){
 

@@ -71,11 +71,15 @@ public class NetworkParser {
             inputMonth = Integer.parseInt(components.get(1));
             inputDay = Integer.parseInt(components.get(2));
 
-            if (inputYear < thisYear && inputYear > 0)
-                if (inputMonth < thisMonth && inputMonth > 0 && inputMonth < 13)
-                    if(inputDay < thisDay && inputDay > 0 && inputDay < 31)
-                        return date;
-                        //SHOULD SWITCH CASE TO VERIFY THAT DAY IS CORRECT
+            if (inputYear > 0) {
+                if (inputYear < thisYear)
+                    return date;
+                else if (inputYear == thisYear)
+                    if (inputMonth < thisMonth && inputMonth > 0 && inputMonth < 13)
+                        if (inputDay < thisDay && inputDay > 0 && inputDay < 31)
+                            return date;
+                //SHOULD SWITCH CASE TO VERIFY THAT DAY IS CORRECT
+            }
         }
         throw new JSONException("");
 

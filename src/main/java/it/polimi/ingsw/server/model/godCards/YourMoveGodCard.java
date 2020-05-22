@@ -19,6 +19,7 @@ import java.util.Map;
 public class YourMoveGodCard extends GodCard {
     private int pushForce;
     private boolean secondMoveDiffDst;
+    private boolean extraMovePerimeter;
     private Cell firstSrcCell;
 
 
@@ -29,26 +30,9 @@ public class YourMoveGodCard extends GodCard {
 
         this.pushForce = intParameters.get("pushForce");
         this.secondMoveDiffDst = flagParameters.get("secondMoveDiffDst");
+        this.extraMovePerimeter = flagParameters.get("extraMovePerimeter");
 
     }
-
-    /*
-    private boolean canMoveAgain(){
-
-        boolean canMoveAgain = false;
-
-        for (ArrayList<String> state : this.states) {
-
-            for (int j = step; j < state.size(); j++) {
-                if (state.get(j).equals("MOVE")) {
-                    canMoveAgain = true;
-                    break;
-                }
-            }
-        }
-        return canMoveAgain;
-    }
-    */
 
     @Override
     public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
@@ -65,7 +49,17 @@ public class YourMoveGodCard extends GodCard {
                 gameMap.getCell(i_dst, j_dst).removeOccupant();
             }
 
+
+            //this should clone the current list of step, add a move option and then add this new list to statesCopy
+            if (super.askMove(i_src, j_src, i_dst, j_dst) && extraMovePerimeter &&
+                (i_dst == 0 || i_dst == IslandBoard.dimension - 1 || j_dst == 0 || j_dst == IslandBoard.dimension - 1)){
+                ArrayList<String> list = new ArrayList<>(statesCopy.get(0));
+                list.add(step, "MOVE");
+                statesCopy.add(0, list);
+            }
+
             result = super.move(i_src, j_src, i_dst, j_dst);
+
 
             if(builderToPush != null)
                 push(builderToPush, i_src, j_src, i_dst, j_dst);
@@ -123,12 +117,17 @@ public class YourMoveGodCard extends GodCard {
     public boolean askMove(int i_src, int j_src, int i_dst, int j_dst){
 
         boolean extraConditions = true;
+        boolean tritonPower = true;
+
         Cell src = gameMap.getCell(i_src, j_src);
         Cell dst = gameMap.getCell(i_dst, j_dst);
 
         boolean moveHeightCondition = IslandBoard.heightDifference(src, dst) <= maxHeightDifference;
         boolean correctSrc = src.getBuilder() != null && src.getBuilder().getPlayer().equals(player);
 
+
+        if (extraMovePerimeter && step > 1)
+            tritonPower = (i_dst == 0 || j_dst == 0 || i_dst == IslandBoard.dimension - 1 || j_dst == IslandBoard.dimension - 1);
 
         if (secondMoveDiffDst && step != 0)
             extraConditions = !firstSrcCell.equals(dst);
@@ -140,7 +139,7 @@ public class YourMoveGodCard extends GodCard {
                 gameMap.check(new Event(Event.EventType.MOVE, src, dst)) &&
                 (dst.isOccupied() &&
                 askPush(i_src, j_src, i_dst, j_dst)))) &&
-                extraConditions;
+                extraConditions && tritonPower;
 
     }
 

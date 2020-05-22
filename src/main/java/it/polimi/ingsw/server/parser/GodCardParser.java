@@ -74,6 +74,8 @@ public class GodCardParser {
                     intParameters.put("pushForce", godObject.opt("pushForce") != null ? godObject.getInt("pushForce") : 0);
                     flagParameters.put("secondMoveDiffDst", godObject.opt("secondMoveDiffDst") != null &&
                             godObject.getBoolean("secondMoveDiffDst"));
+                    flagParameters.put("extraMovePerimeter", godObject.opt("extraMovePerimeter") != null &&
+                            godObject.getBoolean("extraMovePerimeter"));
 
                     cardCreated = new YourMoveGodCard(player, name, description, states, flagParameters, intParameters);
                     break;

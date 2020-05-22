@@ -130,8 +130,8 @@ public class GodCard {
                     } else if (!currState.equals(list.get(step))) {
                         currState = "REQUIRED";
                         //This should prevent from saving clones, TODO verify
-                        if (!currStateList.contains(list.get(i)))
-                            currStateList.add(list.get(i));
+                        if (!currStateList.contains(list.get(step))) /*step () i*/
+                            currStateList.add(list.get(step)); /*step () i*/
                     }
 
                 } else {
