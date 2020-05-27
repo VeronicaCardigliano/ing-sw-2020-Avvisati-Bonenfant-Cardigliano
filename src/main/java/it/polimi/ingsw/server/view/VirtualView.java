@@ -3,15 +3,22 @@ package it.polimi.ingsw.server.view;
 import it.polimi.ingsw.server.controller.AbstractController;
 import it.polimi.ingsw.server.controller.ConnectionObserver;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
-import it.polimi.ingsw.server.parser.Messages;
-import it.polimi.ingsw.server.parser.NetworkParser;
+import it.polimi.ingsw.network.Messages;
+import it.polimi.ingsw.network.NetworkParser;
 import org.json.JSONException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author thomas
@@ -20,20 +27,36 @@ import java.util.Scanner;
  */
 public class VirtualView extends ViewObservable implements Runnable {
 
+    private final int timeout = 20 * 1000;
+    private final int pingDelay = 2;
     private final Socket socket;
     private PrintWriter out;
-    private Scanner in;
+    private BufferedReader in;
     private String nickname;
     private ConnectionObserver connectionObserver;
+    private ScheduledExecutorService scheduler;
 
     public VirtualView(Socket socket, AbstractController controller) {
-        setObservers(controller);
+        setBuilderBuildObserver(controller);
+        setBuilderMoveObserver(controller);
+        setColorChoiceObserver(controller);
+        setNewPlayerObserver(controller);
+        setNumberOfPlayersObserver((controller));
+        setStepChoiceObserver(controller);
+        setBuilderSetupObserver(controller);
+        setDisconnectionObserver(controller);
+        setGodCardChoiceObserver(controller);
+        setStartPlayerObserver(controller);
 
 
         this.socket = socket;
         try {
             out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
-            in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
+            //in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
+            in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+
+            this.socket.setSoTimeout(timeout);
+
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -56,22 +79,19 @@ public class VirtualView extends ViewObservable implements Runnable {
     @Override
     public void run() {
         try {
-            //Scanner in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
-            //out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
             boolean connected = socket.isConnected();
-
             notifyConnection(this);
+            String message;
+
+            scheduler = Executors.newSingleThreadScheduledExecutor();
+            scheduler.schedule(() -> send(Messages.ping()), pingDelay, TimeUnit.SECONDS);
 
 
-            while(connected) {
-
-                String message = in.nextLine();
+            while((message = in.readLine()) != null && connected) {
 
                 System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
 
                 connected = handleMessage(message);
-
-
             }
 
             disconnect();
@@ -87,10 +107,9 @@ public class VirtualView extends ViewObservable implements Runnable {
         socket.close();
     }
 
-    public void send(String message) {
+    public synchronized void send(String message) {
         System.out.println("Sending to " + socket.getRemoteSocketAddress() + " : " + message);
         out.println(message);
-        //out.flush();
     }
 
     /**
@@ -117,9 +136,9 @@ public class VirtualView extends ViewObservable implements Runnable {
                     //drops redundant add player command
                     if(this.nickname == null) {
                         try {
-                        date = parser.getDate();
-                        setNickname(parser.getName());
-                        notifyNewPlayer(this.nickname, date);
+                            date = parser.getDate();
+                            setNickname(parser.getName());
+                            notifyNewPlayer(this.nickname, date);
                         } catch (JSONException e) {
                             send(Messages.errorMessage("Wrong nickname and date format"));
                             send(Messages.parseErrorPlayer());
@@ -168,9 +187,9 @@ public class VirtualView extends ViewObservable implements Runnable {
 
                 case Messages.BUILDERS_PLACEMENT:
                     try {
-                    builder1 = parser.getCoordArray().get(0);
-                    builder2 = parser.getCoordArray().get(1);
-                    notifySetupBuilders(nickname, builder1, builder2);
+                        builder1 = parser.getCoordArray().get(0);
+                        builder2 = parser.getCoordArray().get(1);
+                        notifySetupBuilders(nickname, builder1, builder2);
                     } catch (JSONException coordinatesException){
                         send(Messages.errorMessage(coordinatesException.getMessage()));
                         send(Messages.parseErrorBuilders());
@@ -180,8 +199,8 @@ public class VirtualView extends ViewObservable implements Runnable {
 
                 case Messages.SET_STEP_CHOICE:
                     try{
-                    String stepChoice = parser.getStepChoice();
-                    notifyStepChoice(nickname, stepChoice);
+                        String stepChoice = parser.getStepChoice();
+                        notifyStepChoice(nickname, stepChoice);
                     } catch (JSONException stepException){
                         send(Messages.errorMessage("Invalid format, be sure to insert coordinates as ints"));
                         send(Messages.parseErrorStepChoice());
@@ -207,9 +226,9 @@ public class VirtualView extends ViewObservable implements Runnable {
 
                 case Messages.BUILD:
                     try{
-                    src = parser.getSrcCoordinates();
-                    dst = parser.getDstCoordinates();
-                    notifyBuild(nickname, src, dst, parser.getBuildDome());
+                        src = parser.getSrcCoordinates();
+                        dst = parser.getDstCoordinates();
+                        notifyBuild(nickname, src, dst, parser.getBuildDome());
                     } catch (JSONException e) {
                         send(Messages.parseErrorBuild());
                     }
@@ -219,7 +238,11 @@ public class VirtualView extends ViewObservable implements Runnable {
                     connected = false;
                     notifyDisconnection(nickname);
                     send(Messages.disconnect());
+                    break;
 
+                case Messages.PONG:
+                    scheduler.schedule(() -> send(Messages.ping()), pingDelay, TimeUnit.SECONDS);
+                    break;
 
             }
         } catch (JSONException e) {

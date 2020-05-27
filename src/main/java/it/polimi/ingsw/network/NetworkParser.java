@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.parser;
+package it.polimi.ingsw.network;
 
 //Parses a string containing a json to evaluate e request coming from the view
 

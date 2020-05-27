@@ -1,15 +1,26 @@
 package it.polimi.ingsw.client;
-
 import it.polimi.ingsw.client.cli.Cli;
+
 
 public class Client {
     public static void main(String[] args) {
         NetworkHandler nh = new NetworkHandler("localhost", 2033);
-        Cli view = new Cli(System.in);
+        View view = new Cli();
 
         nh.setView(view);
 
-        view.setObservers(nh);
+        //view.setObservers(nh);
+
+        view.setBuilderBuildObserver(nh);
+        view.setBuilderMoveObserver(nh);
+        view.setColorChoiceObserver(nh);
+        view.setNewPlayerObserver(nh);
+        view.setNumberOfPlayersObserver((nh));
+        view.setStepChoiceObserver(nh);
+        view.setBuilderSetupObserver(nh);
+        view.setDisconnectionObserver(nh);
+        view.setGodCardChoiceObserver(nh);
+        view.setStartPlayerObserver(nh);
 
         nh.setBuilderBuiltObserver(view);
         nh.setBuilderMovementObserver(view);
@@ -27,7 +38,7 @@ public class Client {
         nh.setPossibleMoveObserver(view);
 
         (new Thread(nh)).start();
+        view.run();
 
-        //view.askNumberOfPlayers();
     }
 }

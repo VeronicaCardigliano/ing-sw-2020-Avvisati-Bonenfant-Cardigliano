@@ -270,6 +270,7 @@ public class Model extends ModelObservableWithSelect {
             set = false;
         }
 
+        notifyViewSelection(getCurrPlayer());
         notifyMatchGodCards(currPlayer.getNickname(), Set.copyOf(matchGodCards), set);
 
         return set;

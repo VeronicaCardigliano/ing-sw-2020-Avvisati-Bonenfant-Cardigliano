@@ -4,31 +4,40 @@ import it.polimi.ingsw.server.controller.*;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.ModelObservable;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
-import it.polimi.ingsw.server.parser.Messages;
-import it.polimi.ingsw.server.parser.NetworkParser;
+import it.polimi.ingsw.network.Messages;
+import it.polimi.ingsw.network.NetworkParser;
 import org.json.JSONException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class NetworkHandler extends ModelObservable implements Runnable, BuilderBuildObserver, BuilderMoveObserver,
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
         StepChoiceObserver, DisconnectionObserver, StartPlayerObserver {
 
-    private Socket socket;
+    private final int timeout = 20 * 1000;
     private PrintWriter out;
     private View view;
     private final int port;
     private final String ip;
 
+    private ExecutorService executorS;
+
+
     public NetworkHandler(String ip, int port) {
         this.ip = ip;
         this.port = port;
+
+        this.executorS = Executors.newCachedThreadPool();
     }
 
 
@@ -39,23 +48,22 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     @Override
     public void run() {
         try {
-            socket = new Socket(ip, port);
+            Socket socket = new Socket();
 
+            socket.connect(new InetSocketAddress(ip, port), 10 * 1000);
+            socket.setSoTimeout(timeout);
 
-
-            Scanner in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+
             boolean connected = socket.isConnected();
+            String message;
 
-
-
-            while(connected) {
-                String message = in.nextLine();
-
-                System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
+            while((message = in.readLine()) != null && connected) {
+                if(!Messages.ping().equals(message))
+                    System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
 
                 connected = handleMessage(message);
-
 
             }
 
@@ -64,13 +72,14 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
             socket.close();
 
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            System.err.println(e.getMessage()); //todo una notify per portare l'errore fino alla view
         }
     }
 
     private void send(String message) {
 
-        System.out.println("Sending: " + message);
+        if(!Messages.pong().equals(message))
+            System.out.println("Sending: " + message);
         out.println(message);
     }
 
@@ -92,35 +101,43 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
 
 
                 case Messages.ASK_NUMBER_OF_PLAYERS:
-                    view.askNumberOfPlayers();
+                    executorS.execute(() -> view.askNumberOfPlayers());
+                    //view.askNumberOfPlayers();
                     break;
 
                 case Messages.ASK_NICK_AND_DATE:
+                    //executorS.execute(() -> view.askNickAndDate());
                     view.askNickAndDate();
                     break;
 
                 case Messages.ASK_COLOR:
-                    view.askBuilderColor(parser.getSetFromArray(Messages.CHOSEN_COLORS));
+                    executorS.execute(() -> view.askBuilderColor(parser.getSetFromArray(Messages.CHOSEN_COLORS)));
+                    //view.askBuilderColor(parser.getSetFromArray(Messages.CHOSEN_COLORS));
                     break;
 
                 case Messages.ASK_GOD:
-                    view.askGodCard(parser.getGodDescriptions(), parser.getSetFromArray(Messages.CHOSEN_GOD_CARDS)); //TODO passare la lista dei god possibili? (specifica di gioco: il primo deve scegliere i 3 god possibili)
+                    executorS.execute(() -> view.askGodCard(parser.getGodDescriptions(), parser.getSetFromArray(Messages.CHOSEN_GOD_CARDS)));
+                    //view.askGodCard(parser.getGodDescriptions(), parser.getSetFromArray(Messages.CHOSEN_GOD_CARDS));
                     break;
 
                 case Messages.CHOOSE_MATCH_GOD_CARDS:
-                    view.chooseMatchGodCards(parser.getNumberOfPlayers(), parser.getGodDescriptions());
+                    executorS.execute(() -> view.chooseMatchGodCards(parser.getNumberOfPlayers(), parser.getGodDescriptions()));
+                    //view.chooseMatchGodCards(parser.getNumberOfPlayers(), parser.getGodDescriptions());
                     break;
 
                 case Messages.ASK_BUILDERS:
-                    view.placeBuilders();
+                    executorS.execute(() -> view.placeBuilders());
+                    //view.placeBuilders();
                     break;
 
                 case Messages.ASK_STEP:
-                    view.chooseNextStep(parser.getSetFromArray(Messages.POSSIBLE_STEPS));
+                    executorS.execute(() -> view.chooseNextStep(parser.getSetFromArray(Messages.POSSIBLE_STEPS)));
+                    //view.chooseNextStep(parser.getSetFromArray(Messages.POSSIBLE_STEPS));
                     break;
 
                 case Messages.CHOOSE_START_PLAYER:
-                    view.chooseStartPlayer(parser.getSetFromArray(Messages.PLAYERS));
+                    executorS.execute(() -> view.chooseStartPlayer(parser.getSetFromArray(Messages.PLAYERS)));
+                    //view.chooseStartPlayer(parser.getSetFromArray(Messages.PLAYERS));
                     break;
                 //notify dal Model
 
@@ -195,7 +212,11 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
 
                 case Messages.DISCONNECT:
                     connected = false;
+                    break;
 
+                case Messages.PING:
+                    send(Messages.pong());
+                    break;
 
             }
 

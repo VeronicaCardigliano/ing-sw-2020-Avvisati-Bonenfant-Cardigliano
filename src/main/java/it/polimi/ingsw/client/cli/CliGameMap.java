@@ -1,135 +1,75 @@
 package it.polimi.ingsw.client.cli;
 
+import it.polimi.ingsw.client.GameMap;
+import it.polimi.ingsw.client.Color;
+import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
+import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
-/**
- * This class is the GameMap Object
- */
-public class CliGameMap {
-    private String green = Color.ANSI_GREEN.escape(), yellow = Color.ANSI_YELLOW.escape(), blue = Color.ANSI_BLUE.escape();
+public class CliGameMap extends GameMap {
+
+    private final String green = Color.ANSI_GREEN.escape(), yellow = Color.ANSI_YELLOW.escape(), blue = Color.ANSI_BLUE.escape();
     private String builderColor;
-    private String reset = Color.RESET;
+    private final String reset = Color.RESET;
 
-    private static final String dottedCircle = "\u25CC", filledCircle = "\u25CF", hammerAndPick = "\u2692",
-            boxDrawingsVerticalLine = "\u2502", boxDrawingsVerticalAndRight = "\u2502", boxDrawingsVerticalAndLeft = "\u2524",
-            boxDrawingsDownAndHorizontal = "\u252C", boxDrawingsUpAndHorizontal = "\u2534", boxDrawingsHorizontal = "\u2500",
-            boxDrawingsDownAndRight = "\u250C", boxDrawingsDownAndLeft = "\u2510", boxDrawingsUpAndRight = "\u2514",
-            boxDrawingsUpAndLeft = "\u2518", boxDrawingsVerticalAndHorizontal = "\u253C";
+    private final String possibleDstSymbol = yellow + " " + "\u25CC" + reset;
+    private final String dome = blue + "\u25CF" + reset;
+    private final String builder =  " " + "\u2692" + reset;
 
-    private String horizontalLine = green + boxDrawingsHorizontal + boxDrawingsHorizontal + boxDrawingsHorizontal + boxDrawingsHorizontal;
-    private String possibleDstSymbol = yellow + " " + dottedCircle + reset;
-    private String dome = blue + filledCircle + reset;
-    private String builder =  " " + hammerAndPick + reset;
+    private final String verticalLine = green + "\u2502" + reset,
+            verticalLeftSeparator = green + "\u251C" + reset,
+            verticalRightSeparator = green + "\u2524" + reset,
+            horizontalAboveSeparator = green + "\u252C" + reset,
+            horizontalUnderSeparator = green + "\u2534" + reset,
+            horizontalLine = green + "\u2500" + "\u2500" + "\u2500"+ "\u2500" + reset,
+            leftAboveCorner = green + "\u250C" + reset,
+            rightAboveCorner = green + "\u2510" + reset,
+            leftUnderCorner = green + "\u2514" + reset,
+            rightUnderCorner = green + "\u2518" + reset,
+            centralSeparator = green + "\u253C" + reset;
 
-    private Map<Coordinates, Integer> heights = new HashMap<>();
 
-    //initialize the heights to zero for each cell
-    public CliGameMap() {
-        for (int i=0; i < Cli.mapDimension; i++)
-            for (int j=0; j < Cli.mapDimension; j++)
-                heights.put(new Coordinates(i,j), 0);
+    @Override
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+
+        int i;
+        result.append(printHorizontalIndexes());
+        result.append(printFirstLine());
+        for (i=0; i < IslandBoard.dimension - 1; i++) {
+            printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNumber());
+            result.append(printCentralLine());
+        }
+        result.append(printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNumber()));
+        result.append(printLastLine());
+
+        return result.toString();
     }
 
-    public void modifyHeight(Coordinates coord, boolean dome) {
-        if (dome)
-            heights.put(coord, -1);
-        else
-            heights.put(coord, heights.get(coord) + 1);
-    }
 
-    private void printHorizontalIndexes () {
+    //utility function to print map
+    private String printHorizontalIndexes () {
         StringBuilder indexes = new StringBuilder("   ");
-        for (int i=0; i<Cli.mapDimension; i++) {
+        for (int i = 0; i< IslandBoard.dimension; i++) {
             indexes.append("  ").append(i).append("  ");
         }
-        System.out.println(indexes);
+        return indexes.toString();
     }
 
-    private void printFirstLine() {
-        System.out.println("   " + green + boxDrawingsDownAndRight + horizontalLine + boxDrawingsDownAndHorizontal + horizontalLine +
-                boxDrawingsDownAndHorizontal + horizontalLine + boxDrawingsDownAndHorizontal + horizontalLine + boxDrawingsDownAndHorizontal +
-                horizontalLine + boxDrawingsDownAndLeft + reset);
+    private String printFirstLine() {
+        return("   " + leftAboveCorner + horizontalLine + horizontalAboveSeparator + horizontalLine +
+                horizontalAboveSeparator + horizontalLine + horizontalAboveSeparator + horizontalLine + horizontalAboveSeparator +
+                horizontalLine + rightAboveCorner);
     }
 
-    private void printCentralLine() {
-        System.out.println("   " + green + boxDrawingsVerticalAndRight + horizontalLine + boxDrawingsVerticalAndHorizontal +
-                horizontalLine + boxDrawingsVerticalAndHorizontal + horizontalLine + boxDrawingsVerticalAndHorizontal +
-                horizontalLine + boxDrawingsVerticalAndHorizontal + horizontalLine + boxDrawingsVerticalAndLeft + reset);
+    private String printCentralLine() {
+        return("   " + verticalLeftSeparator + horizontalLine + centralSeparator + horizontalLine + centralSeparator +
+                horizontalLine + centralSeparator + horizontalLine + centralSeparator + horizontalLine +verticalRightSeparator);
     }
 
-    private String returnColor (String player) {
-        String color = "";
-        switch (player) {
-            case "MAGENTA":
-                color = Color.ANSI_MAGENTA.escape();
-                break;
-            case "WHITE":
-                color = "";
-                break;
-            case "LIGHT_BLUE":
-                color =  Color.ANSI_LIGHTBLUE.escape();
-                break;
-        }
-        return color;
-    }
 
-    //i is the row and j is the column
-    private void printContents(int i, Map<String, ArrayList<Coordinates>> occupiedCells, Set<Coordinates> possibleDstBuilder1,
-                               Set<Coordinates> possibleDstBuilder2, int chosenBuilderNumber) {
-        StringBuilder line = new StringBuilder(" " + i + " ");
-        int height;
-        boolean printed;
-        for (int j=0; j < Cli.mapDimension; j++) {
-            printed = false;
-            Coordinates coordinates = new Coordinates(i,j);
-            //if I have a builder -> builder, if I have possibleDst -> possibleDst, else empty
-            for (String player : occupiedCells.keySet()) {
-
-                if (Coordinates.equals(coordinates, occupiedCells.get(player).get(0)) ||
-                        Coordinates.equals(coordinates, occupiedCells.get(player).get(1))) {
-
-                    //I could want to print the possible destinations of just one builder or both, or none of them
-                    //With the following 'if' I control whether the builder is also one of the possible destinations
-                    if ((possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
-                            controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
-                            (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates))) {
-                        builderColor = Color.ANSI_YELLOW.escape();
-                    }
-                    else
-                        builderColor = returnColor(Cli.getColor(player).toUpperCase());
-                    line.append(green).append(boxDrawingsVerticalLine).append(reset).append(builderColor).append(builder);
-                    printed = true;
-                }
-            }
-            //possibleDstBuilder sets are null if the match is not still in the Game state
-            //if the player has chosen the builder to use, it'll show just the chosenBuilder possible destinations
-
-            if (!printed && ((possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
-                    controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
-                    (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates)))) {
-
-                    line.append(green).append(boxDrawingsVerticalLine).append(reset).append(possibleDstSymbol);
-                    printed = true;
-            }
-
-            if (!printed)
-                line.append(green).append(boxDrawingsVerticalLine).append(reset).append("  ");
-
-            height = heights.get(coordinates);
-            if (height == -1)
-                line.append(dome).append(" ");
-            else if (height == 0)
-                line.append("  ");
-            else
-                line.append(height).append(" ");
-        }
-        System.out.print(line + green + boxDrawingsVerticalLine + reset + "\n");
-    }
 
     private boolean controlIfPossibleDst (Set<Coordinates> possibleDstSet, Coordinates coordinates) {
         boolean result = false;
@@ -141,34 +81,65 @@ public class CliGameMap {
         return result;
     }
 
-    private void printLastLine() {
-        System.out.println("   " + green + boxDrawingsUpAndRight + horizontalLine + boxDrawingsUpAndHorizontal + horizontalLine +
-                boxDrawingsUpAndHorizontal + horizontalLine + boxDrawingsUpAndHorizontal + horizontalLine +
-                boxDrawingsUpAndHorizontal + horizontalLine + boxDrawingsUpAndLeft + reset);
-    }
 
-    private void printChosenGodCards () {
-        Map<String,String> chosenGodCards = Cli.getChosenGodCards();
-        for (String player : chosenGodCards.keySet()) {
+    private String printContents(int i, Set<Coordinates> possibleDstBuilder1,
+                               Set<Coordinates> possibleDstBuilder2, int chosenBuilderNumber) {
+        StringBuilder line = new StringBuilder(" " + i + " ");
+        int height;
+        boolean printed;
+        for (int j=0; j < IslandBoard.dimension; j++) {
+            printed = false;
+            Coordinates coordinates = new Coordinates(i,j);
+            //if I have a builder -> builder, if I have possibleDst -> possibleDst, else empty
+            for (String player : getOccupiedCells().keySet()) {
 
-            String playerColor = returnColor(Cli.getColor(player).toUpperCase());
-            System.out.println("    " + playerColor + player + reset + " : " + chosenGodCards.get(player));
+                if (Coordinates.equals(coordinates, getOccupiedCells().get(player).get(0)) ||
+                        Coordinates.equals(coordinates, getOccupiedCells().get(player).get(1))) {
 
+                    //I could want to print the possible destinations of just one builder or both, or none of them
+                    //With the following 'if' I control whether the builder is also one of the possible destinations
+                    if ((possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
+                            controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
+                            (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates))) {
+                        builderColor = Color.ANSI_YELLOW.escape();
+                    }
+                    else
+                        builderColor = Color.returnColor(View.getColor(player).toUpperCase());
+                    line.append(verticalLine).append(builderColor).append(builder);
+                    printed = true;
+                }
+            }
+            //possibleDstBuilder sets are null if the match is not still in the Game state
+            //if the player has chosen the builder to use, it'll show just the chosenBuilder possible destinations
+
+            if (!printed && ((possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
+                    controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
+                    (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates)))) {
+
+                line.append(verticalLine).append(possibleDstSymbol);
+                printed = true;
+            }
+
+            if (!printed)
+                line.append(verticalLine).append("  ");
+
+            height = getHeights().get(coordinates);
+            if (height == -1)
+                line.append(dome).append(" ");
+            else if (height == 0)
+                line.append("  ");
+            else
+                line.append(height).append(" ");
         }
+        return line + verticalLine + "\n";
     }
 
-    public void print (Map<String, ArrayList<Coordinates>> occupiedCells, Set<Coordinates> possibleDstBuilder1,
-                       Set<Coordinates> possibleDstBuilder2, int chosenBuilderNumber) {
-        int i;
-        printHorizontalIndexes();
-        printFirstLine();
-        for (i=0; i < Cli.mapDimension - 1; i++) {
-            printContents(i, occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNumber);
-            printCentralLine();
-        }
-        printContents(i, occupiedCells, possibleDstBuilder1, possibleDstBuilder2, chosenBuilderNumber);
-        printLastLine();
-        printChosenGodCards();
+    private String printLastLine() {
+        return ("   " + leftUnderCorner + horizontalLine + horizontalUnderSeparator + horizontalLine +
+                horizontalUnderSeparator + horizontalLine + horizontalUnderSeparator + horizontalLine +
+                horizontalUnderSeparator + horizontalLine + rightUnderCorner);
     }
+
+
 
 }

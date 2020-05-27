@@ -1,4 +1,4 @@
-package it.polimi.ingsw.server.parser;
+package it.polimi.ingsw.network;
 
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
@@ -32,6 +32,8 @@ public abstract class Messages {
     public static final String INFO = "info";
     public static final String SET_MATCH_GOD_CARDS = "setMatchGodCards";
     public static final String SET_START_PLAYER = "setStartPlayer";
+    public static final String PING = "ping";
+    public static final String PONG = "pong";
 
     public static final String PARSE_ERROR_COLOR = "parseErrorColor";
     public static final String PARSE_ERROR_MOVE = "parseErrorMove";
@@ -63,7 +65,7 @@ public abstract class Messages {
 
     //key values
     public static final String COLOR = "color";                             //for SET_COLOR
-        public static final String WINNER = "winner";                       //for END_GAME
+    public static final String WINNER = "winner";                       //for END_GAME
     public static final String SRC = "src";
     public static final String DST = "dst";
     public static final String BUILD_DOME = "buildDome";
@@ -364,6 +366,17 @@ public abstract class Messages {
         return message.toString();
 
     }
+    //--------------------------------
+    //KEEP-ALIVE Connection Messages
+
+    public static String ping() {
+        return (new JSONObject()).put(TYPE, PING).toString();
+    }
+    public static String pong() {
+        return (new JSONObject()).put(TYPE, PONG).toString();
+    }
+
+    //--------------------------------
 
     public static String errorNumber(){
         return (new JSONObject()).put(TYPE, ERROR_NUMBER).toString();
