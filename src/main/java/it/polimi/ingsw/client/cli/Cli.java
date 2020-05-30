@@ -36,6 +36,8 @@ public class Cli extends View {
 
     @Override
     public  void run() {
+        printer.printTitle();
+
         String input = "";
         in = new Scanner(System.in);
         //setState(ViewState.CONNECTION);
@@ -54,36 +56,52 @@ public class Cli extends View {
                     case NUMPLAYERS:
                         setNumberOfPlayers(parser.nextInt()); //i think this inserts \n automatically, that's why cli sends an empty message
                         notifyNumberOfPlayers(getNumberOfPlayers());
+                        setState(ViewState.WAITING);
                         break;
                     case NICKDATE:
                         setNickname(parser.nextLine());
+                        printer.erase();
                         printer.setAskMessage("Date (yyyy.mm.dd): ");
                         printer.print();
                         setDate(in.nextLine());
                         notifyNewPlayer(getNickname(), getDate());
+                        printer.erase();
+                        setState(ViewState.WAITING);
                         break;
                     case MATCHGODS:
                         while(getMatchGodCards().size() < getNumberOfPlayers()) {
-                            if(parser.hasNext())
+                            if(parser.hasNext()) {
                                 addMatchGodCard(getOption(parser.nextInt()));
-                            else
-                                addMatchGodCard(getOption(in.nextInt()));
-
-
-                            if(getMatchGodCards().size() == getNumberOfPlayers())
+                            }
+                            else {
                                 chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
+                                addMatchGodCard(getOption(in.nextInt()));
+                                in.nextLine(); //to read new line character
+                            }
+
+
+                            //if(getMatchGodCards().size() == getNumberOfPlayers())
+                                //chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
                         }
 
                         notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
+                        printer.erase();
+                        printer.print();
+                        setState(ViewState.WAITING);
                         break;
                     case STARTPLAYER:
                         notifySetStartPlayer(getNickname(), getOption(parser.nextInt()));
+                        setState(ViewState.WAITING);
                         break;
                     case PLAYERGOD:
                         notifyGodCardChoice(getNickname(), getOption(parser.nextInt()));
+                        setState(ViewState.WAITING);
+                        break;
 
                     case BUILDERCOLOR:
                         notifyColorChoice(getNickname(), getOption(parser.nextInt()));
+
+                        setState(ViewState.WAITING);
                         break;
 
                     case BUILDERPLACEMENT:
@@ -91,28 +109,35 @@ public class Cli extends View {
                         int row;
                         int column;
 
+                        printer.erase();
+
                         while(getChosenBuilderPositions().size() < 2) {
                             if(parser.hasNext())
                                 row = parser.nextInt();
-                            else
+                            else {
                                 row = in.nextInt();
+                            }
 
                             printer.setAskMessage("COLUMN: ");
                             printer.print();
                             column = in.nextInt();
                             addBuilderPosition(new Coordinates(row, column));
 
+                            in.nextLine(); //to read new line character
+
                             if(getChosenBuilderPositions().size() < 2)
                             {
-                                printer.setAskMessage("ROW: ");
+                                printer.setAskMessage("Choose builder number " + (getChosenBuilderPositions().size() + 1) + "\nROW: ");
                                 printer.print();
                             }
                         }
 
                         notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
+                        setState(ViewState.WAITING);
                         break;
                     case STEP:
                         notifyStepChoice(getNickname(), getOption(parser.nextInt()));
+                        setState(ViewState.WAITING);
                         break;
 
                     case MOVE:
@@ -122,6 +147,10 @@ public class Cli extends View {
                         build();
                         break;
 
+                    case WAITING:
+                        printer.setInfoMessage("Waiting from Server.\nYou entered " + parser.nextLine());
+                        printer.print();
+                        break;
 
                 }
             } catch (NullPointerException e) {
@@ -139,7 +168,7 @@ public class Cli extends View {
         int column;
 
         //asks for row
-        printer.setGameMapString(null);
+        printer.erase();
         printer.setAskMessage("ROW: ");
         printer.print();
         row = in.nextInt();
@@ -149,7 +178,7 @@ public class Cli extends View {
         printer.print();
         column = in.nextInt();
 
-        in.nextLine();
+        in.nextLine(); //to read new line character
 
         return new Coordinates(row, column);
     }
@@ -161,6 +190,7 @@ public class Cli extends View {
 
         Coordinates src;
         printer.setInfoMessage("Insert the coordinates of the builder you want to use ");
+        printer.print();
         src = coordinatesInsertion();
 
         //verifies that the selected cell contains a valid builder
@@ -201,12 +231,14 @@ public class Cli extends View {
             //checkLeaving(buildType);
 
             while (!(buildType.equals("D") || buildType.equals("B"))) {
-                printer.setAskMessage("Invalid insertion. Select what yuo want to build: insert 'D' for dome or 'B' for building ");
+                printer.setAskMessage("Invalid insertion. Select what you want to build: insert 'D' for dome or 'B' for building ");
                 printer.print();
                 buildType = in.nextLine().toUpperCase();
                 //checkLeaving(buildType);
             }
         }
+
+        printer.setAskMessage(null);
 
         if (buildType.equals("D")) {
             buildDome = true;
@@ -227,7 +259,9 @@ public class Cli extends View {
         else
             gameMap.setPossibleDst(null, possibleDstBuilder2);
 
+        printer.setGameMapString(gameMap.toString());
         printer.setInfoMessage("Insert the coordinates of where you want to build ");
+        printer.print();
         dst = coordinatesInsertion();
 
         while (!possibleDstBuilder.contains(dst)){
@@ -236,10 +270,12 @@ public class Cli extends View {
         }
 
         notifyBuild(getNickname(), currentTurnBuilderPos, dst, buildDome);
+        setState(ViewState.WAITING);
     }
 
 
     public void move() {
+
         Set<Coordinates> possibleDstBuilder;
 
         //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
@@ -258,16 +294,28 @@ public class Cli extends View {
 
         gameMap.setChosenBuilderNumber(getChosenBuilderNum());
 
+        printer.erase();
+        printer.setGameMapString(gameMap.toString());
+        printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+
         printer.setInfoMessage("Insert the coordinates of where you want to move ");
+        printer.print();
         Coordinates dstMove = coordinatesInsertion();
+
 
         //verifies that the selected cell contains a valid builder
         while (!possibleDstBuilder.contains(dstMove)){
+            printer.erase();
             printer.setInfoMessage("Invalid coordinates. Select a cell from the available ones");
+
+            printer.setGameMapString(gameMap.toString());
+            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
             dstMove = coordinatesInsertion();
         }
 
+
         notifyMove(getNickname(), currentTurnBuilderPos, dstMove);
+        setState(ViewState.WAITING);
     }
 
 
@@ -409,6 +457,7 @@ public class Cli extends View {
         }
 
         printer.setChoiceList(displayMap(availableGods));
+        printer.setAskMessage("Choice: ");
         printer.print();
     }
 
@@ -419,6 +468,7 @@ public class Cli extends View {
         Set<String> allColors = new HashSet<>(Set.of("MAGENTA", "WHITE", "LIGHT_BLUE"));
         allColors.removeAll(chosenColors);
 
+        setState(ViewState.BUILDERCOLOR);
         inputOptions = new ArrayList<>();
         inputOptions.addAll(allColors);
         printer.setChoiceList(displaySet(allColors));
@@ -448,17 +498,23 @@ public class Cli extends View {
         printer.setChoiceList(displaySet(possibleSteps));
         printer.setAskMessage("Next Step: ");
         printer.print();
+
+        printer.erase();
     }
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
         super.onBuilderBuild(nickname, src, dst, dome, result);
 
-        if(!result)
+        if(!result) {
             printer.setInfoMessage("Build failed");
+            setState(ViewState.BUILD);
+        }
         else {
             gameMap.setPossibleDst(null, null);
             printer.setGameMapString(gameMap.toString());
+            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+
             printer.setChoiceList(null);
             printer.setAskMessage(null);
         }
@@ -470,11 +526,15 @@ public class Cli extends View {
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
         super.onBuilderMovement(nickname, src, dst, result);
 
-        if(!result)
+        if(!result) {
             printer.setInfoMessage("Move failed");
+            setState(ViewState.MOVE);
+        }
         else {
             gameMap.setPossibleDst(null, null);
             printer.setGameMapString(gameMap.toString());
+            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+
             printer.setChoiceList(null);
             printer.setAskMessage(null);
         }
@@ -487,13 +547,24 @@ public class Cli extends View {
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         super.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2, result);
 
-        if(!result)
+
+
+        if(!result) {
             printer.setInfoMessage("Builders placement failed");
-        else {
-            gameMap.setPossibleDst(null, null);
             printer.setGameMapString(gameMap.toString());
-            printer.setChoiceList(null);
-            printer.setAskMessage(null);
+            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+
+            printer.setAskMessage("ROW: ");
+            printer.print();
+            setState(ViewState.BUILDERPLACEMENT);
+        }
+        else {
+            printer.erase();
+            printer.setInfoMessage(nickname + "'s builders placed!");
+            printer.setGameMapString(gameMap.toString());
+            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+
+            printer.print();
         }
     }
 
@@ -511,6 +582,8 @@ public class Cli extends View {
     public void onColorAssigned(String nickname, String color, boolean result) {
         super.onColorAssigned(nickname, color, result);
 
+        printer.erase();
+
         if(!result)
             printer.setInfoMessage("Color assignment failed");
 
@@ -521,11 +594,9 @@ public class Cli extends View {
     public void onEndGameUpdate(String winnerNickname) {
         super.onEndGameUpdate(winnerNickname);
 
-        printer.setAskMessage(null);
-        printer.setGameMapString(null);
-        printer.setState("Game Over");
-        printer.setChoiceList(null);
-        printer.setInfoMessage("Player: " + winnerNickname + " winned!");
+        printer.erase();
+        printer.setState("Game Over!");
+        printer.setInfoMessage(winnerNickname + " won!");
         printer.print();
     }
 
@@ -543,6 +614,7 @@ public class Cli extends View {
 
         printer.setInfoMessage("SERVER: Wrong Number Insertion");
         printer.print();
+        setState(ViewState.NUMPLAYERS);
     }
 
     @Override
@@ -551,6 +623,7 @@ public class Cli extends View {
 
         if(result) {
             if(nickname.equals(getNickname()))
+                printer.erase();
                 printer.setInfoMessage("GodCard assigned correctly");
         } else
             printer.setInfoMessage("GodCard assignment failed");
@@ -564,7 +637,6 @@ public class Cli extends View {
 
         if(result) {
             printer.setInfoMessage(nickname + " joined the game!");
-            printer.setAskMessage(null);
         }
         else
             printer.setInfoMessage("Could not register nickname");
@@ -605,8 +677,48 @@ public class Cli extends View {
     public void onStateUpdate(Model.State currState) {
         super.onStateUpdate(currState);
 
+        printer.erase();
         printer.setState(currState.toString());
-        printer.setAskMessage(null);
         printer.print();
+        printer.erase();
+    }
+
+    @Override
+    public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
+        super.onMatchGodCardsAssigned(nickname, godCardsToUse, result);
+
+        if(!result) {
+            chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
+        } else {
+            printer.setInfoMessage(nickname + "chose " + godCardsToUse);
+        }
+    }
+
+    @Override
+    public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
+        super.updatePossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2);
+
+        gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
+        //printer.setGameMapString(gameMap.toString());
+        printer.setInfoMessage("Move action required.");
+        printer.setAskMessage("Press ENTER to start or enter QUIT to exit the game.");
+        printer.print();
+
+
+        //erase message that asks for ENTER
+        printer.setAskMessage(null);
+
+    }
+
+    @Override
+    public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
+        super.updatePossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
+
+        printer.setInfoMessage("Build action required.");
+        printer.setAskMessage("Press ENTER to start or enter QUIT to exit the game.");
+        printer.print();
+
+        //erase message
+        printer.setAskMessage(null);
     }
 }

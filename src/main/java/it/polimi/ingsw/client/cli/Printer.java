@@ -21,31 +21,31 @@ public class Printer {
     }
 
 
-    public void setState(String state) {
+    public synchronized void setState(String state) {
         this.state = state;
     }
 
-    public void setInfoMessage(String infoMessage) {
+    public synchronized void setInfoMessage(String infoMessage) {
         this.infoMessage = infoMessage;
     }
 
-    public void setGameMapString(String gameMapString) {
+    public synchronized void setGameMapString(String gameMapString) {
         this.gameMapString = gameMapString;
     }
 
-    public void setAskMessage(String message) {
+    public synchronized void setAskMessage(String message) {
         this.askMessage = message;
     }
 
-    public void setPlayersList(String playersList) {
+    public synchronized void setPlayersList(String playersList) {
         this.playersList = playersList;
     }
 
-    public void setChoiceList(String choiceList) {
+    public synchronized void setChoiceList(String choiceList) {
         this.choiceList = choiceList;
     }
 
-    private void printTitle() {
+    public void printTitle() {
         System.out.println("\n" +
                 "░██████╗░█████╗░███╗░░██╗████████╗░█████╗░██████╗░██╗███╗░░██╗██╗\n" +
                 "██╔════╝██╔══██╗████╗░██║╚══██╔══╝██╔══██╗██╔══██╗██║████╗░██║██║\n" +
@@ -55,20 +55,29 @@ public class Printer {
                 "╚═════╝░╚═╝░░╚═╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝╚═╝");
     }
 
-    public void print() {
+    public synchronized void print() {
         //printTitle();
 
         if(state != null)
-            out.println(state);
-        if(infoMessage != null)
-            out.println(infoMessage);
+            out.println("\n" + state);
         if(gameMapString != null)
             out.println(gameMapString);
         if(playersList != null)
             out.println(playersList);
+        if(infoMessage != null)
+            out.println(infoMessage);
         if(choiceList != null)
             out.println(choiceList);
         if(askMessage != null)
-            out.println(askMessage);
+            out.print(askMessage);
+    }
+
+    public synchronized void erase() {
+        state = null;
+        infoMessage = null;
+        gameMapString = null;
+        playersList = null;
+        choiceList = null;
+        askMessage = null;
     }
 }

@@ -7,8 +7,8 @@ import java.util.*;
 
 public abstract class GameMap {
 
-    private Set<Coordinates> possibleDstBuilder1;
-    private Set<Coordinates> possibleDstBuilder2;
+    private Set<Coordinates> possibleDstBuilder1 = new HashSet<>();
+    private Set<Coordinates> possibleDstBuilder2 = new HashSet<>();
     private int chosenBuilderNumber = 0;
 
     private final int DOME = -1;
@@ -36,7 +36,10 @@ public abstract class GameMap {
     }
 
     public ArrayList<Set<Coordinates>> getPossibleDst() {
-        return new ArrayList<>(List.of(possibleDstBuilder1, possibleDstBuilder2));
+        ArrayList<Set<Coordinates>> possDst = new ArrayList<>();
+        possDst.add(possibleDstBuilder1);
+        possDst.add(possibleDstBuilder2);
+        return possDst;
     }
 
     public void setOccupiedCells (String nickname, Coordinates builder1, Coordinates builder2) {

@@ -39,7 +39,7 @@ public class CliGameMap extends GameMap {
         result.append(printHorizontalIndexes());
         result.append(printFirstLine());
         for (i=0; i < IslandBoard.dimension - 1; i++) {
-            printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNumber());
+            result.append(printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNumber()));
             result.append(printCentralLine());
         }
         result.append(printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNumber()));
@@ -55,18 +55,18 @@ public class CliGameMap extends GameMap {
         for (int i = 0; i< IslandBoard.dimension; i++) {
             indexes.append("  ").append(i).append("  ");
         }
-        return indexes.toString();
+        return indexes.toString() + "\n";
     }
 
     private String printFirstLine() {
         return("   " + leftAboveCorner + horizontalLine + horizontalAboveSeparator + horizontalLine +
                 horizontalAboveSeparator + horizontalLine + horizontalAboveSeparator + horizontalLine + horizontalAboveSeparator +
-                horizontalLine + rightAboveCorner);
+                horizontalLine + rightAboveCorner + "\n");
     }
 
     private String printCentralLine() {
         return("   " + verticalLeftSeparator + horizontalLine + centralSeparator + horizontalLine + centralSeparator +
-                horizontalLine + centralSeparator + horizontalLine + centralSeparator + horizontalLine +verticalRightSeparator);
+                horizontalLine + centralSeparator + horizontalLine + centralSeparator + horizontalLine +verticalRightSeparator + "\n");
     }
 
 
@@ -82,7 +82,7 @@ public class CliGameMap extends GameMap {
     }
 
 
-    private String printContents(int i, Set<Coordinates> possibleDstBuilder1,
+    public String printContents(int i, Set<Coordinates> possibleDstBuilder1,
                                Set<Coordinates> possibleDstBuilder2, int chosenBuilderNumber) {
         StringBuilder line = new StringBuilder(" " + i + " ");
         int height;
@@ -137,7 +137,7 @@ public class CliGameMap extends GameMap {
     private String printLastLine() {
         return ("   " + leftUnderCorner + horizontalLine + horizontalUnderSeparator + horizontalLine +
                 horizontalUnderSeparator + horizontalLine + horizontalUnderSeparator + horizontalLine +
-                horizontalUnderSeparator + horizontalLine + rightUnderCorner);
+                horizontalUnderSeparator + horizontalLine + rightUnderCorner + "\n");
     }
 
 

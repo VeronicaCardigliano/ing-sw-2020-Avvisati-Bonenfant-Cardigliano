@@ -61,7 +61,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
 
             while((message = in.readLine()) != null && connected) {
                 if(!Messages.ping().equals(message))
-                    System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
+                    ;//System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
 
                 connected = handleMessage(message);
 
@@ -79,7 +79,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     private void send(String message) {
 
         if(!Messages.pong().equals(message))
-            System.out.println("Sending: " + message);
+            ;//System.out.println("Sending: " + message);
         out.println(message);
     }
 

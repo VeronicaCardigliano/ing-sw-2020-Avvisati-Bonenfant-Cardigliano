@@ -85,7 +85,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
 
     public Map<String, String> getChosenGodCardsForPlayer() { return chosenGodCardsForPlayer; }
-    public Map<String, String> getChosenColorsForPlayer() {return chosenColorsForPlayer;}
+    public static Map<String, String> getChosenColorsForPlayer() {return chosenColorsForPlayer;}
 
 
     public void askNumberOfPlayers () {
@@ -150,7 +150,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         this.possibleDstBuilder1forDome = possibleDstBuilder1forDome;
         this.possibleDstBuilder2forDome = possibleDstBuilder2forDome;
         setState(ViewState.BUILD);
-        //logger.askForAction(getState());
     }
 
     @Override

@@ -100,8 +100,8 @@ public class YourMoveGodCard extends GodCard {
         // Checks that destination isn't out of board (this could happen due to the pushForce),
         // destination Cell is free from builders or dome (don't care about height)
         return  dst.isOccupied() && !dst.getBuilder().getPlayer().equals(player) &&
-                i_enemy_dst < IslandBoard.dimension && i_enemy_dst > 0 &&
-                j_enemy_dst < IslandBoard.dimension && j_enemy_dst > 0 &&
+                i_enemy_dst < IslandBoard.dimension && i_enemy_dst >= 0 &&
+                j_enemy_dst < IslandBoard.dimension && j_enemy_dst >= 0 &&
                 !gameMap.getCell(i_enemy_dst, j_enemy_dst).isDomePresent() &&
                 (allowSwitch || !gameMap.getCell(i_enemy_dst, j_enemy_dst).isOccupied());
     }
