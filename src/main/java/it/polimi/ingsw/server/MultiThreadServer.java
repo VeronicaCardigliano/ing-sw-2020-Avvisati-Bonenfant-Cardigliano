@@ -12,13 +12,14 @@ import java.util.concurrent.Executors;
 
 public class MultiThreadServer {
     private final int port;
+    private final int maxNumberOfThreads = 5;
 
     public MultiThreadServer(int port) {
         this.port = port;
     }
 
     public void startServer(ViewManager viewManager, Controller controller) {
-        ExecutorService executor = Executors.newFixedThreadPool(5);
+        ExecutorService executor = Executors.newFixedThreadPool(maxNumberOfThreads);
         ServerSocket serverSocket;
 
         try {

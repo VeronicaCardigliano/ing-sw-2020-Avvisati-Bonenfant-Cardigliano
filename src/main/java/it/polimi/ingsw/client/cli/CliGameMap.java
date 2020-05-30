@@ -14,21 +14,19 @@ public class CliGameMap extends GameMap {
     private String builderColor;
     private final String reset = Color.RESET;
 
-    private final String possibleDstSymbol = yellow + " " + "\u25CC" + reset;
-    private final String dome = blue + "\u25CF" + reset;
-    private final String builder =  " " + "\u2692" + reset;
 
-    private final String verticalLine = green + "\u2502" + reset,
-            verticalLeftSeparator = green + "\u251C" + reset,
-            verticalRightSeparator = green + "\u2524" + reset,
-            horizontalAboveSeparator = green + "\u252C" + reset,
-            horizontalUnderSeparator = green + "\u2534" + reset,
-            horizontalLine = green + "\u2500" + "\u2500" + "\u2500"+ "\u2500" + reset,
-            leftAboveCorner = green + "\u250C" + reset,
-            rightAboveCorner = green + "\u2510" + reset,
-            leftUnderCorner = green + "\u2514" + reset,
-            rightUnderCorner = green + "\u2518" + reset,
-            centralSeparator = green + "\u253C" + reset;
+
+
+    private static final String dottedCircle = "\u25CC", filledCircle = "\u25CF", hammerAndPick = "\u2692",
+            boxDrawingsVerticalLine = "\u2502", boxDrawingsVerticalAndRight = "\u2502", boxDrawingsVerticalAndLeft = "\u2524",
+            boxDrawingsDownAndHorizontal = "\u252C", boxDrawingsUpAndHorizontal = "\u2534", boxDrawingsHorizontal = "\u2500",
+            boxDrawingsDownAndRight = "\u250C", boxDrawingsDownAndLeft = "\u2510", boxDrawingsUpAndRight = "\u2514",
+            boxDrawingsUpAndLeft = "\u2518", boxDrawingsVerticalAndHorizontal = "\u253C";
+
+    private final String horizontalLine = green + boxDrawingsHorizontal + boxDrawingsHorizontal + boxDrawingsHorizontal + boxDrawingsHorizontal;
+    private final String possibleDstSymbol = yellow + " " + dottedCircle + reset;
+    private final String dome = blue + filledCircle + reset;
+    private final String builder =  " " + hammerAndPick + reset;
 
 
     @Override
@@ -59,14 +57,15 @@ public class CliGameMap extends GameMap {
     }
 
     private String printFirstLine() {
-        return("   " + leftAboveCorner + horizontalLine + horizontalAboveSeparator + horizontalLine +
-                horizontalAboveSeparator + horizontalLine + horizontalAboveSeparator + horizontalLine + horizontalAboveSeparator +
-                horizontalLine + rightAboveCorner + "\n");
+        return("   " + green + boxDrawingsDownAndRight + horizontalLine + boxDrawingsDownAndHorizontal + horizontalLine +
+                boxDrawingsDownAndHorizontal + horizontalLine + boxDrawingsDownAndHorizontal + horizontalLine + boxDrawingsDownAndHorizontal +
+                horizontalLine + boxDrawingsDownAndLeft + reset + "\n");
     }
 
     private String printCentralLine() {
-        return("   " + verticalLeftSeparator + horizontalLine + centralSeparator + horizontalLine + centralSeparator +
-                horizontalLine + centralSeparator + horizontalLine + centralSeparator + horizontalLine +verticalRightSeparator + "\n");
+        return("   " + green + boxDrawingsVerticalAndRight + horizontalLine + boxDrawingsVerticalAndHorizontal +
+                horizontalLine + boxDrawingsVerticalAndHorizontal + horizontalLine + boxDrawingsVerticalAndHorizontal +
+                horizontalLine + boxDrawingsVerticalAndHorizontal + horizontalLine + boxDrawingsVerticalAndLeft + reset + "\n");
     }
 
 
@@ -105,7 +104,7 @@ public class CliGameMap extends GameMap {
                     }
                     else
                         builderColor = Color.returnColor(View.getColor(player).toUpperCase());
-                    line.append(verticalLine).append(builderColor).append(builder);
+                    line.append(green).append(boxDrawingsVerticalLine).append(reset).append(builderColor).append(builder);
                     printed = true;
                 }
             }
@@ -116,12 +115,12 @@ public class CliGameMap extends GameMap {
                     controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
                     (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates)))) {
 
-                line.append(verticalLine).append(possibleDstSymbol);
+                line.append(green).append(boxDrawingsVerticalLine).append(reset).append(possibleDstSymbol);
                 printed = true;
             }
 
             if (!printed)
-                line.append(verticalLine).append("  ");
+                line.append(green).append(boxDrawingsVerticalLine).append(reset).append("  ");
 
             height = getHeights().get(coordinates);
             if (height == -1)
@@ -131,13 +130,13 @@ public class CliGameMap extends GameMap {
             else
                 line.append(height).append(" ");
         }
-        return line + verticalLine + "\n";
+        return line + green + boxDrawingsVerticalLine + reset + "\n";
     }
 
     private String printLastLine() {
-        return ("   " + leftUnderCorner + horizontalLine + horizontalUnderSeparator + horizontalLine +
-                horizontalUnderSeparator + horizontalLine + horizontalUnderSeparator + horizontalLine +
-                horizontalUnderSeparator + horizontalLine + rightUnderCorner + "\n");
+        return ("   " + green + boxDrawingsUpAndRight + horizontalLine + boxDrawingsUpAndHorizontal + horizontalLine +
+                boxDrawingsUpAndHorizontal + horizontalLine + boxDrawingsUpAndHorizontal + horizontalLine +
+                boxDrawingsUpAndHorizontal + horizontalLine + boxDrawingsUpAndLeft + reset + "\n");
     }
 
 

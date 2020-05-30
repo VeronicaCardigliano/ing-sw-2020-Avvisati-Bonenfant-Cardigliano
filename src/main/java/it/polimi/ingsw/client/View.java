@@ -133,8 +133,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
             if(getNickname().equals(nickname))
                 currentTurnBuilderPos = dst;
-        } else
-            ;
+        }
 
     }
 
@@ -164,16 +163,12 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         if(result)
             gameMap.setOccupiedCells(nickname, positionBuilder1, positionBuilder2);
-        else
-            ;//todo da vedere
+
     }
 
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
-        if(result)
-            ;//logger.log(nickname + " chose " + step + "\n");
-        else
-            ;//logger.log(red + "\nERROR:"+ Color.RESET + " wrong step.\n");
+
 
     }
 
@@ -181,8 +176,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public void onColorAssigned(String nickname, String color, boolean result) {
         if(result)
             chosenColorsForPlayer.put(nickname, color);
-        else
-            ;//logger.log("Invalid insertion of color.\n");
+
     }
 
     @Override
@@ -192,41 +186,30 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onWrongInsertionUpdate(String error) {
-        ;//logger.log(error + "\n");
     }
 
     @Override
     public void onWrongNumberInsertion() {
-        ;//logger.log("Invalid number Insertion.\n");
     }
 
     @Override
     public void onGodCardAssigned(String nickname, String card, boolean result) {
         if(result) {
-            if(this.nickname.equals(nickname))
-                ;//logger.log("GodCard assigned correctly.\n");
             chosenGodCardsForPlayer.put(nickname, card);
-        } else
-            ;//logger.log("Invalid insertion of godCard.\n");
+        }
     }
 
     @Override
     public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
-        if(result)
-            ;//logger.log("GodCards correctly chosen. Wait for the other players to choose theirs.\n");
-        else
-            ;//logger.log("Error assigning");
+
     }
 
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
-        if(result)
-            ;//logger.log(nickname + " joined the game!\n");
-        else {
+        if(!result)
             this.nickname = null;
-            this.date = null;
-            //logger.log("Invalid nickname or date. Could not join the game.\n");
-        }
+        this.date = null;
+
     }
 
     @Override
@@ -239,15 +222,14 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public void onPlayerTurn(String nickname) {
         currentTurnBuilderPos = null;
         chosenBuilderNum = 0;
-        ;//logger.log("Now Playing: " + nickname + "\n");
     }
 
     @Override
     public void onStartPlayerSet(String nickname, boolean result) {
-        if(result)
+        /*if(result)
             System.out.println("The starting player is" + nickname);
         else
-            System.out.println(red + "\nERROR:"+ Color.RESET + " could not set starting player.");
+            System.out.println(red + "\nERROR:"+ Color.RESET + " could not set starting player.");*/
     }
 
     @Override

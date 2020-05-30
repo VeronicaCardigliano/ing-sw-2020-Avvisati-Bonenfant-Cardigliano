@@ -24,7 +24,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
         StepChoiceObserver, DisconnectionObserver, StartPlayerObserver {
 
-    private final int timeout = 20 * 1000;
+    private final int timeout = 5 * 1000;
     private PrintWriter out;
     private View view;
     private final int port;

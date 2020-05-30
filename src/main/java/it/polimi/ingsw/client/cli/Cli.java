@@ -49,118 +49,126 @@ public class Cli extends View {
 
             input = in.nextLine();
 
-            Scanner parser = new Scanner(input);
+            if (!input.toLowerCase().equals("quit")) {
 
-            try {
-                switch (getState()) {
-                    case NUMPLAYERS:
-                        setNumberOfPlayers(parser.nextInt()); //i think this inserts \n automatically, that's why cli sends an empty message
-                        notifyNumberOfPlayers(getNumberOfPlayers());
-                        setState(ViewState.WAITING);
-                        break;
-                    case NICKDATE:
-                        setNickname(parser.nextLine());
-                        printer.erase();
-                        printer.setAskMessage("Date (yyyy.mm.dd): ");
-                        printer.print();
-                        setDate(in.nextLine());
-                        notifyNewPlayer(getNickname(), getDate());
-                        printer.erase();
-                        setState(ViewState.WAITING);
-                        break;
-                    case MATCHGODS:
-                        while(getMatchGodCards().size() < getNumberOfPlayers()) {
-                            if(parser.hasNext()) {
-                                addMatchGodCard(getOption(parser.nextInt()));
-                            }
-                            else {
-                                chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
-                                addMatchGodCard(getOption(in.nextInt()));
-                                in.nextLine(); //to read new line character
-                            }
+                Scanner parser = new Scanner(input);
 
-
-                            //if(getMatchGodCards().size() == getNumberOfPlayers())
-                                //chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
-                        }
-
-                        notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
-                        printer.erase();
-                        printer.print();
-                        setState(ViewState.WAITING);
-                        break;
-                    case STARTPLAYER:
-                        notifySetStartPlayer(getNickname(), getOption(parser.nextInt()));
-                        setState(ViewState.WAITING);
-                        break;
-                    case PLAYERGOD:
-                        notifyGodCardChoice(getNickname(), getOption(parser.nextInt()));
-                        setState(ViewState.WAITING);
-                        break;
-
-                    case BUILDERCOLOR:
-                        notifyColorChoice(getNickname(), getOption(parser.nextInt()));
-
-                        setState(ViewState.WAITING);
-                        break;
-
-                    case BUILDERPLACEMENT:
-                        boolean askForRow = false;
-                        int row;
-                        int column;
-
-                        printer.erase();
-
-                        while(getChosenBuilderPositions().size() < 2) {
-                            if(parser.hasNext())
-                                row = parser.nextInt();
-                            else {
-                                row = in.nextInt();
-                            }
-
-                            printer.setAskMessage("COLUMN: ");
+                try {
+                    switch (getState()) {
+                        case NUMPLAYERS:
+                            setNumberOfPlayers(parser.nextInt()); //i think this inserts \n automatically, that's why cli sends an empty message
+                            notifyNumberOfPlayers(getNumberOfPlayers());
+                            setState(ViewState.WAITING);
+                            break;
+                        case NICKDATE:
+                            setNickname(parser.nextLine());
+                            printer.erase();
+                            printer.setAskMessage("Date (yyyy.mm.dd): ");
                             printer.print();
-                            column = in.nextInt();
-                            addBuilderPosition(new Coordinates(row, column));
+                            setDate(in.nextLine());
+                            notifyNewPlayer(getNickname(), getDate());
+                            printer.erase();
+                            setState(ViewState.WAITING);
+                            break;
+                        case MATCHGODS:
+                            while (getMatchGodCards().size() < getNumberOfPlayers()) {
+                                if (parser.hasNext()) {
+                                    addMatchGodCard(getOption(parser.nextInt()));
+                                } else {
+                                    chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
+                                    addMatchGodCard(getOption(in.nextInt()));
+                                    in.nextLine(); //to read new line character
+                                }
 
-                            in.nextLine(); //to read new line character
 
-                            if(getChosenBuilderPositions().size() < 2)
-                            {
-                                printer.setAskMessage("Choose builder number " + (getChosenBuilderPositions().size() + 1) + "\nROW: ");
-                                printer.print();
+                                //if(getMatchGodCards().size() == getNumberOfPlayers())
+                                //chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
                             }
-                        }
 
-                        notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
-                        setState(ViewState.WAITING);
-                        break;
-                    case STEP:
-                        notifyStepChoice(getNickname(), getOption(parser.nextInt()));
-                        setState(ViewState.WAITING);
-                        break;
+                            notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
+                            printer.erase();
+                            printer.print();
+                            setState(ViewState.WAITING);
+                            break;
+                        case STARTPLAYER:
+                            notifySetStartPlayer(getNickname(), getOption(parser.nextInt()));
+                            setState(ViewState.WAITING);
+                            break;
+                        case PLAYERGOD:
+                            notifyGodCardChoice(getNickname(), getOption(parser.nextInt()));
+                            setState(ViewState.WAITING);
+                            break;
 
-                    case MOVE:
-                        move();
-                        break;
-                    case BUILD:
-                        build();
-                        break;
+                        case BUILDERCOLOR:
+                            notifyColorChoice(getNickname(), getOption(parser.nextInt()));
 
-                    case WAITING:
-                        printer.setInfoMessage("Waiting from Server.\nYou entered " + parser.nextLine());
-                        printer.print();
-                        break;
+                            setState(ViewState.WAITING);
+                            break;
 
+                        case BUILDERPLACEMENT:
+                            boolean askForRow = false;
+                            int row;
+                            int column;
+
+                            printer.erase();
+
+                            while (getChosenBuilderPositions().size() < 2) {
+                                if (parser.hasNext())
+                                    row = parser.nextInt();
+                                else {
+                                    row = in.nextInt();
+                                }
+
+                                printer.setAskMessage("COLUMN: ");
+                                printer.print();
+                                column = in.nextInt();
+                                addBuilderPosition(new Coordinates(row, column));
+
+                                in.nextLine(); //to read new line character
+
+                                if (getChosenBuilderPositions().size() < 2) {
+                                    printer.setAskMessage("Choose builder number " + (getChosenBuilderPositions().size() + 1) + "\nROW: ");
+                                    printer.print();
+                                }
+                            }
+
+                            notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
+                            setState(ViewState.WAITING);
+                            break;
+                        case STEP:
+                            notifyStepChoice(getNickname(), getOption(parser.nextInt()));
+                            setState(ViewState.WAITING);
+                            break;
+
+                        case MOVE:
+                            move();
+                            break;
+                        case BUILD:
+                            build();
+                            break;
+
+                        case WAITING:
+                            printer.setInfoMessage("Waiting from Server.\nYou entered " + parser.nextLine());
+                            printer.print();
+                            break;
+
+                    }
+                } catch (NullPointerException e) {
+                    System.err.println("NullPointerException: " + e.getMessage());
+                    e.printStackTrace();
+                    in.nextLine();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (NullPointerException e) {
-                System.err.println("NullPointerException: " + e.getMessage());
-                e.printStackTrace();
-                in.nextLine();
-            } catch (Exception e) {
-                e.printStackTrace();
+
+
+            } else {
+                quit = true;
+                notifyDisconnection(getNickname() != null ? getNickname() : "unknown");
             }
         }
+
+        System.out.println("You exited the game.");
     }
 
     private Coordinates coordinatesInsertion() {
