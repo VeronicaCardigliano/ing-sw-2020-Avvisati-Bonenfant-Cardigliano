@@ -2,9 +2,6 @@ package it.polimi.ingsw.client.gui;
 
 import it.polimi.ingsw.client.NetworkHandler;
 import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 
@@ -134,20 +131,11 @@ public class GuiClient extends Application {
         });
         */
 
-        /* ALTERNATIVE: the user can resize just mofifying one between height or width
-        stage.setMinHeight(580);
-        DoubleBinding w = stage.heightProperty().subtract(28).divide(2); stage.minWidthProperty().bind(w); stage.maxWidthProperty().bind(w);*/
     }
 
     public static void main(String[] args) {
-        launch(args);
-    }
 
-    private Border borderPaint (Scene s) {
-        BorderStroke line1 = new BorderStroke(Color.LIGHTGREEN, Color.LIGHTGREEN, Color.LIGHTGREEN, Color.LIGHTGREEN, BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID,
-               BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT,null);
-               // new Insets(s.getHeight()*ratioFromTop,s.getWidth()*ratioFromSides,s.getHeight()*ratioFromBottom,s.getWidth()*ratioFromSides));
-        return new Border(line1);
+        launch(args);
     }
 
 }
