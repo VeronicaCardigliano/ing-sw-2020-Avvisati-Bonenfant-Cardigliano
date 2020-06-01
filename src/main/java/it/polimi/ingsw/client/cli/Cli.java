@@ -21,6 +21,7 @@ public class Cli extends View {
     private boolean quit = false;
 
     private ArrayList<String> inputOptions;
+    private static final String crownSymbol = "\u2654";
 
     private Map<String, String> allGodCards;
 
@@ -220,111 +221,6 @@ public class Cli extends View {
     }
 
 
-    public void build() {
-        String buildType = "B";
-        Coordinates dst;
-        Set<Coordinates> possibleDstBuilder;
-        boolean buildDome = false;
-
-        //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
-
-        if (getChosenBuilderNum() == 0)
-            currentTurnBuilderPos = chooseTurnBuilder();
-
-        if ((!possibleDstBuilder1forDome.isEmpty() && getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
-                getChosenBuilderNum() == 2)) {
-            printer.setAskMessage("Select what you want to build: insert 'D' for dome or 'B' for building: ");
-            printer.print();
-            buildType = in.nextLine().toUpperCase();
-            //checkLeaving(buildType);
-
-            while (!(buildType.equals("D") || buildType.equals("B"))) {
-                printer.setAskMessage("Invalid insertion. Select what you want to build: insert 'D' for dome or 'B' for building ");
-                printer.print();
-                buildType = in.nextLine().toUpperCase();
-                //checkLeaving(buildType);
-            }
-        }
-
-        printer.setAskMessage(null);
-
-        if (buildType.equals("D")) {
-            buildDome = true;
-            if (getChosenBuilderNum() == 1)
-                possibleDstBuilder = possibleDstBuilder1forDome;
-            else
-                possibleDstBuilder = possibleDstBuilder2forDome;
-        }
-        else {
-            if (getChosenBuilderNum() == 1)
-                possibleDstBuilder = possibleDstBuilder1;
-            else
-                possibleDstBuilder = possibleDstBuilder2;
-        }
-
-        if (getChosenBuilderNum() == 1)
-            gameMap.setPossibleDst(possibleDstBuilder1, null);
-        else
-            gameMap.setPossibleDst(null, possibleDstBuilder2);
-
-        printer.setGameMapString(gameMap.toString());
-        printer.setInfoMessage("Insert the coordinates of where you want to build ");
-        printer.print();
-        dst = coordinatesInsertion();
-
-        while (!possibleDstBuilder.contains(dst)){
-            printer.setInfoMessage("Invalid coordinates. Select a cell from the selected ones");
-            dst = coordinatesInsertion();
-        }
-
-        notifyBuild(getNickname(), currentTurnBuilderPos, dst, buildDome);
-        setState(ViewState.WAITING);
-    }
-
-
-    public void move() {
-
-        Set<Coordinates> possibleDstBuilder;
-
-        //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
-
-        if (getChosenBuilderNum() == 0)
-            currentTurnBuilderPos = chooseTurnBuilder();
-
-        if (getChosenBuilderNum() == 1) {
-            possibleDstBuilder = possibleDstBuilder1;
-            gameMap.setPossibleDst(possibleDstBuilder, null);
-        }
-        else {
-            possibleDstBuilder = possibleDstBuilder2;
-            gameMap.setPossibleDst(null, possibleDstBuilder);
-        }
-
-        gameMap.setChosenBuilderNumber(getChosenBuilderNum());
-
-        printer.erase();
-        printer.setGameMapString(gameMap.toString());
-        printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
-
-        printer.setInfoMessage("Insert the coordinates of where you want to move ");
-        printer.print();
-        Coordinates dstMove = coordinatesInsertion();
-
-
-        //verifies that the selected cell contains a valid builder
-        while (!possibleDstBuilder.contains(dstMove)){
-            printer.erase();
-            printer.setInfoMessage("Invalid coordinates. Select a cell from the available ones");
-
-            printer.setGameMapString(gameMap.toString());
-            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
-            dstMove = coordinatesInsertion();
-        }
-
-
-        notifyMove(getNickname(), currentTurnBuilderPos, dstMove);
-        setState(ViewState.WAITING);
-    }
 
 
     private String displayMap(Map<String, String> map) {
@@ -398,7 +294,6 @@ public class Cli extends View {
 
     //override View methods
 
-
     @Override
     public synchronized void askNumberOfPlayers() {
         super.askNumberOfPlayers();
@@ -430,7 +325,7 @@ public class Cli extends View {
                 availableGods.put(key, godDescriptionsParam.get(key));
 
 
-        String crown = Color.ANSI_YELLOW.escape() + "\u2654" + Color.RESET;
+        String crown = Color.ANSI_YELLOW.escape() + crownSymbol + Color.RESET;
         printer.setInfoMessage("\n" + crown + "  You're the " + Color.ANSI_YELLOW.escape() + "Challenger" + Color.RESET + " of this match!  " + crown + "\n" +
                 "Choose " + (numOfPlayers - getMatchGodCards().size()) + " godCards for the match: \n");
         printer.setChoiceList(displayMap(availableGods));
@@ -554,7 +449,6 @@ public class Cli extends View {
     @Override
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         super.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2, result);
-
 
 
         if(!result) {
@@ -729,4 +623,112 @@ public class Cli extends View {
         //erase message
         printer.setAskMessage(null);
     }
+
+    @Override
+    public void build() {
+        String buildType = "B";
+        Coordinates dst;
+        Set<Coordinates> possibleDstBuilder;
+        boolean buildDome = false;
+
+        //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
+
+        if (getChosenBuilderNum() == 0)
+            currentTurnBuilderPos = chooseTurnBuilder();
+
+        if ((!possibleDstBuilder1forDome.isEmpty() && getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
+                getChosenBuilderNum() == 2)) {
+            printer.setAskMessage("Select what you want to build: insert 'D' for dome or 'B' for building: ");
+            printer.print();
+            buildType = in.nextLine().toUpperCase();
+            //checkLeaving(buildType);
+
+            while (!(buildType.equals("D") || buildType.equals("B"))) {
+                printer.setAskMessage("Invalid insertion. Select what you want to build: insert 'D' for dome or 'B' for building ");
+                printer.print();
+                buildType = in.nextLine().toUpperCase();
+                //checkLeaving(buildType);
+            }
+        }
+
+        printer.setAskMessage(null);
+
+        if (buildType.equals("D")) {
+            buildDome = true;
+            if (getChosenBuilderNum() == 1)
+                possibleDstBuilder = possibleDstBuilder1forDome;
+            else
+                possibleDstBuilder = possibleDstBuilder2forDome;
+        }
+        else {
+            if (getChosenBuilderNum() == 1)
+                possibleDstBuilder = possibleDstBuilder1;
+            else
+                possibleDstBuilder = possibleDstBuilder2;
+        }
+
+        if (getChosenBuilderNum() == 1)
+            gameMap.setPossibleDst(possibleDstBuilder1, null);
+        else
+            gameMap.setPossibleDst(null, possibleDstBuilder2);
+
+        printer.setGameMapString(gameMap.toString());
+        printer.setInfoMessage("Insert the coordinates of where you want to build ");
+        printer.print();
+        dst = coordinatesInsertion();
+
+        while (!possibleDstBuilder.contains(dst)){
+            printer.setInfoMessage("Invalid coordinates. Select a cell from the selected ones");
+            dst = coordinatesInsertion();
+        }
+
+        notifyBuild(getNickname(), currentTurnBuilderPos, dst, buildDome);
+        setState(ViewState.WAITING);
+    }
+
+    @Override
+    public void move() {
+
+        Set<Coordinates> possibleDstBuilder;
+
+        //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
+
+        if (getChosenBuilderNum() == 0)
+            currentTurnBuilderPos = chooseTurnBuilder();
+
+        if (getChosenBuilderNum() == 1) {
+            possibleDstBuilder = possibleDstBuilder1;
+            gameMap.setPossibleDst(possibleDstBuilder, null);
+        }
+        else {
+            possibleDstBuilder = possibleDstBuilder2;
+            gameMap.setPossibleDst(null, possibleDstBuilder);
+        }
+
+        gameMap.setChosenBuilderNumber(getChosenBuilderNum());
+
+        printer.erase();
+        printer.setGameMapString(gameMap.toString());
+        printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+
+        printer.setInfoMessage("Insert the coordinates of where you want to move ");
+        printer.print();
+        Coordinates dstMove = coordinatesInsertion();
+
+
+        //verifies that the selected cell contains a valid builder
+        while (!possibleDstBuilder.contains(dstMove)){
+            printer.erase();
+            printer.setInfoMessage("Invalid coordinates. Select a cell from the available ones");
+
+            printer.setGameMapString(gameMap.toString());
+            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+            dstMove = coordinatesInsertion();
+        }
+
+
+        notifyMove(getNickname(), currentTurnBuilderPos, dstMove);
+        setState(ViewState.WAITING);
+    }
+
 }

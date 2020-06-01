@@ -7,14 +7,17 @@ import java.util.*;
 
 public abstract class GameMap {
 
+    private static final int DOME = -1;
+    private final Map<Coordinates, Integer> heights = new HashMap<>();
+    protected final Map<String,String> chosenColorsForPlayer = new HashMap<>();
+    protected final Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
+
+    public static final int firstBuilderIndex = 0;
+    public static final int secondBuilderIndex = 1;
+
     private Set<Coordinates> possibleDstBuilder1 = new HashSet<>();
     private Set<Coordinates> possibleDstBuilder2 = new HashSet<>();
     private int chosenBuilderNumber = 0;
-
-    private final int DOME = -1;
-    private final Map<Coordinates, Integer> heights = new HashMap<>();
-    private final Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
-
 
     public GameMap() {
         for (int i = 0; i < IslandBoard.dimension; i++)
@@ -26,6 +29,16 @@ public abstract class GameMap {
         this.possibleDstBuilder1 = possibleDstBuilder1;
         this.possibleDstBuilder2 = possibleDstBuilder2;
     }
+
+    //Used only by GUI???
+    public void setChosenColorsForPlayer (String nickname, String chosenColor) {
+        chosenColorsForPlayer.put(nickname, chosenColor);
+    }
+
+    public Map<String,String> getChosenColorsForPlayer () {
+        return chosenColorsForPlayer;
+    }
+
 
     public void setChosenBuilderNumber(int chosenBuilderNumber) {
         this.chosenBuilderNumber = chosenBuilderNumber;

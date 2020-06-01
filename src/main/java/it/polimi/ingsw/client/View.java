@@ -5,7 +5,6 @@ import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.view.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class View extends ViewObservable implements BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
         ColorAssignmentObserver, ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver,
@@ -16,8 +15,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
 
     public static final String red = Color.ANSI_RED.escape();
-    private final String yellow = Color.ANSI_YELLOW.escape();
-
 
     private ViewState state;
 
@@ -34,16 +31,13 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     private final Set<String> matchGodCards = new HashSet<>();
     private final Map<String, String> chosenGodCardsForPlayer = new HashMap<>();
 
-
     private final ArrayList<Coordinates> chosenBuilderPositions = new ArrayList<>();
 
     protected GameMap gameMap;
-
     private String nickname;
     private String date;
 
     private int numberOfPlayers;
-
     private int chosenBuilderNum = 0;
 
     public void setChosenBuilderNum(int number) {
@@ -84,6 +78,10 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         return chosenColorsForPlayer.get(nickname);
     }
 
+    public void setChosenGodCard (String player, String godCard) {
+        chosenGodCardsForPlayer.put(player, godCard);
+    }
+
     public Map<String, String> getChosenGodCardsForPlayer() { return chosenGodCardsForPlayer; }
     public static Map<String, String> getChosenColorsForPlayer() {return chosenColorsForPlayer;}
 
@@ -119,6 +117,10 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public void chooseNextStep (Set<String> possibleSteps) {
         setState(ViewState.STEP);
     }
+
+    //used only by GUI??
+    abstract public void build();
+    abstract public void move();
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
@@ -168,8 +170,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
-
-
     }
 
     @Override
