@@ -127,7 +127,6 @@ public class GuiClient extends Application {
             public void handle(DialogEvent dialogEvent) {
 
             }
-
         });
         */
 

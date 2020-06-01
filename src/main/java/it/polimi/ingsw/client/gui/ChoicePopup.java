@@ -63,7 +63,7 @@ public class ChoicePopup extends Stage {
         AnchorPane.setTopAnchor(requests,Gui.marginLength);
         AnchorPane.setLeftAnchor(choiceBox,Gui.marginLength);
         AnchorPane.setTopAnchor(choiceBox,Gui.marginLength * 2.5);
-        anchorPane.setPrefSize((double)Gui.sceneWidth/3.5, (double)Gui.sceneHeight/3.5);
+        anchorPane.setPrefSize((double)Gui.sceneWidth/3, (double)Gui.sceneHeight/3.5);
 
         AnchorPane.setRightAnchor(submit, Gui.marginLength);
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);

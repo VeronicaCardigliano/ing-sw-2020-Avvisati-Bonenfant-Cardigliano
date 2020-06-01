@@ -48,7 +48,7 @@ public class Gui extends View {
 
     public static final double ratioCellHeight = 78.0/sceneHeight;
 
-    public final static int fontSize = 13;
+    public final static int fontSize = 14;
     public final static double selectionOpacity = 0.7;
     public static final int godsForPlayer = 1;
     public static final Color SEA = Color.rgb(51,184,253);
@@ -81,6 +81,8 @@ public class Gui extends View {
     private Insets playersRegionInsets;
     private int numMessages;
 
+    private Map<String, Text> playersNameTags = new HashMap<>();
+
 
     public Gui(Stage primaryStage) {
 
@@ -101,10 +103,10 @@ public class Gui extends View {
 
         this.bottomAnchorPane = new AnchorPane();
 
-        /* Debug purpose
+        /* Test purpose
         bottomAnchorPane.setBackground(new Background(new BackgroundFill(Color.YELLOWGREEN, null, null)));
-        dialogRegion.setBackground(new Background(new BackgroundFill(Color.DARKRED, null, null)));
-         */
+        dialogRegion.setBackground(new Background(new BackgroundFill(Color.DARKRED, null, null))); */
+
 
         playersRegion.prefWidthProperty().bind(primaryScene.widthProperty().multiply(mapRatioFromSides));
         dialogRegion.prefWidthProperty().bind(primaryScene.widthProperty().multiply(mapRatioFromSides));
@@ -114,8 +116,10 @@ public class Gui extends View {
         bottomMessagesVBox.setSpacing(marginLength/10);
         bottomAnchorPane.getChildren().add(bottomMessagesVBox);
         AnchorPane.setLeftAnchor(bottomMessagesVBox, marginLength);
-        bottomMessagesVBox.prefHeightProperty().bind(bottomAnchorPane.prefHeightProperty().subtract(marginLength/5));
+        AnchorPane.setTopAnchor(bottomMessagesVBox, marginLength/4);
+        bottomMessagesVBox.setAlignment(Pos.CENTER);
 
+        //bottomMessagesVBox.prefHeightProperty().bind(bottomAnchorPane.prefHeightProperty().subtract(marginLength/5));
         //bottomMessagesVBox.setBackground(new Background(new BackgroundFill(Color.NAVAJOWHITE, null, null)));
 
         root.setLeft(playersRegion); //list of players + gods
@@ -135,15 +139,12 @@ public class Gui extends View {
         title.setFont(new Font("Arial", headingFontSize));
         title.setTextFill(SEA); */
 
-        playersRegion.setBorder(new Border(new BorderStroke(SEA, SEA, SEA,Color.TRANSPARENT, BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID,
-                BorderStrokeStyle.SOLID, null, CornerRadii.EMPTY, BorderStroke.MEDIUM, playersRegionInsets)));
 
-        playersRegion.setBackground(new Background(new BackgroundFill(Color.ANTIQUEWHITE, null, playersRegionInsets)));
         /*playersRegion.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/title_sky.png"), BackgroundRepeat.NO_REPEAT,
               BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(playersRegion.getPrefWidth() - playersRegion.getBorder().getInsets().getRight(), playersRegion.getHeight(), false, false, false, false))));
         playersRegion.setStyle("-fx-background-color: linear-gradient(to right, WHITE 80%, TRANSPARENT)"); */
 
-        playersRegion.setAlignment(Pos.CENTER);
+        playersRegion.setAlignment(Pos.CENTER_LEFT);
         playersRegion.setSpacing(marginLength);
 
         //TODO: verify max Width
@@ -450,22 +451,6 @@ public class Gui extends View {
                 }
             });
         }
-
-        //TODO: send matchGodCards after saving them in the matchGodCards update
-        Button godCards = createButton("GodCards",buttonCoralSrc, bottomAnchorPane, mouseEvent ->
-                new GodCardsPopup(primaryStage, 0, matchGodCards, this), buttonCoralPressedSrc);
-
-        Button quit = createButton("QUIT",buttonCoralSrc, bottomAnchorPane, mouseEvent -> {
-
-           notifyDisconnection(getNickname());
-            primaryStage.close();
-        }, buttonCoralPressedSrc);
-
-        AnchorPane.setBottomAnchor(quit, Gui.marginLength);
-        AnchorPane.setRightAnchor(quit, Gui.marginLength);
-
-        AnchorPane.setBottomAnchor(godCards, Gui.marginLength);
-        AnchorPane.setRightAnchor(godCards, Gui.marginLength * 8);
     }
 
     @Override
@@ -650,7 +635,7 @@ public class Gui extends View {
         Label domeRequest = new Label ("Do you want to build a dome? ");
         Platform.runLater(() -> dialogRegion.getChildren().add(domeRequest));
 
-        Button yesBtn =createButton("YES", submitButton, dialogRegion,
+        Button yesBtn = createButton("YES", submitButton, dialogRegion,
                 mouseEvent ->  {
                     buildDome = true;
                     afterDomeChoice();
@@ -799,8 +784,8 @@ public class Gui extends View {
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
-        if(result) {
 
+        if(result) {
             if (getNickname().equals(nickname))
                 gameMap.resetMap();
 
@@ -883,10 +868,8 @@ public class Gui extends View {
 
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
-        if(result) {
+        if(result)
             printMessage(nickname + " chose " + step);
-            //Platform.runLater(() -> dialogRegion.getChildren().clear());
-        }
         else
             printMessage("ERROR: wrong step.");
     }
@@ -952,6 +935,7 @@ public class Gui extends View {
     @Override
     public void onPlayerTurn(String nickname) {
 
+        String state = getState().toString();
         if (currentTurnBuilderPos != null) {
 
             gameMap.resetBuilder(currentTurnBuilderPos);
@@ -959,7 +943,17 @@ public class Gui extends View {
             setChosenBuilderNum(0);
         }
 
-        printMessage("Now Playing: " + nickname);
+        if (state.equals("BUILD") || state.equals("MOVE") || state.equals("STEP") || state.equals("BUILDERPLACEMENT")) {
+            for (String player : playersNameTags.keySet())
+                playersNameTags.get(player).setEffect(null);
+
+            Glow glow = new Glow();
+            glow.setLevel(1);
+            playersNameTags.get(nickname).setEffect(glow);
+
+        }
+        else
+            printMessage("Turn of: " + nickname);
     }
 
     @Override
@@ -974,10 +968,16 @@ public class Gui extends View {
     public void onStateUpdate(Model.State currState) {
 
         boolean firstPlayer = true;
-
         String state = currState.toString();
+
         if (state.equals("SETUP_BUILDERS")) {
+
             Map<String, String> chosenGodCards = getChosenGodCardsForPlayer();
+
+            playersRegion.setBorder(new Border(new BorderStroke(SEA, SEA, SEA,Color.TRANSPARENT, BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID,
+                    BorderStrokeStyle.SOLID, null, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS, playersRegionInsets)));
+
+            playersRegion.setBackground(new Background(new BackgroundFill(Color.ANTIQUEWHITE, null, playersRegionInsets)));
 
             for (String player: chosenGodCards.keySet()) {
 
@@ -992,13 +992,16 @@ public class Gui extends View {
                 firstPlayer = false;
 
                 ImageView nameTag = new ImageView(nameTagSrc);
+                nameTag.setPreserveRatio(true);
                 nameTag.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()).divide(1.2));
-                nameTag.fitHeightProperty().bind(primaryScene.heightProperty().divide(12.5));
 
                 StackPane tagImageText = new StackPane();
 
                 Text text = new Text(player + ": "+ chosenGodCards.get(player));
                 text.setFont(new Font ("Courier" ,(float)fontSize));
+                text.setStyle("-fx-font-weight: bold");
+
+                playersNameTags.put(player, text);
 
                 String color = gameMap.getChosenColorsForPlayer().get(player);
                 switch (color) {
@@ -1016,6 +1019,24 @@ public class Gui extends View {
                 Platform.runLater(() -> tagImageText.getChildren().addAll(nameTag, text));
                 Platform.runLater(() -> playersRegion.getChildren().add(tagImageText));
             }
+
+            HBox bottomBtns = new HBox();
+            bottomBtns.setSpacing(marginLength);
+
+            //TODO: send matchGodCards after saving them in the matchGodCards update
+            createButton("GodCards",buttonCoralSrc, bottomBtns, mouseEvent ->
+                    new GodCardsPopup(primaryStage, 0, matchGodCards, this), buttonCoralPressedSrc);
+
+            createButton("QUIT",buttonCoralSrc, bottomBtns, mouseEvent -> {
+
+                notifyDisconnection(getNickname());
+                primaryStage.close();
+            }, buttonCoralPressedSrc);
+
+            Platform.runLater(() ->bottomAnchorPane.getChildren().add(bottomBtns));
+
+            AnchorPane.setBottomAnchor(bottomBtns, Gui.marginLength);
+            AnchorPane.setRightAnchor(bottomBtns, Gui.marginLength);
         }
     }
 
