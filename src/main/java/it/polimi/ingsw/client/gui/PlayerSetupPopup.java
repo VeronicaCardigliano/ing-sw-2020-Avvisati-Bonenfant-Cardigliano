@@ -1,16 +1,14 @@
 package it.polimi.ingsw.client.gui;
 
-import it.polimi.ingsw.client.View;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.stage.WindowEvent;
 
 public class PlayerSetupPopup extends Stage{
 
@@ -72,6 +70,15 @@ public class PlayerSetupPopup extends Stage{
         AnchorPane.setRightAnchor(submit, Gui.marginLength);
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
         anchorPane.getChildren().addAll(nicknameRequest, birthdayRequest, nickInsertion, birthdayInsertion, submit);
+
+        this.setOnCloseRequest(windowEvent -> {
+            if (Gui.confirmQuit()) {
+                this.close();
+                ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+            }
+            else
+                windowEvent.consume();
+        });
 
         Scene scene = new Scene(anchorPane);
         this.setScene(scene);

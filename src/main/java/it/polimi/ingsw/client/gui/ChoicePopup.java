@@ -1,16 +1,19 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.util.Set;
+
+/**
+ * This class is a window, composed by an AnchorPane, which allows the user to do a choice through a choiceBox in the setup phase
+ */
 
 public class ChoicePopup extends Stage {
 
@@ -69,11 +72,23 @@ public class ChoicePopup extends Stage {
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
         anchorPane.getChildren().addAll(requests,choiceBox,submit);
 
+        this.setOnCloseRequest(windowEvent -> {
+            if (Gui.confirmQuit()) {
+                this.close();
+                ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+            }
+            else
+                windowEvent.consume();
+        });
+
         Scene scene = new Scene(anchorPane);
         this.setScene(scene);
         this.show();
     }
 
+    /**
+     * @return the submit button used to send the choice to the server
+     */
     protected Button getSubmit() {
         return submit;
     }

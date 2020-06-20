@@ -11,10 +11,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -84,6 +81,16 @@ public class Gui extends View {
     private Map<String, Text> playersNameTags = new HashMap<>();
 
 
+    /**
+     * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
+     * The main stage is composed by a BorderPane as root with inside a VBox as playersRegion with players infos on the left,
+     * a VBox as dialogRegion (on the right) in which are shown the requests during the match,
+     * an AnchorPane in the bottom in which are printed messages on the left and buttons on the right to show godCards and to quit,
+     * the title on the top in a StackPane and finally in the center a tilePane which represents the gameBoard
+     *
+     * It also creates a starting homeScene
+     * @param primaryStage principal stage of the match
+     */
     public Gui(Stage primaryStage) {
 
         this.primaryStage = new Stage();
@@ -105,11 +112,16 @@ public class Gui extends View {
 
         /* Test purpose
         bottomAnchorPane.setBackground(new Background(new BackgroundFill(Color.YELLOWGREEN, null, null)));
-        dialogRegion.setBackground(new Background(new BackgroundFill(Color.DARKRED, null, null))); */
-
+        dialogRegion.setBackground(new Background(new BackgroundFill(Color.DARKRED, null, null)));
+        playersRegion.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/title_sky.png"), BackgroundRepeat.NO_REPEAT,
+              BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(playersRegion.getPrefWidth() - playersRegion.getBorder().getInsets().getRight(), playersRegion.getHeight(), false, false, false, false))));
+        playersRegion.setStyle("-fx-background-color: linear-gradient(to right, WHITE 80%, TRANSPARENT)"); */
 
         playersRegion.prefWidthProperty().bind(primaryScene.widthProperty().multiply(mapRatioFromSides));
+        playersRegion.setAlignment(Pos.CENTER_LEFT);
+        playersRegion.setSpacing(marginLength);
         dialogRegion.prefWidthProperty().bind(primaryScene.widthProperty().multiply(mapRatioFromSides));
+        dialogRegion.setSpacing(marginLength);
         bottomAnchorPane.prefHeightProperty().bind(primaryScene.heightProperty().multiply(mapRatioFromBottom));
 
         this.bottomMessagesVBox = new VBox();
@@ -119,69 +131,57 @@ public class Gui extends View {
         AnchorPane.setTopAnchor(bottomMessagesVBox, marginLength/4);
         bottomMessagesVBox.setAlignment(Pos.CENTER);
 
-        //bottomMessagesVBox.prefHeightProperty().bind(bottomAnchorPane.prefHeightProperty().subtract(marginLength/5));
-        //bottomMessagesVBox.setBackground(new Background(new BackgroundFill(Color.NAVAJOWHITE, null, null)));
-
         root.setLeft(playersRegion); //list of players + gods
         root.setRight(dialogRegion); //dialog with user
         root.setTop(setTitle(primaryScene));
         root.setBottom(bottomAnchorPane);
         root.setCenter(tile);
+
         root.setBackground(new Background(
                 new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
-        dialogRegion.setSpacing(marginLength);
-
-        /*
-        Label title = new Label("PLAYERS:");
-        title.textProperty().bind(playersRegion.prefWidthProperty());
-        title.setFont(new Font("Arial", headingFontSize));
-        title.setTextFill(SEA); */
-
-
-        /*playersRegion.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/title_sky.png"), BackgroundRepeat.NO_REPEAT,
-              BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(playersRegion.getPrefWidth() - playersRegion.getBorder().getInsets().getRight(), playersRegion.getHeight(), false, false, false, false))));
-        playersRegion.setStyle("-fx-background-color: linear-gradient(to right, WHITE 80%, TRANSPARENT)"); */
-
-        playersRegion.setAlignment(Pos.CENTER_LEFT);
-        playersRegion.setSpacing(marginLength);
 
         //TODO: verify max Width
         primaryStage.setMaxWidth(maxSceneWidth);
 
-
         //sets personalized actions when clicking on the default closing button
         primaryStage.setOnCloseRequest(windowEvent -> {
-            notifyDisconnection(getNickname());
+            if (getNickname() != null)
+                notifyDisconnection(getNickname());
             primaryStage.close();
+            Platform.exit();
+            System.exit(0);
         });
+
         //primaryStage.setScene(primaryScene);
     }
 
-
+    /**
+     * This method creates the home scene composed by an AnchorPane with two nameTags composed by a StackPane
+     * with an image and a TextField to insert IP and Port values, and a play button which sends a request of connection.
+     * If the request is successful, the home stage gives way to the main stage
+     */
     private void setHomeScene() {
 
         DropShadow shadow = new DropShadow();
         AnchorPane home = new AnchorPane();
+        home.prefWidthProperty().bind(home.widthProperty());
+        home.prefHeightProperty().bind(home.heightProperty());
         home.setBackground(new Background(
                 new BackgroundImage(new Image(homeBackgroundSrc), BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         Scene homeScene = new Scene (home, sceneWidth, sceneHeight);
-        home.prefWidthProperty().bind(home.widthProperty());
-        home.prefHeightProperty().bind(home.heightProperty());
+
+        ImageView playBtn = new ImageView(playButtonSrc);
+        playBtn.setOnMouseEntered(mouseEvent -> playBtn.setEffect(shadow));
+        playBtn.setOnMouseExited(mouseEvent -> playBtn.setEffect(null));
+        playBtn.setPreserveRatio(true);
 
         ImageView IPNameTag = new ImageView(IPInsertionSrc);
         ImageView portNameTag = new ImageView(PortInsertionSrc);
-        ImageView playBtn = new ImageView(playButtonSrc);
 
-        playBtn.setOnMouseEntered(mouseEvent -> {
-            playBtn.setEffect(shadow);
-        });
-        playBtn.setOnMouseExited(mouseEvent -> playBtn.setEffect(null));
-
-        playBtn.setPreserveRatio(true);
         IPNameTag.setPreserveRatio(true);
         portNameTag.setPreserveRatio(true);
         playBtn.fitWidthProperty().bind(homeScene.widthProperty().multiply(playBtnRatio));
@@ -192,6 +192,7 @@ public class Gui extends View {
         TextField portInsertion = new TextField("Port");
         IPInsertion.prefWidthProperty().bind(homeScene.widthProperty().multiply(networkInsertionRatio));
         portInsertion.prefWidthProperty().bind(homeScene.widthProperty().multiply(networkInsertionRatio));
+
         IPInsertion.maxWidthProperty().bind(IPNameTag.fitWidthProperty().divide(2.5));
         IPInsertion.setAlignment(Pos.CENTER);
         portInsertion.setAlignment(Pos.CENTER);
@@ -259,7 +260,7 @@ public class Gui extends View {
         AnchorPane.setLeftAnchor(networkRequests, (double) sceneWidth/10);
 
         AnchorPane.setBottomAnchor(playBtn, marginLength*2);
-        AnchorPane.setRightAnchor(playBtn, 180.0);
+        AnchorPane.setRightAnchor(playBtn, (double) sceneHeight/3);
 
         primaryStage.minWidthProperty().bind(home.heightProperty().multiply((double)sceneWidth/sceneHeight));
         primaryStage.minHeightProperty().bind(home.widthProperty().divide((double)sceneWidth/sceneHeight));
@@ -275,16 +276,85 @@ public class Gui extends View {
         primaryStage.setScene(homeScene);
 
         playBtn.setOnMouseClicked(mouseEvent -> {
-            //TODO: inviare porta e IP inseriti
-            primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double)sceneWidth/sceneHeight));
-            primaryStage.minHeightProperty().bind(root.widthProperty().divide((double)sceneWidth/sceneHeight));
-            primaryStage.setScene(primaryScene);
+            notifyConnection(IPInsertion.getText(), Integer.parseInt(portInsertion.getText()));
         });
 
     }
 
-    public void setMatchGodCards(Map<String, String> matchGods) {
-        this.matchGodCards = matchGods;
+    /**
+     * This method creates the title StackPane
+     * @param s main scene
+     * @return the StackPane of the title (titlePane)
+     */
+    private StackPane setTitle(Scene s) {
+
+        StackPane titlePane = new StackPane();
+        titlePane.prefHeightProperty().bind(s.heightProperty().multiply(mapPatioFromTop));
+        titlePane.prefWidthProperty().bind(s.widthProperty());
+        ImageView title = new ImageView (titleSrc);
+
+        title.setPreserveRatio(true);
+
+        title.fitWidthProperty().bind(titlePane.prefWidthProperty());
+        title.fitHeightProperty().bind(titlePane.prefHeightProperty());
+        //title.setFitHeight(s.getHeight()*ratioFromBottom);
+
+        //the % after center are for the x and y pos of center the circle of shapes, % after radius is the % of reaching of the second color
+        titlePane.setStyle("-fx-font-weight: bold; -fx-background-color: radial-gradient(center 50% 30%, radius 100%, rgb(51,184,253), TRANSPARENT)");
+
+        titlePane.setAlignment(Pos.CENTER);
+        titlePane.getChildren().add(title);
+        return titlePane;
+    }
+
+    /**
+     * This method creates a button given the following parameters:
+     * @param btnName name shown on the button
+     * @param backgroundSrc background image of the button
+     * @param parent the pane in which the button has to be positioned
+     * @param handler what to do when the button is pressed
+     * @param pressedBtnSrc background image of the pressed button
+     * @return the new button object
+     */
+    private Button createButton(String btnName, String backgroundSrc, Pane parent, EventHandler<MouseEvent> handler, String pressedBtnSrc) {
+
+        Button button = new Button(btnName);
+        button.setBackground(new Background(new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
+                BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
+
+        button.setOnMouseEntered(mouseEvent -> {
+            Button enteredButton = (Button) mouseEvent.getSource();
+            DropShadow shadow = new DropShadow();
+            enteredButton.setEffect(shadow);
+        });
+
+        button.setOnMouseExited(mouseEvent -> {
+            Button enteredButton = (Button) mouseEvent.getSource();
+            enteredButton.setEffect(null);
+        });
+
+        button.setOnMousePressed(mouseEvent -> {
+            Button pressedButton = (Button) mouseEvent.getSource();
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image(pressedBtnSrc), BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
+
+        });
+
+        button.setOnMouseReleased(mouseEvent -> {
+            Button pressedButton = (Button) mouseEvent.getSource();
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
+
+        });
+
+        //button.setPrefWidth(stage.getWidth()/12);
+        button.prefWidthProperty().bind(primaryScene.widthProperty().divide(11));
+        button.prefHeightProperty().bind(primaryScene.heightProperty().divide(15));
+
+        Platform.runLater(() -> parent.getChildren().add(button));
+        button.setOnMouseClicked(handler);
+
+        return button;
     }
 
     @Override
@@ -292,6 +362,10 @@ public class Gui extends View {
         primaryStage.show();
     }
 
+    /**
+     * Creates a ChoicePopup allowing the first player to choose the number of players of the match, with a
+     * choiceBox to show which are the possibilities
+     */
     @Override
     public void askNumberOfPlayers() {
         setState(ViewState.NUMPLAYERS);
@@ -301,7 +375,8 @@ public class Gui extends View {
 
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
         Platform.runLater(() -> {
-            ChoicePopup popup = new ChoicePopup(primaryStage, possibleNumPlayers, "You're the first player! Select number of players: ", "New match", choiceBox);
+            ChoicePopup popup = new ChoicePopup(primaryStage, possibleNumPlayers,
+                    "You're the first player! Select number of players: ", "New match", choiceBox);
 
             popup.getSubmit().setOnMouseClicked(mouseEvent -> {
 
@@ -309,11 +384,15 @@ public class Gui extends View {
                 popup.close();
             });
         });
-
     }
 
+    /**
+     * Creates a PlayersSetupPopup to make each player insert their nickname and birthday date, with two TextFields
+     * whose content is sent to the server after the submit button is pressed
+     */
     @Override
     public void askNickAndDate() {
+
         setState(ViewState.NICKDATE);
 
         TextField nickInsertion = new TextField ("nickname");
@@ -331,12 +410,32 @@ public class Gui extends View {
         });
     }
 
+    /**
+     * Sends a GodCardsPopup to the Challenger with all the possible cards, sent through godDescriptionsParam
+     * @param numOfPlayers number of the players of the match, and also of the godCards to choose
+     */
     @Override
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
         setState(ViewState.MATCHGODS);
-        Platform.runLater(() -> new GodCardsPopup(primaryStage, numOfPlayers, godDescriptionsParam, this));
+
+        Platform.runLater(() -> {
+            GodCardsPopup popup = new GodCardsPopup(primaryStage, numOfPlayers, godDescriptionsParam);
+
+            popup.getSubmit().setOnMouseClicked(mouseEvent -> {
+                if (popup.getSelectionsNum() == numOfPlayers) {
+
+                    notifyMatchGodCardsChoice(getNickname(), popup.getChosenGodCards());
+                    popup.close();
+                }
+            });
+        });
     }
 
+    /**
+     * Sends a GodCardsPopup to each player to make him choose his godCard
+     * @param godDescriptions map of each card with its description
+     * @param chosenCards already chosen cards
+     */
     @Override
     public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenCards) {
 
@@ -346,17 +445,18 @@ public class Gui extends View {
         for(String godName : godDescriptions.keySet().stream().filter(godName -> !chosenCards.contains(godName)).collect(Collectors.toSet()))
             availableGods.put(godName, godDescriptions.get(godName));
 
-        //GodCardsPopup has to receive the available GodCards
-        Platform.runLater(() -> new GodCardsPopup(primaryStage, godsForPlayer, availableGods,this));
 
-    }
+        Platform.runLater(() -> {
+            GodCardsPopup popup = new GodCardsPopup(primaryStage, godsForPlayer, availableGods);
 
-    protected void setGodCardsChoice(Set<String> chosenGodCards) {
+            popup.getSubmit().setOnMouseClicked(mouseEvent -> {
+                if (popup.getSelectionsNum() == godsForPlayer) {
 
-        if (getState().toString().equals("MATCHGODS"))
-            notifyMatchGodCardsChoice(getNickname(), chosenGodCards);
-        else if (getState().toString().equals("PLAYERGOD"))
-            notifyGodCardChoice(getNickname(), chosenGodCards.iterator().next());
+                    notifyGodCardChoice(getNickname(), popup.getChosenGodCards().iterator().next());
+                    popup.close();
+                }
+            });
+        });
     }
 
     @Override
@@ -399,7 +499,6 @@ public class Gui extends View {
             });
         });
     }
-
 
     @Override
     public void placeBuilders () {
@@ -699,89 +798,6 @@ public class Gui extends View {
         }
     }
 
-    /*
-    private Label setTitle(Scene s)
-    {
-        double height = s.getHeight()*ratioFromBottom/2;
-        Label label = new Label ("SANTORINI");
-        label.prefHeightProperty().bind(s.heightProperty().multiply(ratioFromTop));
-        label.prefWidthProperty().bind(s.widthProperty());
-
-        //the % after center are for the x and y pos of center the circle of shapes, % after radius is the % of reaching of the second color
-        label.setStyle("-fx-font-weight: bold; -fx-background-color: radial-gradient(center 50% 30%, radius 100%, rgb(51,184,253), TRANSPARENT)");
-        label.setTextFill(Color.TOMATO);
-        label.setFont(new Font("Century Schoolbook", height));
-
-        /*
-        for (String x: Font.getFamilies()) {
-            System.out.println(x);
-        }
-        label.setAlignment(Pos.BASELINE_CENTER);
-        return label;
-    }   */
-
-    private StackPane setTitle(Scene s) {
-
-        StackPane titlePane = new StackPane();
-        titlePane.prefHeightProperty().bind(s.heightProperty().multiply(mapPatioFromTop));
-        titlePane.prefWidthProperty().bind(s.widthProperty());
-        ImageView title = new ImageView (titleSrc);
-
-        title.setPreserveRatio(true);
-
-        title.fitWidthProperty().bind(titlePane.prefWidthProperty());
-        title.fitHeightProperty().bind(titlePane.prefHeightProperty());
-        //title.setFitHeight(s.getHeight()*ratioFromBottom);
-
-        //the % after center are for the x and y pos of center the circle of shapes, % after radius is the % of reaching of the second color
-        titlePane.setStyle("-fx-font-weight: bold; -fx-background-color: radial-gradient(center 50% 30%, radius 100%, rgb(51,184,253), TRANSPARENT)");
-
-        titlePane.setAlignment(Pos.CENTER);
-        titlePane.getChildren().add(title);
-        return titlePane;
-    }
-
-    private Button createButton(String btnName, String backgroundSrc, Pane parent, EventHandler<MouseEvent> handler, String pressedBtnSrc) {
-
-        Button button = new Button(btnName);
-        button.setBackground(new Background(new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        button.setOnMouseEntered(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            DropShadow shadow = new DropShadow();
-            enteredButton.setEffect(shadow);
-        });
-
-        button.setOnMouseExited(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            enteredButton.setEffect(null);
-        });
-
-        button.setOnMousePressed(mouseEvent -> {
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(pressedBtnSrc), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        });
-
-        button.setOnMouseReleased(mouseEvent -> {
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        });
-
-        //button.setPrefWidth(stage.getWidth()/12);
-        button.prefWidthProperty().bind(primaryScene.widthProperty().divide(11));
-        button.prefHeightProperty().bind(primaryScene.heightProperty().divide(15));
-        
-        Platform.runLater(() -> parent.getChildren().add(button));
-
-        button.setOnMouseClicked(handler);
-        return button;
-    }
-
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
 
@@ -970,7 +986,7 @@ public class Gui extends View {
         boolean firstPlayer = true;
         String state = currState.toString();
 
-        if (state.equals("SETUP_BUILDERS")) {
+        if (state.equals(Model.State.SETUP_BUILDERS.toString())) {
 
             Map<String, String> chosenGodCards = getChosenGodCardsForPlayer();
 
@@ -1025,7 +1041,7 @@ public class Gui extends View {
 
             //TODO: send matchGodCards after saving them in the matchGodCards update
             createButton("GodCards",buttonCoralSrc, bottomBtns, mouseEvent ->
-                    new GodCardsPopup(primaryStage, 0, matchGodCards, this), buttonCoralPressedSrc);
+                    new GodCardsPopup(primaryStage, 0, matchGodCards), buttonCoralPressedSrc);
 
             createButton("QUIT",buttonCoralSrc, bottomBtns, mouseEvent -> {
 
@@ -1033,11 +1049,38 @@ public class Gui extends View {
                 primaryStage.close();
             }, buttonCoralPressedSrc);
 
-            Platform.runLater(() ->bottomAnchorPane.getChildren().add(bottomBtns));
+            Platform.runLater(() -> bottomAnchorPane.getChildren().add(bottomBtns));
 
             AnchorPane.setBottomAnchor(bottomBtns, Gui.marginLength);
             AnchorPane.setRightAnchor(bottomBtns, Gui.marginLength);
         }
+        else if (state.equals(Model.State.SETUP_PLAYERS.toString())) {
+
+            Platform.runLater(() ->primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double)Gui.sceneWidth/Gui.sceneHeight)));
+            Platform.runLater(() ->primaryStage.minHeightProperty().bind(root.widthProperty().divide((double)Gui.sceneWidth/Gui.sceneHeight)));
+            Platform.runLater(() ->primaryStage.setScene(primaryScene));
+            Label label = new Label("Waiting for players... ");
+            label.setTextFill(Color.RED);
+            playersRegion.setAlignment(Pos.CENTER);
+            playersRegion.getChildren().add(label);
+        }
+    }
+
+    /**
+     * Predefined alert to confirm the leaving of the match, returns true if the user clicks on YES button
+     */
+    protected static boolean confirmQuit () {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.getDialogPane().getButtonTypes().clear();
+        ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        alert.getDialogPane().getButtonTypes().add(yes);
+        alert.getDialogPane().getButtonTypes().add(cancel);
+
+        alert.setTitle("Quit");
+        alert.setHeaderText("Closing this window you'll leave the game");
+        alert.setContentText("Do you want to quit?");
+        return alert.showAndWait().orElse(cancel) == yes;
     }
 
     @Override

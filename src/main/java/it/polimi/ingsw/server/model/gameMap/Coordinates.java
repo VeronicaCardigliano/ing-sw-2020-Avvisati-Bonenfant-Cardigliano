@@ -12,7 +12,6 @@ public class Coordinates {
         }
     }
 
-
     public Coordinates(Coordinates c) {
         this.i = c.getI();
         this.j = c.getJ();

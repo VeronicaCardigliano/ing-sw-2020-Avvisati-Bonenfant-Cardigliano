@@ -17,7 +17,7 @@ public class GuiClient extends Application {
 
         Gui view = new Gui(primaryStage);
 
-        NetworkHandler nh = new NetworkHandler("localhost", 2033);
+        NetworkHandler nh = new NetworkHandler();
 
         nh.setView(view);
 
@@ -31,6 +31,7 @@ public class GuiClient extends Application {
         view.setDisconnectionObserver(nh);
         view.setGodCardChoiceObserver(nh);
         view.setStartPlayerObserver(nh);
+        view.setConnectionObserver(nh);
 
         nh.setBuilderBuiltObserver(view);
         nh.setBuilderMovementObserver(view);
@@ -46,8 +47,8 @@ public class GuiClient extends Application {
         nh.setStateObserver(view);
         nh.setPossibleBuildObserver(view);
         nh.setPossibleMoveObserver(view);
+        nh.setSocketErrorObserver(view);
 
-        (new Thread(nh)).start();
         view.run();
 
         //final Canvas cell = new Canvas(50, 50);

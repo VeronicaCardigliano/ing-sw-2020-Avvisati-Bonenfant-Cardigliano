@@ -3,15 +3,14 @@ package it.polimi.ingsw.client.gui;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.util.*;
 
@@ -21,11 +20,12 @@ public class GodCardsPopup extends Stage {
     private final static int cardsWidth = 100;
     private Map<String, ImageView> cards;
     private Set<String> chosenGodCards;
+    private Button submit;
 
     private int maxSelectionsNum;
     private int selectionsNum;
 
-    public GodCardsPopup (Stage ownerStage, int selectionsNum, Map<String, String> godCardsDescriptions, Gui gui) {
+    public GodCardsPopup (Stage ownerStage, int selectionsNum, Map<String, String> godCardsDescriptions) {
 
         initOwner(ownerStage);
         maxSelectionsNum = selectionsNum;
@@ -36,7 +36,8 @@ public class GodCardsPopup extends Stage {
         initializeCards();
         this.selectionsNum = 0;
         VBox vbox = new VBox();
-        Button submit = new Button("Submit");
+        Label label = new Label();
+        submit = new Button("Submit");
         TilePane tilePane = new TilePane();
 
         tilePane.setHgap(gap);
@@ -45,48 +46,54 @@ public class GodCardsPopup extends Stage {
         vbox.setBackground(new Background(new BackgroundFill(Color.LIGHTSLATEGREY, null, null)));
 
         //if the popup appears to choose the matchGods, it has to tell the player that he's the challenger
-        if (selectionsNum > Gui.godsForPlayer) {
-            Label label = new Label ("You're the Challenger of this match! Choose " + selectionsNum + " godCards for the match:");
-            label.setTextFill(Color.WHITE);
-            vbox.getChildren().add(label);
-            vbox.setAlignment(Pos.CENTER);
-        }
-        else if (selectionsNum == Gui.godsForPlayer) {
-            Label label = new Label ("Choose your GodCard from the available ones: ");
-            label.setTextFill(Color.WHITE);
-            vbox.getChildren().add(label);
-            vbox.setAlignment(Pos.CENTER);
-        }
+        if (selectionsNum > Gui.godsForPlayer)
+            label.setText("You're the Challenger of this match! Choose " + selectionsNum + " godCards for the match:");
 
+        else if (selectionsNum == Gui.godsForPlayer)
+            label.setText("Choose your GodCard from the available ones: ");
+
+        else if (selectionsNum == 0)
+            label.setText("Hold your mouse over the card to see the power. GodCards of the match: ");
+
+        label.setTextFill(Color.WHITE);
+        label.setAlignment(Pos.CENTER);
+        vbox.getChildren().add(label);
+        vbox.setAlignment(Pos.CENTER);
         vbox.getChildren().add(tilePane);
 
         //if selectionsNum is 0, it means the match is in GAME state and i just want to see MatchCards and descriptions
-        if (selectionsNum != 0)
-            vbox.getChildren().add(submit);
+        if (selectionsNum != 0) {
 
-        submit.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        submit.setPrefWidth((float) Gui.sceneWidth/14);
-        submit.setTextFill(Color.WHITESMOKE);
-
-        submit.setOnMouseEntered(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            DropShadow shadow = new DropShadow();
-            enteredButton.setEffect(shadow);
-        });
-
-        submit.setOnMouseExited(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            enteredButton.setEffect(null);
-        });
-
-        submit.setOnMousePressed(mouseEvent -> {
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(Gui.submitButtonPressed), BackgroundRepeat.NO_REPEAT,
+            Tooltip notReady= new Tooltip("Not all cards have been chosen yet");
+            submit.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
                     BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
-        });
+            submit.setPrefWidth((float) Gui.sceneWidth/14);
+            submit.setTextFill(Color.WHITESMOKE);
+
+            submit.setOnMouseEntered(mouseEvent -> {
+                Button enteredButton = (Button) mouseEvent.getSource();
+                DropShadow shadow = new DropShadow();
+                enteredButton.setEffect(shadow);
+                if (selectionsNum < maxSelectionsNum)
+                    Tooltip.install(enteredButton, notReady);
+                else
+                    Tooltip.uninstall(enteredButton, notReady);
+            });
+
+            submit.setOnMouseExited(mouseEvent -> {
+                Button enteredButton = (Button) mouseEvent.getSource();
+                enteredButton.setEffect(null);
+            });
+
+            submit.setOnMousePressed(mouseEvent -> {
+                Button pressedButton = (Button) mouseEvent.getSource();
+                pressedButton.setBackground(new Background(new BackgroundImage(new Image(Gui.submitButtonPressed), BackgroundRepeat.NO_REPEAT,
+                        BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
+
+            });
+            vbox.getChildren().add(submit);
+        }
 
         vbox.setBorder(new Border(new BorderStroke(Color.TRANSPARENT, Color.TRANSPARENT, Color. TRANSPARENT,Color.TRANSPARENT,
                 null, null, null, null, CornerRadii.EMPTY,
@@ -101,22 +108,32 @@ public class GodCardsPopup extends Stage {
             tilePane.getChildren().add(tmp);
 
             tmp.setOnMouseEntered(mouseEvent -> Tooltip.install(tmp, new Tooltip(godCardsDescriptions.get(s))));
-
-            submit.setOnMouseClicked(mouseEvent -> {
-                if (selectionsNum == maxSelectionsNum) {
-                        /*
-                        Map<String,String> matchGodCards = new HashMap<>();
-                        for(String godName : godCardsDescriptions.keySet().stream().filter(godName -> chosenGodCards.contains(godName)).collect(Collectors.toSet()))
-                            matchGodCards.put(godName, godCardsDescriptions.get(godName));*/
-                    gui.setGodCardsChoice(chosenGodCards);
-                    close();
-                }
-            });
         }
+
+        this.setOnCloseRequest(windowEvent -> {
+            if (Gui.confirmQuit()) {
+                this.close();
+                ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+            }
+            else
+                windowEvent.consume();
+        });
 
         Scene scene = new Scene(vbox);
         this.setScene(scene);
         this.show();
+    }
+
+    protected int getSelectionsNum() {
+        return selectionsNum;
+    }
+
+    protected Set<String> getChosenGodCards() {
+        return chosenGodCards;
+    }
+
+    protected Button getSubmit() {
+        return submit;
     }
 
     private void initializeCards() {
@@ -165,6 +182,13 @@ public class GodCardsPopup extends Stage {
                     image.setOpacity(Gui.selectionOpacity);
                     chosenGodCards.add(godCardName);
                 }
+
+                if (chosenGodCards.contains(godCardName)) {
+                    selectionsNum--;
+                    image.setOpacity(1);
+                    chosenGodCards.remove(godCardName);
+                }
+
             });
         }
     }

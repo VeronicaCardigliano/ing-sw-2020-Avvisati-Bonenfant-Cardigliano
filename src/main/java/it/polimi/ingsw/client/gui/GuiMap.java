@@ -24,7 +24,6 @@ public class GuiMap extends GameMap {
     private static final int cellGap = 1;
     private Scene scene;
     private TilePane tile;
-    private ImageView pushedBuilder;
 
     GuiMap(TilePane tilePane, Scene s) {
         super();
@@ -86,9 +85,8 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     *
-     * @param cellStack
-     * @return
+     * @param cellStack stackPane of the cell
+     * @return the position of the current index in the cell StackPane
      */
     protected int getCurrentBuilderIndexInStack(Coordinates cellStack) {
         int result = 0;

@@ -65,7 +65,7 @@ public abstract class Messages {
 
     //key values
     public static final String COLOR = "color";                             //for SET_COLOR
-    public static final String WINNER = "winner";                       //for END_GAME
+    public static final String WINNER = "winner";                           //for END_GAME
     public static final String SRC = "src";
     public static final String DST = "dst";
     public static final String BUILD_DOME = "buildDome";
@@ -327,8 +327,6 @@ public abstract class Messages {
     public static String playerAdded(String nickname, boolean result) {
         return (new JSONObject()).put(TYPE, PLAYER_ADDED).put(NAME, nickname).put(RESULT, result).toString();
     }
-
-
 
 
     public static String godCardAssigned(String nickname, String godCard, boolean result){
