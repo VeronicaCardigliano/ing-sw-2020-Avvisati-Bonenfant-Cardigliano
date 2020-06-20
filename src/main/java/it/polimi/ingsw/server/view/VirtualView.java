@@ -12,10 +12,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -96,6 +94,8 @@ public class VirtualView extends ViewObservable implements Runnable {
 
             disconnect();
 
+        } catch(SocketTimeoutException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }

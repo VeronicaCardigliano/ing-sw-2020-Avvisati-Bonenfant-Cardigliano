@@ -90,27 +90,23 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
             try {
                 socket.connect(new InetSocketAddress(ip, port), timeout);
                 socket.setSoTimeout(timeout);
-            } catch (SocketTimeoutException e) {
-                notifyConnectionTimedOut("Connection Timed Out: " + e.getMessage());
+                socket.setKeepAlive(true);
+            } catch (SocketTimeoutException | ConnectException | IllegalArgumentException | NoRouteToHostException e) {
+                notifyConnectionError(e.getMessage());
                 return;
             } catch (UnknownHostException e) {
-                notifyUnknownHostError("Unknown Host: " + e.getMessage());
-                return;
-            } catch (NoRouteToHostException e) {
-                notifyUnknownHostError("No Route to host: " + e.getMessage());
-                return;
-            }catch (ConnectException e) {
-                //todo connection refused
-            } catch (IllegalArgumentException e) {
-                //todo for out of range port
+                notifyConnectionError("Unknown Host: " + e.getMessage());
                 return;
             }
 
 
+
+            boolean connected = socket.isConnected();
+
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
 
-            boolean connected = socket.isConnected();
+
             String message;
 
             try {
@@ -122,7 +118,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
                 }
             } catch (SocketTimeoutException e) {
-                notifyConnectionTimedOut("Connection Lost: " + e.getMessage());
+                notifyConnectionError(e.getMessage());
 
             } finally {
                 in.close();
@@ -359,15 +355,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         executorS.execute(this);
     }
 
-    public void notifyConnectionTimedOut(String message) {
-        socketErrorObserver.onConnectionTimedOut(message);
-    }
-
-    public void notifyConnectionRefused(String message) {
-        socketErrorObserver.onConnectionRefused(message);
-    }
-
-    public void notifyUnknownHostError(String message) {
-        socketErrorObserver.onUnknownHostError(message);
+    public void notifyConnectionError(String message) {
+        socketErrorObserver.onConnectionError(message);
     }
 }

@@ -230,10 +230,12 @@ public class Cli extends View{
             } else {
                 quit = true;
                 notifyDisconnection(getNickname() != null ? getNickname() : "unknown");
+
             }
         }
 
         System.out.println("You exited the game.");
+        System.exit(0);
     }
 
     private Coordinates coordinatesInsertion() {
@@ -614,6 +616,11 @@ public class Cli extends View{
 
         printer.setInfoMessage(nickname + " has lost!");
         printer.print();
+
+        printer.erase();
+        printer.printTitle();
+        printer.setAskMessage("Server to join: ");
+
     }
 
     @Override
@@ -642,9 +649,17 @@ public class Cli extends View{
         super.onStateUpdate(currState);
 
         printer.erase();
-        printer.setState(currState.toString());
+
+        if(currState.equals(Model.State.SETUP_PLAYERS))
+            printer.setInfoMessage("Waiting for opponents...");
+
         printer.print();
         printer.erase();
+
+        /*printer.erase();
+        printer.setState(currState.toString());
+        printer.print();
+        printer.erase();*/
     }
 
     @Override
@@ -797,22 +812,8 @@ public class Cli extends View{
     }
 
     @Override
-    public void onConnectionRefused(String message) {
-        printer.setInfoMessage(message);
+    public void onConnectionError(String message) {
         printer.erase();
-        printer.print();
-    }
-
-    @Override
-    public void onConnectionTimedOut(String message) {
-        printer.setInfoMessage(message);
-        printer.erase();
-        printer.setAskMessage("Server to join: ");
-        printer.print();
-    }
-
-    @Override
-    public void onUnknownHostError(String message) {
         printer.setInfoMessage(message);
         printer.print();
         printer.erase();

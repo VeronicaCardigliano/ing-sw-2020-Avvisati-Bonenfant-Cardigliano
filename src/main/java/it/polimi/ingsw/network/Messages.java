@@ -295,10 +295,6 @@ public abstract class Messages {
 
     public static String askBuilders(){ return (new JSONObject()).put(TYPE, ASK_BUILDERS).toString(); }
 
-    public static String askStep(){
-        return (new JSONObject()).put(TYPE, ASK_STEP).toString();
-    }
-
     public static String chooseStartPlayer(Set<String> players) {
         return (new JSONObject()).put(TYPE, CHOOSE_START_PLAYER).put(PLAYERS, players).toString();
     }

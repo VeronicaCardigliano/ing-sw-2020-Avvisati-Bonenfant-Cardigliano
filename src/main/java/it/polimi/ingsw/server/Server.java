@@ -10,7 +10,7 @@ import it.polimi.ingsw.server.view.ViewManager;
  */
 public class Server
 {
-    public static void main( String[] args )
+    public static void main(int port)
     {
         Model model = new Model();
         ViewManager vm = new ViewManager();
@@ -34,7 +34,7 @@ public class Server
 
 
 
-        MultiThreadServer server = new MultiThreadServer(2033);
+        MultiThreadServer server = new MultiThreadServer(port);
 
         server.startServer(vm, controller);
 

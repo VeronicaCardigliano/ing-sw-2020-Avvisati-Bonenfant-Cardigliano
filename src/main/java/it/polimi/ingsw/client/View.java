@@ -224,7 +224,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onLossUpdate(String nickname) {
-        ;//logger.log(nickname + " lost!\n");
+        setState(ViewState.CONNECTION);
 
     }
 
