@@ -1040,6 +1040,20 @@ public class Gui extends View {
         }
     }
 
+    @Override
+    public void onConnectionRefused(String message) {
+
+    }
+
+    @Override
+    public void onConnectionTimedOut(String message) {
+
+    }
+
+    @Override
+    public void onUnknownHostError(String message) {
+
+    }
 }
 
 

@@ -15,7 +15,7 @@ import static it.polimi.ingsw.client.Color.returnColor;
 /**
  * Console based User Interface.
  */
-public class Cli extends View {
+public class Cli extends View{
 
     private final Printer printer = new Printer(System.out);
     private boolean quit = false;
@@ -35,14 +35,48 @@ public class Cli extends View {
     }
 
 
+    int parseInteger(String input) {
+        int result = 0;
+        try {
+            result = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            printer.setInfoMessage("You have to type a number.");
+            printer.setAskMessage("Input: ");
+            printer.print();
+            result = parseInteger();
+        }
+
+        return result;
+    }
+
+    int parseInteger() {
+        boolean ok = false;
+        int result = 0;
+
+        while(!ok) {
+            try {
+                result = in.nextInt();
+                in.nextLine();
+                ok = true;
+            } catch (InputMismatchException e) {
+                printer.setInfoMessage("You have to type a number.");
+                printer.print();
+                in.nextLine();
+            }
+        }
+
+        return result;
+    }
+
     @Override
     public  void run() {
         printer.printTitle();
 
         String input = "";
+        printer.setAskMessage("Server to join: ");
+        printer.print();
         in = new Scanner(System.in);
-        //setState(ViewState.CONNECTION);
-
+        setState(ViewState.CONNECTION);
 
         quit = false;
 
@@ -56,10 +90,23 @@ public class Cli extends View {
 
                 try {
                     switch (getState()) {
+                        case CONNECTION:
+                            String ip = parser.nextLine();
+                            printer.setAskMessage("port: ");
+                            printer.print();
+                            int port = parseInteger();
+
+                            //in.nextLine();
+
+                            notifyConnection(ip, port);
+                            break;
+
                         case NUMPLAYERS:
                             setNumberOfPlayers(parser.nextInt()); //i think this inserts \n automatically, that's why cli sends an empty message
-                            notifyNumberOfPlayers(getNumberOfPlayers());
-                            setState(ViewState.WAITING);
+                            synchronized (this) {
+                                notifyNumberOfPlayers(getNumberOfPlayers());
+                                setState(ViewState.WAITING);
+                            }
                             break;
                         case NICKDATE:
                             setNickname(parser.nextLine());
@@ -67,9 +114,12 @@ public class Cli extends View {
                             printer.setAskMessage("Date (yyyy.mm.dd): ");
                             printer.print();
                             setDate(in.nextLine());
-                            notifyNewPlayer(getNickname(), getDate());
                             printer.erase();
-                            setState(ViewState.WAITING);
+
+                            synchronized (this) {
+                                notifyNewPlayer(getNickname(), getDate());
+                                setState(ViewState.WAITING);
+                            }
                             break;
                         case MATCHGODS:
                             while (getMatchGodCards().size() < getNumberOfPlayers()) {
@@ -85,25 +135,32 @@ public class Cli extends View {
                                 //if(getMatchGodCards().size() == getNumberOfPlayers())
                                 //chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
                             }
-
-                            notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
                             printer.erase();
                             printer.print();
-                            setState(ViewState.WAITING);
+
+                            synchronized (this) {
+                                notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
+                                setState(ViewState.WAITING);
+                            }
                             break;
                         case STARTPLAYER:
-                            notifySetStartPlayer(getNickname(), getOption(parser.nextInt()));
-                            setState(ViewState.WAITING);
+                            synchronized (this) {
+                                notifySetStartPlayer(getNickname(), getOption(parser.nextInt()));
+                                setState(ViewState.WAITING);
+                            }
                             break;
                         case PLAYERGOD:
-                            notifyGodCardChoice(getNickname(), getOption(parser.nextInt()));
-                            setState(ViewState.WAITING);
+                            synchronized (this) {
+                                notifyGodCardChoice(getNickname(), getOption(parser.nextInt()));
+                                setState(ViewState.WAITING);
+                            }
                             break;
 
                         case BUILDERCOLOR:
-                            notifyColorChoice(getNickname(), getOption(parser.nextInt()));
-
-                            setState(ViewState.WAITING);
+                            synchronized (this) {
+                                notifyColorChoice(getNickname(), getOption(parser.nextInt()));
+                                setState(ViewState.WAITING);
+                            }
                             break;
 
                         case BUILDERPLACEMENT:
@@ -133,12 +190,16 @@ public class Cli extends View {
                                 }
                             }
 
-                            notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
-                            setState(ViewState.WAITING);
+                            synchronized (this) {
+                                notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
+                                setState(ViewState.WAITING);
+                            }
                             break;
                         case STEP:
-                            notifyStepChoice(getNickname(), getOption(parser.nextInt()));
-                            setState(ViewState.WAITING);
+                            synchronized (this) {
+                                notifyStepChoice(getNickname(), getOption(parser.nextInt()));
+                                setState(ViewState.WAITING); //todo atomicizzare queste 2 espressioni
+                            }
                             break;
 
                         case MOVE:
@@ -149,15 +210,18 @@ public class Cli extends View {
                             break;
 
                         case WAITING:
-                            printer.setInfoMessage("Waiting from Server.\nYou entered " + parser.nextLine());
+                            printer.setInfoMessage("Waiting from Server.\nYou entered: " + parser.nextLine());
                             printer.print();
                             break;
 
                     }
                 } catch (NullPointerException e) {
-                    System.err.println("NullPointerException: " + e.getMessage());
                     e.printStackTrace();
                     in.nextLine();
+                } catch (InvalidOptionException e) {
+                    printer.setInfoMessage(e.getMessage());
+                    printer.print();
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -284,10 +348,10 @@ public class Cli extends View {
         return result.toString();
     }
 
-    private String getOption(int choice) throws Exception{
+    private String getOption(int choice) throws InvalidOptionException{
 
         if(choice < 0 || choice >= inputOptions.size())
-            throw new Exception("Invalid Choice.");
+            throw new InvalidOptionException("Invalid Choice.");
 
         return inputOptions.get(choice);
     }
@@ -300,7 +364,6 @@ public class Cli extends View {
 
         printer.setAskMessage("Number Of Players: ");
         printer.print();
-        notifyAll();
     }
 
     @Override
@@ -309,7 +372,6 @@ public class Cli extends View {
 
         printer.setAskMessage("Nickname: ");
         printer.print();
-        notifyAll();
     }
 
     @Override
@@ -538,7 +600,7 @@ public class Cli extends View {
         super.onPlayerAdded(nickname, result);
 
         if(result) {
-            printer.setInfoMessage(nickname + " joined the game!");
+            printer.setInfoMessage("\n" + nickname + " joined the game!");
         }
         else
             printer.setInfoMessage("Could not register nickname");
@@ -668,9 +730,9 @@ public class Cli extends View {
         }
 
         if (getChosenBuilderNum() == 1)
-            gameMap.setPossibleDst(possibleDstBuilder1, null);
+            gameMap.setPossibleDst(possibleDstBuilder, null);
         else
-            gameMap.setPossibleDst(null, possibleDstBuilder2);
+            gameMap.setPossibleDst(null, possibleDstBuilder);
 
         printer.setGameMapString(gameMap.toString());
         printer.setInfoMessage("Insert the coordinates of where you want to build ");
@@ -682,8 +744,10 @@ public class Cli extends View {
             dst = coordinatesInsertion();
         }
 
-        notifyBuild(getNickname(), currentTurnBuilderPos, dst, buildDome);
-        setState(ViewState.WAITING);
+        synchronized (this) {
+            notifyBuild(getNickname(), currentTurnBuilderPos, dst, buildDome);
+            setState(ViewState.WAITING);
+        }
     }
 
     @Override
@@ -726,9 +790,33 @@ public class Cli extends View {
             dstMove = coordinatesInsertion();
         }
 
-
-        notifyMove(getNickname(), currentTurnBuilderPos, dstMove);
-        setState(ViewState.WAITING);
+        synchronized (this) {
+            notifyMove(getNickname(), currentTurnBuilderPos, dstMove);
+            setState(ViewState.WAITING);
+        }
     }
 
+    @Override
+    public void onConnectionRefused(String message) {
+        printer.setInfoMessage(message);
+        printer.erase();
+        printer.print();
+    }
+
+    @Override
+    public void onConnectionTimedOut(String message) {
+        printer.setInfoMessage(message);
+        printer.erase();
+        printer.setAskMessage("Server to join: ");
+        printer.print();
+    }
+
+    @Override
+    public void onUnknownHostError(String message) {
+        printer.setInfoMessage(message);
+        printer.print();
+        printer.erase();
+        printer.setAskMessage("Server to join: ");
+        printer.print();
+    }
 }

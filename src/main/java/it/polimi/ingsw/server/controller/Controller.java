@@ -35,6 +35,7 @@ public class Controller extends AbstractController implements ConnectionObserver
         model.getNumberOfPlayers() != 3)) {
 
             if (model.setNumberOfPlayers(num)) {
+
                 model.setNextState();
             }
 
@@ -202,7 +203,6 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     @Override
     public synchronized void onConnection(VirtualView view) throws IOException {
-        //boolean acceptConnection = true;
 
         if(viewManager.getNumberOfViews() == 0 && model.getCurrState().equals(Model.State.SETUP_NUMOFPLAYERS)) {
             viewManager.add(view);
@@ -216,7 +216,6 @@ public class Controller extends AbstractController implements ConnectionObserver
                 viewManager.askNickAndDate();
 
         } else {
-            //acceptConnection = true;
             view.send(Messages.errorMessage("Too many clients connected"));
             view.send(Messages.disconnect());
             view.disconnect();
@@ -226,7 +225,7 @@ public class Controller extends AbstractController implements ConnectionObserver
     }
 
     @Override
-    public void onSetStartPlayer(String nickname, String startPlayer) {
+    public synchronized void onSetStartPlayer(String nickname, String startPlayer) {
         if(model.getCurrState().equals(Model.State.SETUP_CARDS) && challenger.equals(nickname)) {
             if(model.setStartPlayer(nickname, startPlayer)) {
                 startPlayerNickname = startPlayer;

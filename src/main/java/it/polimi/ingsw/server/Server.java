@@ -8,7 +8,7 @@ import it.polimi.ingsw.server.view.ViewManager;
  * Hello world!
  *
  */
-public class App 
+public class Server
 {
     public static void main( String[] args )
     {

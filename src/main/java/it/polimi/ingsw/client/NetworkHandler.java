@@ -12,25 +12,28 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class NetworkHandler extends ModelObservable implements Runnable, BuilderBuildObserver, BuilderMoveObserver,
+public class NetworkHandler extends ModelObservable implements Runnable, ConnectionObserver, BuilderBuildObserver, BuilderMoveObserver,
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
         StepChoiceObserver, DisconnectionObserver, StartPlayerObserver {
 
     private final int timeout = 5 * 1000;
     private PrintWriter out;
     private View view;
-    private final int port;
-    private final String ip;
+    private int port;
+    private static final int defaultPort = 2033;
+    private static final String defaultIp = "localhost";
+    private String ip;
 
     private ExecutorService executorS;
+
+    private SocketErrorObserver socketErrorObserver;
 
 
     public NetworkHandler(String ip, int port) {
@@ -40,18 +43,69 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
         this.executorS = Executors.newCachedThreadPool();
     }
 
+    public NetworkHandler() {
+        this(defaultIp, defaultPort);
+    }
+
+    public boolean setIp(String ip) {
+        boolean result = true;
+
+        if(ip != null)
+            this.ip = ip;
+        else
+            result = false;
+
+        return result;
+    }
+
+    public boolean setPort(int port) {
+        boolean result = true;
+        int minimumPort = 1025;
+
+        if(port >= minimumPort)
+            this.port = port;
+        else
+            result = false;
+
+        return result;
+    }
 
     public void setView(View view) {
         this.view = view;
     }
 
+    public void setSocketErrorObserver(SocketErrorObserver o) {
+        socketErrorObserver = o;
+    }
+
+    /**
+     * run function for the Network Manager thread.
+     * It creates the socket and connects it to the Game Server.
+     */
     @Override
     public void run() {
         try {
             Socket socket = new Socket();
 
-            socket.connect(new InetSocketAddress(ip, port), 10 * 1000);
-            socket.setSoTimeout(timeout);
+            try {
+                socket.connect(new InetSocketAddress(ip, port), timeout);
+                socket.setSoTimeout(timeout);
+            } catch (SocketTimeoutException e) {
+                notifyConnectionTimedOut("Connection Timed Out: " + e.getMessage());
+                return;
+            } catch (UnknownHostException e) {
+                notifyUnknownHostError("Unknown Host: " + e.getMessage());
+                return;
+            } catch (NoRouteToHostException e) {
+                notifyUnknownHostError("No Route to host: " + e.getMessage());
+                return;
+            }catch (ConnectException e) {
+                //todo connection refused
+            } catch (IllegalArgumentException e) {
+                //todo for out of range port
+                return;
+            }
+
 
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
@@ -59,20 +113,27 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
             boolean connected = socket.isConnected();
             String message;
 
-            while((message = in.readLine()) != null && connected) {
-                if(!Messages.ping().equals(message))
-                    ;//System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
+            try {
+                while ((message = in.readLine()) != null && connected) {
+                    if (!Messages.ping().equals(message))
+                        ;//System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
 
-                connected = handleMessage(message);
+                    connected = handleMessage(message);
 
+                }
+            } catch (SocketTimeoutException e) {
+                notifyConnectionTimedOut("Connection Lost: " + e.getMessage());
+
+            } finally {
+                in.close();
+                out.close();
+                socket.close();
             }
 
-            in.close();
-            out.close();
-            socket.close();
-
-        } catch (IOException e) {
-            System.err.println(e.getMessage()); //todo una notify per portare l'errore fino alla view
+        }
+        catch (IOException e) {
+            //System.err.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -275,10 +336,38 @@ public class NetworkHandler extends ModelObservable implements Runnable, Builder
     public void onDisconnection(String nickname) {
         send(Messages.disconnect());
 
+
+
     }
 
     @Override
     public void onSetStartPlayer(String nickname, String startPlayer) {
         send(Messages.setStartPlayer(startPlayer));
+    }
+
+
+    @Override
+    public void onConnection(String ip, int port) {
+        setIp(ip);
+        setPort(port);
+
+        onConnection();
+    }
+
+    @Override
+    public void onConnection() {
+        executorS.execute(this);
+    }
+
+    public void notifyConnectionTimedOut(String message) {
+        socketErrorObserver.onConnectionTimedOut(message);
+    }
+
+    public void notifyConnectionRefused(String message) {
+        socketErrorObserver.onConnectionRefused(message);
+    }
+
+    public void notifyUnknownHostError(String message) {
+        socketErrorObserver.onUnknownHostError(message);
     }
 }

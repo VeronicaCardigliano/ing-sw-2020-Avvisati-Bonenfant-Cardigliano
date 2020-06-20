@@ -184,6 +184,9 @@ public class Model extends ModelObservableWithSelect {
                 }
 
                 found = players.remove(p);
+
+                if(players.size() == 1)
+                    notifyEndGame(players.get(0).getNickname());
         }
 
         if (!found)

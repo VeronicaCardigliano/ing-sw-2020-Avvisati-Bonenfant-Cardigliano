@@ -8,17 +8,19 @@ import java.util.*;
 
 public abstract class View extends ViewObservable implements BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
         ColorAssignmentObserver, ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver,
-        BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChosenStepObserver, StartPlayerSetObserver{
+        BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChosenStepObserver, StartPlayerSetObserver,
+        SocketErrorObserver{
 
     public enum ViewState {
         CONNECTION, WAITING, NUMPLAYERS, NICKDATE, MATCHGODS, PLAYERGOD, STARTPLAYER, BUILDERCOLOR, BUILDERPLACEMENT, STEP, MOVE, BUILD
     }
 
+    private ConnectionObserver connectionObserver;
+
     public static final String red = Color.ANSI_RED.escape();
 
     private ViewState state;
 
-    //protected final Set<String> chosenColors = new HashSet<>();
     protected static final Map<String,String> chosenColorsForPlayer = new HashMap<>();
 
     protected Coordinates currentTurnBuilderPos;
@@ -118,7 +120,15 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         setState(ViewState.STEP);
     }
 
-    //used only by GUI??
+
+    public void setConnectionObserver(ConnectionObserver observer) {
+        this.connectionObserver = observer;
+    }
+
+    public void notifyConnection(String ip, int port) {
+        connectionObserver.onConnection(ip, port);
+    }
+
     abstract public void build();
     abstract public void move();
 
