@@ -33,6 +33,8 @@ public class Model extends ModelObservableWithSelect {
     private String currStep;
     private final GodCardParser cardsParser;
 
+    private String startPlayerNickname;
+    private String challenger;
 
     private Player currPlayer;
     private Builder chosenBuilder;
@@ -99,6 +101,15 @@ public class Model extends ModelObservableWithSelect {
     }
 
     public String getCurrStep () {return currStep;}
+
+    public String getStartPlayerNickname() {return startPlayerNickname;}
+
+    public void setStartPlayerNickname(String startPlayerNickname) {this.startPlayerNickname = startPlayerNickname;}
+
+    public String getChallenger() {return challenger;}
+
+    public void setChallenger(String challenger ) {this.challenger = challenger;}
+
 
     public void startTurn () {
         currPlayer.startTurn();
@@ -402,6 +413,7 @@ public class Model extends ModelObservableWithSelect {
             for(Player p : players)
                 if(p.getGodCard().winCondition()) {
                     notifyEndGame(p.getNickname());
+                    //model.flush();
                     currState = State.ENDGAME;
                     end = true;
                     break;
@@ -681,4 +693,8 @@ public class Model extends ModelObservableWithSelect {
         return changed;
     }
 
+
+    private void flush() {
+
+    }
 }

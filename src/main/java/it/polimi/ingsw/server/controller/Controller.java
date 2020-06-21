@@ -15,8 +15,7 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     private final Model model;
     private final ViewManager viewManager;
-    private String startPlayerNickname;
-    private String challenger;
+
 
     public Controller (Model model, ViewManager viewManager) {
 
@@ -55,8 +54,8 @@ public class Controller extends AbstractController implements ConnectionObserver
                 model.setNextState();
                 //setNextPlayer used to initialize first player :)
                 model.setNextPlayer();
-                challenger = model.getCurrPlayer();
-                viewManager.chooseMatchGodCards(challenger, model.getNumberOfPlayers(), model.getGodDescriptions());
+                model.setChallenger(model.getCurrPlayer());
+                viewManager.chooseMatchGodCards(model.getChallenger(), model.getNumberOfPlayers(), model.getGodDescriptions());
 
             }
         }
@@ -69,7 +68,7 @@ public class Controller extends AbstractController implements ConnectionObserver
         if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().equals(nickname)) {
             if (model.assignColor(color)) {
                 model.setNextPlayer();
-                if (model.getCurrPlayer().equals(startPlayerNickname)) {
+                if (model.getCurrPlayer().equals(model.getStartPlayerNickname())){
                     model.setNextState();
                     viewManager.askBuilders(model.getCurrPlayer());
                 } else
@@ -88,7 +87,7 @@ public class Controller extends AbstractController implements ConnectionObserver
                 model.setNextPlayer();
 
                 if (!model.currPlayerNullGodCard()) {
-                    viewManager.chooseStartPlayer(challenger, model.getPlayersNickname());
+                    viewManager.chooseStartPlayer(model.getChallenger(), model.getPlayersNickname());
                 }
                 else
                     viewManager.askGod(model.getCurrPlayer(), model.getMatchGodCardsDescriptions(), model.getChosenCards());
@@ -117,7 +116,7 @@ public class Controller extends AbstractController implements ConnectionObserver
             if (model.setCurrPlayerBuilders(builder1, builder2)){
                 model.setNextPlayer();
 
-                if (model.getCurrPlayer().equals(startPlayerNickname)) {
+                if (model.getCurrPlayer().equals(model.getStartPlayerNickname())) {
                     model.setNextState();
 
                     //game starts
@@ -260,9 +259,9 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     @Override
     public synchronized void onSetStartPlayer(String nickname, String startPlayer) {
-        if(model.getCurrState().equals(Model.State.SETUP_CARDS) && challenger.equals(nickname)) {
+        if(model.getCurrState().equals(Model.State.SETUP_CARDS) && model.getChallenger().equals(nickname)) {
             if(model.setStartPlayer(nickname, startPlayer)) {
-                startPlayerNickname = startPlayer;
+                model.setStartPlayerNickname(startPlayer);
                 model.setNextState();
                 viewManager.askColor(model.getCurrPlayer(), model.getChosenColors());
             }

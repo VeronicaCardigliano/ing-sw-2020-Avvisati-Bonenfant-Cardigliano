@@ -124,7 +124,8 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         for(VirtualView view : views)
             view.send(Messages.endGame(winnerNickname));
 
-        //cleanSelection();
+
+
     }
 
     @Override
