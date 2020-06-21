@@ -5,6 +5,8 @@ import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -21,6 +23,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,6 +72,7 @@ public class Gui extends View {
     private Scene primaryScene;
     private BorderPane root;
     private AnchorPane bottomAnchorPane;
+    private AnchorPane home;
     private VBox bottomMessagesVBox;
     private VBox playersRegion;
     private TilePane tile;
@@ -145,7 +149,7 @@ public class Gui extends View {
         //TODO: verify max Width
         primaryStage.setMaxWidth(maxSceneWidth);
 
-        //sets personalized actions when clicking on the default closing button
+
         primaryStage.setOnCloseRequest(windowEvent -> {
             if (getNickname() != null)
                 notifyDisconnection(getNickname());
@@ -154,6 +158,8 @@ public class Gui extends View {
             System.exit(0);
         });
 
+
+        //The primaryScene is set after onStateUpdate
         //primaryStage.setScene(primaryScene);
     }
 
@@ -165,7 +171,7 @@ public class Gui extends View {
     private void setHomeScene() {
 
         DropShadow shadow = new DropShadow();
-        AnchorPane home = new AnchorPane();
+        home = new AnchorPane();
         home.prefWidthProperty().bind(home.widthProperty());
         home.prefHeightProperty().bind(home.heightProperty());
         home.setBackground(new Background(
@@ -815,8 +821,8 @@ public class Gui extends View {
 
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
-        if(result) {
 
+        if(result) {
             if(getNickname().equals(nickname)) {
                 currentTurnBuilderPos = dst;
                 gameMap.resetMap();
@@ -859,7 +865,8 @@ public class Gui extends View {
         this.possibleDstBuilder2 = possibleDstBuilder2;
         setState(ViewState.MOVE);
 
-        gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, 0, null);
+        if (getChosenBuilderNum() == 0)
+            gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, 0, null);
         move();
     }
 
@@ -940,6 +947,7 @@ public class Gui extends View {
             setNickname(null);
             setDate(null);
             printMessage("Invalid nickname or date. Could not join the game.");
+            askNickAndDate();
         }
     }
 
@@ -980,6 +988,11 @@ public class Gui extends View {
             printMessage("ERROR: could not set starting player.");
     }
 
+    /**
+     * When the match is in the state SETUP_BUILDERS, the playersRegion is featured with players nicknames and gods,
+     * when the match is in SETUP_PLAYERS, the user is advised to wait for players to enter
+     * @param currState currState of the game
+     */
     @Override
     public void onStateUpdate(Model.State currState) {
 
@@ -1065,6 +1078,14 @@ public class Gui extends View {
             Platform.runLater(() ->primaryStage.setScene(primaryScene));
             Label label = new Label("Waiting for players... ");
             label.setTextFill(Color.RED);
+            label.setFont(new Font("Arial", fontSize));
+
+            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), label);
+            fadeTransition.setFromValue(1.0);
+            fadeTransition.setToValue(0.0);
+            fadeTransition.setCycleCount(Animation.INDEFINITE);
+            fadeTransition.play();
+
             playersRegion.setAlignment(Pos.CENTER);
             Platform.runLater(() ->playersRegion.getChildren().add(label));
         }
@@ -1074,6 +1095,7 @@ public class Gui extends View {
      * Predefined alert to confirm the leaving of the match, returns true if the user clicks on YES button
      */
     protected static boolean confirmQuit () {
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.getDialogPane().getButtonTypes().clear();
         ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
@@ -1090,6 +1112,12 @@ public class Gui extends View {
     @Override
     public void onConnectionError(String message) {
 
+        Label errorLabel = new Label("CONNECTION ERROR: try new IP and port values ");
+        errorLabel.setTextFill(Color.DARKRED);
+        errorLabel.setFont(new Font("Arial", fontSize));
+        Platform.runLater(()->home.getChildren().add(errorLabel));
+        AnchorPane.setBottomAnchor(errorLabel, marginLength);
+        AnchorPane.setLeftAnchor(errorLabel, (double) sceneWidth/10);
     }
 }
 

@@ -83,7 +83,7 @@ public class ChoicePopup extends Stage {
         this.setOnCloseRequest(windowEvent -> {
             if (Gui.confirmQuit()) {
                 this.close();
-                //ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+                ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
                 ownerStage.close();
                 Platform.exit();
                 System.exit(0);
