@@ -1,5 +1,6 @@
 package it.polimi.ingsw.client.gui;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -25,10 +26,10 @@ public class GodCardsPopup extends Stage {
     private int maxSelectionsNum;
     private int selectionsNum;
 
-    public GodCardsPopup (Stage ownerStage, int selectionsNum, Map<String, String> godCardsDescriptions) {
+    public GodCardsPopup (Stage ownerStage, int maxSelections, Map<String, String> godCardsDescriptions) {
 
         initOwner(ownerStage);
-        maxSelectionsNum = selectionsNum;
+        maxSelectionsNum = maxSelections;
         setTitle("GodCards");
         setResizable(false);
         this.chosenGodCards = new HashSet<>();
@@ -36,6 +37,7 @@ public class GodCardsPopup extends Stage {
         initializeCards();
         this.selectionsNum = 0;
         VBox vbox = new VBox();
+        VBox labelBox = new VBox();
         Label label = new Label();
         submit = new Button("Submit");
         TilePane tilePane = new TilePane();
@@ -46,23 +48,26 @@ public class GodCardsPopup extends Stage {
         vbox.setBackground(new Background(new BackgroundFill(Color.LIGHTSLATEGREY, null, null)));
 
         //if the popup appears to choose the matchGods, it has to tell the player that he's the challenger
-        if (selectionsNum > Gui.godsForPlayer)
-            label.setText("You're the Challenger of this match! Choose " + selectionsNum + " godCards for the match:");
+        if (maxSelections > Gui.godsForPlayer)
+            label.setText("You're the Challenger of this match! Choose " + maxSelections + " godCards for the match:");
 
-        else if (selectionsNum == Gui.godsForPlayer)
+        else if (maxSelections == Gui.godsForPlayer)
             label.setText("Choose your GodCard from the available ones: ");
 
-        else if (selectionsNum == 0)
-            label.setText("Hold your mouse over the card to see the power. GodCards of the match: ");
+        else if (maxSelections == 0)
+            label.setText("GodCards of the match: ");
+
+        Label tooltipsNotice = new Label ("Hold your mouse over the godCard to see the power.");
 
         label.setTextFill(Color.WHITE);
-        label.setAlignment(Pos.CENTER);
-        vbox.getChildren().add(label);
-        vbox.setAlignment(Pos.CENTER);
+        labelBox.getChildren().add(label);
+        labelBox.getChildren().add(tooltipsNotice);
+        labelBox.setAlignment(Pos.CENTER);
+        vbox.getChildren().add(labelBox);
         vbox.getChildren().add(tilePane);
 
         //if selectionsNum is 0, it means the match is in GAME state and i just want to see MatchCards and descriptions
-        if (selectionsNum != 0) {
+        if (maxSelections != 0) {
 
             Tooltip notReady= new Tooltip("Not all cards have been chosen yet");
             submit.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
@@ -92,6 +97,14 @@ public class GodCardsPopup extends Stage {
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
             });
+
+            submit.setOnMouseReleased(mouseEvent -> {
+                Button pressedButton = (Button) mouseEvent.getSource();
+                pressedButton.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
+                        BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
+
+            });
+
             vbox.getChildren().add(submit);
         }
 
@@ -110,14 +123,17 @@ public class GodCardsPopup extends Stage {
             tmp.setOnMouseEntered(mouseEvent -> Tooltip.install(tmp, new Tooltip(godCardsDescriptions.get(s))));
         }
 
-        this.setOnCloseRequest(windowEvent -> {
-            if (Gui.confirmQuit()) {
-                this.close();
-                ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
-            }
-            else
-                windowEvent.consume();
-        });
+        if (maxSelections != 0) {
+            this.setOnCloseRequest(windowEvent -> {
+                if (Gui.confirmQuit()) {
+                    this.close();
+                    ownerStage.close();
+                    Platform.exit();
+                    System.exit(0);
+                } else
+                    windowEvent.consume();
+            });
+        }
 
         Scene scene = new Scene(vbox);
         this.setScene(scene);
@@ -177,16 +193,17 @@ public class GodCardsPopup extends Stage {
 
             ImageView image = cards.get(godCardName);
             image.setOnMouseClicked(mouseEvent -> {
-                if (selectionsNum < maxSelectionsNum) {
-                    selectionsNum++;
-                    image.setOpacity(Gui.selectionOpacity);
-                    chosenGodCards.add(godCardName);
-                }
 
                 if (chosenGodCards.contains(godCardName)) {
                     selectionsNum--;
                     image.setOpacity(1);
                     chosenGodCards.remove(godCardName);
+                }
+
+                else if (selectionsNum < maxSelectionsNum) {
+                    selectionsNum++;
+                    image.setOpacity(Gui.selectionOpacity);
+                    chosenGodCards.add(godCardName);
                 }
 
             });

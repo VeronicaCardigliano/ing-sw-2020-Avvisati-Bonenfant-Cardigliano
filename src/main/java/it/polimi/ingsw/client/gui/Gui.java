@@ -704,26 +704,26 @@ public class Gui extends View {
         gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome,
                 getChosenBuilderNum(), buildDome, mouseEvent -> {
 
-                    //if the turnBuilder have been chosen
-                    if (currentTurnBuilderPos != null) {
-                        int index = 0;
+                //if the turnBuilder have been chosen
+                if (currentTurnBuilderPos != null) {
+                    int index = 0;
 
-                        StackPane clickedCell = (StackPane) mouseEvent.getSource();
+                    StackPane clickedCell = (StackPane) mouseEvent.getSource();
 
-                        //finds the index of the clickedCell
-                        for (Node node : tile.getChildren()) {
-                            if (!node.equals(clickedCell))
-                                index++;
-                            else
-                                break;
-                        }
-
-                        gameMap.createBuilding(index, buildDome, getNickname());
-
-                        notifyBuild(getNickname(), currentTurnBuilderPos, gameMap.indexToCoord(index), buildDome);
-                        gameMap.resetMap();
+                    //finds the index of the clickedCell
+                    for (Node node : tile.getChildren()) {
+                        if (!node.equals(clickedCell))
+                            index++;
+                        else
+                            break;
                     }
-                });
+
+                    gameMap.createBuilding(index, buildDome, getNickname());
+
+                    notifyBuild(getNickname(), currentTurnBuilderPos, gameMap.indexToCoord(index), buildDome);
+                    gameMap.resetMap();
+                }
+            });
     }
 
     /**
@@ -990,6 +990,8 @@ public class Gui extends View {
 
             Map<String, String> chosenGodCards = getChosenGodCardsForPlayer();
 
+            Platform.runLater(() ->playersRegion.getChildren().clear());
+
             playersRegion.setBorder(new Border(new BorderStroke(SEA, SEA, SEA,Color.TRANSPARENT, BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID,
                     BorderStrokeStyle.SOLID, null, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS, playersRegionInsets)));
 
@@ -1047,6 +1049,8 @@ public class Gui extends View {
 
                 notifyDisconnection(getNickname());
                 primaryStage.close();
+                Platform.exit();
+                System.exit(0);
             }, buttonCoralPressedSrc);
 
             Platform.runLater(() -> bottomAnchorPane.getChildren().add(bottomBtns));
@@ -1062,7 +1066,7 @@ public class Gui extends View {
             Label label = new Label("Waiting for players... ");
             label.setTextFill(Color.RED);
             playersRegion.setAlignment(Pos.CENTER);
-            playersRegion.getChildren().add(label);
+            Platform.runLater(() ->playersRegion.getChildren().add(label));
         }
     }
 

@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
@@ -8,6 +9,10 @@ import javafx.scene.effect.Glow;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
+
+import static it.polimi.ingsw.client.gui.Gui.sceneHeight;
+import static it.polimi.ingsw.client.gui.Gui.sceneWidth;
 
 /**
  * The home scene is composed by an AnchorPane with two nameTags composed by a StackPane
@@ -20,13 +25,15 @@ public class HomeScene extends Scene {
     private static final String IPInsertionSrc = "file:src/main/resources/IP_insertion.png";
     private static final String PortInsertionSrc = "file:src/main/resources/Port_insertion.png";
 
-    public static final double networkReqRatio = 232.0/Gui.sceneWidth;
-    public static final double networkInsertionRatio = 100.0/Gui.sceneWidth;
-    public static final double playBtnRatio = 283.0/Gui.sceneWidth;
+    public static final double networkReqRatio = 232.0/ sceneWidth;
+    public static final double networkInsertionRatio = 100.0/ sceneWidth;
+    public static final double playBtnRatio = 283.0/ sceneWidth;
 
-    public HomeScene(Pane home, double width, double height) {
+    public HomeScene(Pane parent, double v, double v1) {
+        super(parent, v, v1);
+    }
 
-        super(home, width, height);
+    public void setHomeScene (AnchorPane home) {
 
         DropShadow shadow = new DropShadow();
 
@@ -112,11 +119,11 @@ public class HomeScene extends Scene {
 
         home.getChildren().addAll(networkRequests, playBtn);
 
-        AnchorPane.setBottomAnchor(networkRequests, (double) Gui.sceneHeight/10);
-        AnchorPane.setLeftAnchor(networkRequests, (double) Gui.sceneWidth/10);
+        AnchorPane.setBottomAnchor(networkRequests, (double) sceneHeight/10);
+        AnchorPane.setLeftAnchor(networkRequests, (double) sceneWidth/10);
 
         AnchorPane.setBottomAnchor(playBtn, Gui.marginLength*2);
-        AnchorPane.setRightAnchor(playBtn, (double) Gui.sceneHeight/3);
+        AnchorPane.setRightAnchor(playBtn, (double) sceneHeight/3);
 
         playBtn.setOnMouseClicked(mouseEvent -> {
             //TODO: sistemare connessione
@@ -124,6 +131,5 @@ public class HomeScene extends Scene {
 
         });
     }
-
 
 }

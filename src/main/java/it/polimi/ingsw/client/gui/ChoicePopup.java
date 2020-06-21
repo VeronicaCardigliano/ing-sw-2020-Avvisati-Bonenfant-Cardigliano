@@ -1,5 +1,6 @@
 package it.polimi.ingsw.client.gui;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
@@ -54,6 +55,13 @@ public class ChoicePopup extends Stage {
 
         });
 
+        submit.setOnMouseReleased(mouseEvent -> {
+            Button pressedButton = (Button) mouseEvent.getSource();
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
+                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
+
+        });
+
         for (String s: choices)
             choiceBox.getItems().add(s);
 
@@ -75,7 +83,10 @@ public class ChoicePopup extends Stage {
         this.setOnCloseRequest(windowEvent -> {
             if (Gui.confirmQuit()) {
                 this.close();
-                ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+                //ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+                ownerStage.close();
+                Platform.exit();
+                System.exit(0);
             }
             else
                 windowEvent.consume();
