@@ -67,7 +67,7 @@ public class Gui extends View {
     private static final String PortInsertionSrc = "file:src/main/resources/Port_insertion.png";
     private static final String titleSrc = "file:src/main/resources/title.png";
 
-    private Map<String, String> matchGodCards = new HashMap<>();
+    private Map<String, String> godCardsToUseDesc = new HashMap<>();
     private Stage primaryStage;
     private Scene primaryScene;
     private BorderPane root;
@@ -81,6 +81,7 @@ public class Gui extends View {
     private boolean buildDome;
     private Insets playersRegionInsets;
     private int numMessages;
+    private Label connectionErrorLbl;
 
     private Map<String, Text> playersNameTags = new HashMap<>();
 
@@ -282,7 +283,13 @@ public class Gui extends View {
         primaryStage.setScene(homeScene);
 
         playBtn.setOnMouseClicked(mouseEvent -> {
-            notifyConnection(IPInsertion.getText(), Integer.parseInt(portInsertion.getText()));
+            try {
+                int portNum = Integer.parseInt(portInsertion.getText());
+                notifyConnection(IPInsertion.getText(), portNum);
+            }
+            catch (NumberFormatException e) {
+                onConnectionError("WRONG FORMAT: Insert an Integer as port value");
+            }
         });
 
     }
@@ -374,8 +381,13 @@ public class Gui extends View {
      */
     @Override
     public void askNumberOfPlayers() {
+
         setState(ViewState.NUMPLAYERS);
         Set<String> possibleNumPlayers = new HashSet<>();
+
+        if (home.getChildren().contains(connectionErrorLbl))
+            Platform.runLater(()->home.getChildren().remove(connectionErrorLbl));
+
         for (int i = minNumberOfPlayers; i <= maxNumberOfPlayers; i++)
             possibleNumPlayers.add(String.valueOf(i));
 
@@ -422,7 +434,9 @@ public class Gui extends View {
      */
     @Override
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
+
         setState(ViewState.MATCHGODS);
+        godCardsToUseDesc = godDescriptionsParam;
 
         Platform.runLater(() -> {
             GodCardsPopup popup = new GodCardsPopup(primaryStage, numOfPlayers, godDescriptionsParam);
@@ -438,7 +452,7 @@ public class Gui extends View {
     }
 
     /**
-     * Sends a GodCardsPopup to each player to make him choose his godCard
+     * Creates a GodCardsPopup for each player to make him choose his godCard
      * @param godDescriptions map of each card with its description
      * @param chosenCards already chosen cards
      */
@@ -465,6 +479,10 @@ public class Gui extends View {
         });
     }
 
+    /**
+     * Creates a ChoicePopup to make the Challenger choose the first player of the match
+     * @param players list of players ready to play
+     */
     @Override
     public void chooseStartPlayer(Set<String> players) {
 
@@ -483,6 +501,10 @@ public class Gui extends View {
 
     //TODO: make the server send available colors, not chosen one to avoid the manual insertion of them ?
 
+    /**
+     * Creates a ChoicePopup to make each player choose his color
+     * @param chosenColors already chosen colors, not to be showed as possibilities
+     */
     @Override
     public void askBuilderColor(Set<String> chosenColors) {
 
@@ -506,6 +528,11 @@ public class Gui extends View {
         });
     }
 
+    /**
+     * For each cell in the tile (map), if the state is BUILDERPLACEMENT and the cell is not already occupied,
+     * clicking on it a new builder is added calling the method createBuilder in GuiMap.
+     * This method updates also occupiedCells
+     */
     @Override
     public void placeBuilders () {
 
@@ -548,7 +575,7 @@ public class Gui extends View {
 
                         else {
                             gameMap.setOccupiedCells(getNickname(), null, gameMap.indexToCoord(index));
-                            //if it's the second builder of getNickname() player, notify is called and, after the update, che state changes
+                            //if it's the second builder of getNickname() player, notify is called and, after the update, the state changes
                             notifySetupBuilders(getNickname(), gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex),
                                     gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex));
                         }
@@ -558,10 +585,15 @@ public class Gui extends View {
         }
     }
 
+    /**
+     * Creates a label and a choiceBox to ask the user to select how he wants to continue his turn or if he wants to end it.
+     * @param possibleSteps set of the possible choices to continue the game
+     */
     @Override
     public void chooseNextStep (Set<String> possibleSteps) {
 
         Label chooseStep = new Label ("Choose the next step: ");
+        chooseStep.setFont(new Font("Arial", fontSize));
         ChoiceBox<String> stepChoice = new ChoiceBox<>();
         for (String step: possibleSteps)
             stepChoice.getItems().add(step);
@@ -577,7 +609,11 @@ public class Gui extends View {
         }, submitButtonPressed);
         okBtn.setTextFill(Color.WHITESMOKE);
     }
-    
+
+    /**
+     * Private method used to print maxMessagesShown messages in the bottom left of the scene.
+     * @param message error or information messages received from server
+     */
     private void printMessage(String message) {
 
         Text messageText = new Text(message);
@@ -593,12 +629,16 @@ public class Gui extends View {
         numMessages++;
     }
 
+    /**
+     * Shows the possible destinations for a move for both builders if the builder hasn't been chosen and gives the possibility
+     * to choose the turn builder. Otherwise, it allows to move with the chosen builder calling moveOnBuilderChosen()
+     */
     @Override
     public void move() {
 
         if (getChosenBuilderNum() == 0) {
 
-            //getChosenBuilderNum() returns 0 until a turnBuilder is chosen, until the user don't choose it prints all the possible dsts
+            //getChosenBuilderNum() returns 0 until a turn builder is chosen, until the user don't choose it prints all the possible dsts
             gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, 0, null);
 
             printMessage("Select your turn builder");
@@ -611,13 +651,16 @@ public class Gui extends View {
         }
     }
 
+    /**
+     * This method makes the user choose the turn builder and than calls moveOnBuilderChosen or buildToDst to complete the first step
+     * of the turn.
+     */
     private void chooseTurnBuilder() {
 
         for (Coordinates coord: gameMap.getOccupiedCells().get(getNickname())) {
 
             int currBuilderIndexStack;
 
-            //builder is the first element of stackpane Cell only if height is 0
             StackPane tmp = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coord));
 
             currBuilderIndexStack = gameMap.getCurrentBuilderIndexInStack(coord);
@@ -669,7 +712,6 @@ public class Gui extends View {
 
                 gameMap.resetMap();
 
-
                 if(getState().toString().equals("MOVE")) {
                     printMessage("Select where you want to move");
                     moveOnBuilderChosen();
@@ -686,12 +728,17 @@ public class Gui extends View {
         }
     }
 
-
+    /**
+     * On turn builder chosen, shows the possible destinations and adds an eventHandler on them in order to notify the chosen
+     * move destination after being clicked. It updates also the currentTrunBuilderPos.
+     */
     private void moveOnBuilderChosen() {
-        gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum(), mouseEvent -> {
 
+        gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum(), mouseEvent -> {
             int dstIndex = 0;
             StackPane clickedCell = (StackPane) mouseEvent.getSource();
+
+            //finds the index of the clickedCell
             for (Node node : tile.getChildren()) {
                 if (!node.equals(clickedCell))
                     dstIndex++;
@@ -705,6 +752,10 @@ public class Gui extends View {
         });
     }
 
+    /**
+     * On turn builder chosen, shows the possible destinations to build and adds an eventHandler on them to notify the
+     * build destination choice. It creates also the new building calling the gameMap method "createBuilding"
+     */
     private void buildToDst() {
 
         gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome,
@@ -930,15 +981,19 @@ public class Gui extends View {
             printMessage("Invalid insertion of godCard.");
     }
 
-    //TODO: send also descriptions
     @Override
     public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
-        if(result)
+        if(result) {
             printMessage("GodCards correctly chosen. Wait for the other players to choose theirs.");
+            godCardsToUseDesc.keySet().retainAll(godCardsToUse);
+        }
         else
             printMessage("Error assigning");
     }
 
+    /**
+     * Prints a message to notify the entry of a new player, if the result is false asks again for nick and birthday.
+     */
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
         if(result)
@@ -956,6 +1011,11 @@ public class Gui extends View {
         printMessage(nickname + " lost!");
     }
 
+    /**
+     * Resets the turn builder if it's not null (it's not the first turn), glows the name of the current player
+     * in the nameTag and resets the old one.
+     * @param nickname of the current player
+     */
     @Override
     public void onPlayerTurn(String nickname) {
 
@@ -980,6 +1040,11 @@ public class Gui extends View {
             printMessage("Turn of: " + nickname);
     }
 
+    /**
+     * Prints the message of starting player chosen.
+     * @param nickname starting player
+     * @param result true if the choice was successful
+     */
     @Override
     public void onStartPlayerSet(String nickname, boolean result) {
         if(result)
@@ -1054,9 +1119,8 @@ public class Gui extends View {
             HBox bottomBtns = new HBox();
             bottomBtns.setSpacing(marginLength);
 
-            //TODO: send matchGodCards after saving them in the matchGodCards update
             createButton("GodCards",buttonCoralSrc, bottomBtns, mouseEvent ->
-                    new GodCardsPopup(primaryStage, 0, matchGodCards), buttonCoralPressedSrc);
+                    new GodCardsPopup(primaryStage, 0, godCardsToUseDesc), buttonCoralPressedSrc);
 
             createButton("QUIT",buttonCoralSrc, bottomBtns, mouseEvent -> {
 
@@ -1109,15 +1173,23 @@ public class Gui extends View {
         return alert.showAndWait().orElse(cancel) == yes;
     }
 
+    /**
+     * Creates a label of error and shows it in the bottom-left of the home scene
+     * @param message error message received from server
+     */
     @Override
     public void onConnectionError(String message) {
 
-        Label errorLabel = new Label("CONNECTION ERROR: try new IP and port values ");
-        errorLabel.setTextFill(Color.DARKRED);
-        errorLabel.setFont(new Font("Arial", fontSize));
-        Platform.runLater(()->home.getChildren().add(errorLabel));
-        AnchorPane.setBottomAnchor(errorLabel, marginLength);
-        AnchorPane.setLeftAnchor(errorLabel, (double) sceneWidth/10);
+        if (!home.getChildren().contains(connectionErrorLbl)) {
+            connectionErrorLbl = new Label(message);
+            connectionErrorLbl.setTextFill(Color.DARKRED);
+            connectionErrorLbl.setFont(new Font("Arial", fontSize));
+            Platform.runLater(()->home.getChildren().add(connectionErrorLbl));
+            AnchorPane.setBottomAnchor(connectionErrorLbl, marginLength);
+            AnchorPane.setLeftAnchor(connectionErrorLbl, (double) sceneWidth/10);
+        }
+        else
+            Platform.runLater(()->connectionErrorLbl.setText(message));
     }
 }
 
