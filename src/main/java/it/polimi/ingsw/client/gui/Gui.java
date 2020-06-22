@@ -42,10 +42,6 @@ public class Gui extends View {
     public static final double mapRatioFromSides = 280.0/sceneWidth;
     public static final double mapPatioFromTop = 75.0/sceneHeight;
     public static final double mapRatioFromBottom = 70.0/sceneHeight;
-    public static final double networkReqRatio = 232.0/sceneWidth;
-    public static final double networkInsertionRatio = 100.0/sceneWidth;
-    public static final double playBtnRatio = 283.0/sceneWidth;
-
     public static final double ratioCellHeight = 78.0/sceneHeight;
 
     public final static int fontSize = 14;
@@ -61,15 +57,12 @@ public class Gui extends View {
     private static final String nameTagSrc = "file:src/main/resources/nameTag.png";
     private static final String versusSrc = "file:src/main/resources/versus.png";
     private static final String backgroundSrc = "file:src/main/resources/SantoriniBoard.png";
-    private static final String homeBackgroundSrc = "file:src/main/resources/homeScreenBackground.png";
-    private static final String playButtonSrc = "file:src/main/resources/PlayButton.png";
-    private static final String IPInsertionSrc = "file:src/main/resources/IP_insertion.png";
-    private static final String PortInsertionSrc = "file:src/main/resources/Port_insertion.png";
     private static final String titleSrc = "file:src/main/resources/title.png";
 
-    private Map<String, String> godCardsToUseDesc = new HashMap<>();
+    private Map<String, String> matchGodCards = new HashMap<>();
     private Stage primaryStage;
     private Scene primaryScene;
+    private HomeScene homeScene;
     private BorderPane root;
     private AnchorPane bottomAnchorPane;
     private AnchorPane home;
@@ -85,7 +78,6 @@ public class Gui extends View {
 
     private Map<String, Text> playersNameTags = new HashMap<>();
 
-
     /**
      * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
      * The main stage is composed by a BorderPane as root with inside a VBox as playersRegion with players infos on the left,
@@ -94,13 +86,27 @@ public class Gui extends View {
      * the title on the top in a StackPane and finally in the center a tilePane which represents the gameBoard
      *
      * It also creates a starting homeScene
-     * @param primaryStage principal stage of the match
+     * @param primaryStageParam principal stage of the match
      */
-    public Gui(Stage primaryStage) {
+    public Gui(Stage primaryStageParam) {
 
-        this.primaryStage = new Stage();
+        this.primaryStage = primaryStageParam;
 
-        setHomeScene();
+        this.home = new AnchorPane();
+        TextField IPInsertion = new TextField ("IP");
+        TextField portInsertion = new TextField("Port");
+
+        homeScene = new HomeScene (home, sceneWidth, sceneHeight, IPInsertion, portInsertion);
+
+        homeScene.getPlayBtn().setOnMouseClicked(mouseEvent -> {
+            try {
+                int portNum = Integer.parseInt(portInsertion.getText());
+                notifyConnection(IPInsertion.getText(), portNum);
+            }
+            catch (NumberFormatException e) {
+                onConnectionError("WRONG FORMAT: Insert an Integer as port value");
+            }
+        });;
 
         this.root = new BorderPane();
         this.primaryScene = new Scene (root, sceneWidth, sceneHeight);
@@ -127,6 +133,7 @@ public class Gui extends View {
         playersRegion.setSpacing(marginLength);
         dialogRegion.prefWidthProperty().bind(primaryScene.widthProperty().multiply(mapRatioFromSides));
         dialogRegion.setSpacing(marginLength);
+        dialogRegion.setAlignment(Pos.CENTER);
         bottomAnchorPane.prefHeightProperty().bind(primaryScene.heightProperty().multiply(mapRatioFromBottom));
 
         this.bottomMessagesVBox = new VBox();
@@ -146,129 +153,6 @@ public class Gui extends View {
                 new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
-
-        //TODO: verify max Width
-        primaryStage.setMaxWidth(maxSceneWidth);
-
-
-        primaryStage.setOnCloseRequest(windowEvent -> {
-            if (getNickname() != null)
-                notifyDisconnection(getNickname());
-            primaryStage.close();
-            Platform.exit();
-            System.exit(0);
-        });
-
-
-        //The primaryScene is set after onStateUpdate
-        //primaryStage.setScene(primaryScene);
-    }
-
-    /**
-     * This method creates the home scene composed by an AnchorPane with two nameTags composed by a StackPane
-     * with an image and a TextField to insert IP and Port values, and a play button which sends a request of connection.
-     * If the request is successful, the home stage gives way to the main stage
-     */
-    private void setHomeScene() {
-
-        DropShadow shadow = new DropShadow();
-        home = new AnchorPane();
-        home.prefWidthProperty().bind(home.widthProperty());
-        home.prefHeightProperty().bind(home.heightProperty());
-        home.setBackground(new Background(
-                new BackgroundImage(new Image(homeBackgroundSrc), BackgroundRepeat.NO_REPEAT,
-                        BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        Scene homeScene = new Scene (home, sceneWidth, sceneHeight);
-
-        ImageView playBtn = new ImageView(playButtonSrc);
-        playBtn.setOnMouseEntered(mouseEvent -> playBtn.setEffect(shadow));
-        playBtn.setOnMouseExited(mouseEvent -> playBtn.setEffect(null));
-        playBtn.setPreserveRatio(true);
-
-        ImageView IPNameTag = new ImageView(IPInsertionSrc);
-        ImageView portNameTag = new ImageView(PortInsertionSrc);
-
-        IPNameTag.setPreserveRatio(true);
-        portNameTag.setPreserveRatio(true);
-        playBtn.fitWidthProperty().bind(homeScene.widthProperty().multiply(playBtnRatio));
-        IPNameTag.fitWidthProperty().bind(homeScene.widthProperty().multiply(networkReqRatio));
-        portNameTag.fitWidthProperty().bind(homeScene.widthProperty().multiply(networkReqRatio));
-
-        TextField IPInsertion = new TextField ("IP");
-        TextField portInsertion = new TextField("Port");
-        IPInsertion.prefWidthProperty().bind(homeScene.widthProperty().multiply(networkInsertionRatio));
-        portInsertion.prefWidthProperty().bind(homeScene.widthProperty().multiply(networkInsertionRatio));
-
-        IPInsertion.maxWidthProperty().bind(IPNameTag.fitWidthProperty().divide(2.5));
-        IPInsertion.setAlignment(Pos.CENTER);
-        portInsertion.setAlignment(Pos.CENTER);
-        portInsertion.maxWidthProperty().bind(portNameTag.fitWidthProperty().divide(2.5));
-
-        IPInsertion.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, null, null)));
-        portInsertion.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, null, null)));
-
-        StackPane IPRequest = new StackPane();
-        IPRequest.getChildren().addAll(IPNameTag, IPInsertion);
-        StackPane portRequest = new StackPane();
-        portRequest.getChildren().addAll(portNameTag, portInsertion);
-        Glow glow = new Glow();
-        glow.setLevel(0.2);
-
-        IPRequest.setOnMouseEntered(mouseEvent -> IPRequest.setEffect(shadow));
-        portRequest.setOnMouseEntered(mouseEvent -> portRequest.setEffect(shadow));
-        portRequest.setOnMouseExited(mouseEvent -> portRequest.setEffect(null));
-        IPRequest.setOnMouseExited(mouseEvent -> IPRequest.setEffect(null));
-
-        portRequest.setOnMouseClicked(mouseEvent -> {
-            portRequest.setEffect(glow);
-            IPRequest.setEffect(null);
-            portRequest.setOnMouseEntered(null);
-            portRequest.setOnMouseExited(null);
-            IPRequest.setOnMouseEntered(mouseEvent1 -> IPRequest.setEffect(shadow));
-            IPRequest.setOnMouseExited(mouseEvent1 -> IPRequest.setEffect(null));
-        });
-
-        IPRequest.setOnMouseClicked(mouseEvent -> {
-            IPRequest.setEffect(glow);
-            portRequest.setEffect(null);
-            portRequest.setOnMouseEntered(mouseEvent1 -> portRequest.setEffect(shadow));
-            portRequest.setOnMouseExited(mouseEvent1 -> portRequest.setEffect(null));
-            IPRequest.setOnMouseEntered(null);
-            IPRequest.setOnMouseExited(null);
-        });
-
-        IPInsertion.setOnMouseClicked(mouseEvent -> {
-            IPRequest.setEffect(glow);
-            portRequest.setEffect(null);
-            portRequest.setOnMouseEntered(mouseEvent1 -> portRequest.setEffect(shadow));
-            portRequest.setOnMouseExited(mouseEvent1 -> portRequest.setEffect(null));
-            IPRequest.setOnMouseEntered(null);
-            IPRequest.setOnMouseExited(null);
-        });
-
-        portInsertion.setOnMouseClicked(mouseEvent -> {
-            portRequest.setEffect(glow);
-            IPRequest.setEffect(null);
-            portRequest.setOnMouseEntered(null);
-            portRequest.setOnMouseExited(null);
-            IPRequest.setOnMouseEntered(mouseEvent1 -> IPRequest.setEffect(shadow));
-            IPRequest.setOnMouseExited(mouseEvent1 -> IPRequest.setEffect(null));
-        });
-
-        VBox networkRequests = new VBox();
-        networkRequests.setAlignment(Pos.CENTER_LEFT);
-        networkRequests.setSpacing(marginLength);
-        networkRequests.getChildren().addAll(IPRequest, portRequest);
-
-        home.getChildren().addAll(networkRequests, playBtn);
-
-        AnchorPane.setBottomAnchor(networkRequests, (double) sceneHeight/10);
-        AnchorPane.setLeftAnchor(networkRequests, (double) sceneWidth/10);
-
-        AnchorPane.setBottomAnchor(playBtn, marginLength*2);
-        AnchorPane.setRightAnchor(playBtn, (double) sceneHeight/3);
-
         primaryStage.minWidthProperty().bind(home.heightProperty().multiply((double)sceneWidth/sceneHeight));
         primaryStage.minHeightProperty().bind(home.widthProperty().divide((double)sceneWidth/sceneHeight));
 
@@ -282,16 +166,16 @@ public class Gui extends View {
 
         primaryStage.setScene(homeScene);
 
-        playBtn.setOnMouseClicked(mouseEvent -> {
-            try {
-                int portNum = Integer.parseInt(portInsertion.getText());
-                notifyConnection(IPInsertion.getText(), portNum);
-            }
-            catch (NumberFormatException e) {
-                onConnectionError("WRONG FORMAT: Insert an Integer as port value");
-            }
-        });
+        //TODO: verify max Width
+        primaryStage.setMaxWidth(maxSceneWidth);
 
+        primaryStage.setOnCloseRequest(windowEvent -> {
+
+            notifyDisconnection(getNickname());
+            primaryStage.close();
+            Platform.exit();
+            System.exit(0);
+        });
     }
 
     /**
@@ -436,7 +320,6 @@ public class Gui extends View {
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
 
         setState(ViewState.MATCHGODS);
-        godCardsToUseDesc = godDescriptionsParam;
 
         Platform.runLater(() -> {
             GodCardsPopup popup = new GodCardsPopup(primaryStage, numOfPlayers, godDescriptionsParam);
@@ -460,6 +343,7 @@ public class Gui extends View {
     public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenCards) {
 
         setState(ViewState.PLAYERGOD);
+        matchGodCards = godDescriptions;
         Map<String, String> availableGods = new HashMap<>();
 
         for(String godName : godDescriptions.keySet().stream().filter(godName -> !chosenCards.contains(godName)).collect(Collectors.toSet()))
@@ -600,7 +484,6 @@ public class Gui extends View {
         // set a default value
         stepChoice.setValue(possibleSteps.iterator().next());
 
-        dialogRegion.setAlignment(Pos.CENTER);
         Platform.runLater(() -> dialogRegion.getChildren().addAll(chooseStep, stepChoice));
 
         Button okBtn = createButton("Ok", submitButton, dialogRegion,  mouseEvent -> {
@@ -958,8 +841,65 @@ public class Gui extends View {
 
     @Override
     public void onEndGameUpdate(String winnerNickname) {
-        printMessage("Player " + winnerNickname + " wins!!");
+
+        if (!getNickname().equals(winnerNickname))
+            printMessage("Player " + winnerNickname + " wins!");
+        else
+            createEndGameMessage("YOU WIN!");
+        //printMessage("Player " + winnerNickname + " wins!!");
     }
+
+    /**
+     * Creates and end game message of victory or loss with a button to  eventually play again.
+     * @param message string to print
+     */
+    private void createEndGameMessage(String message) {
+
+        Text text = new Text(message);
+        //text.prefWidthProperty().bind(playersRegion.prefWidthProperty().subtract(marginLength*2));
+        text.setFont(new Font ("Courier" ,fontSize*3));
+        text.setFill(Color.LIGHTSALMON);
+
+        Blend blend = new Blend();
+        blend.setMode(BlendMode.MULTIPLY);
+
+        DropShadow ds = new DropShadow();
+        ds.setColor(Color.MIDNIGHTBLUE);
+        ds.setOffsetX(5);
+        ds.setOffsetY(5);
+        ds.setRadius(5);
+        ds.setSpread(0.6);
+
+        blend.setBottomInput(ds);
+
+        DropShadow ds1 = new DropShadow();
+        ds1.setColor(Color.WHITESMOKE);
+        ds1.setRadius(20);
+        ds1.setSpread(0.5);
+
+        blend.setTopInput(ds1);
+
+        text.setEffect(blend);
+
+        Platform.runLater(()-> dialogRegion.getChildren().add(text));
+
+        Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> {
+
+            //resets all
+            Platform.runLater(() -> primaryStage.setScene(homeScene));
+            Platform.runLater(() -> playersRegion.getChildren().clear());
+            Platform.runLater(() -> bottomAnchorPane.getChildren().clear());
+            for (int i = 0; i < tile.getChildren().size(); i++) {
+                StackPane cell = (StackPane) tile.getChildren().get(i);
+                cell.getChildren().clear();
+            }
+            Platform.runLater(() -> dialogRegion.getChildren().clear());
+            Platform.runLater(() -> dialogRegion.getChildren().clear());
+        }, submitButtonPressed);
+
+        playAgainBtn.setTextFill(Color.WHITESMOKE);
+    }
+
 
     @Override
     public void onWrongInsertionUpdate(String error) {
@@ -983,10 +923,8 @@ public class Gui extends View {
 
     @Override
     public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
-        if(result) {
+        if(result)
             printMessage("GodCards correctly chosen. Wait for the other players to choose theirs.");
-            godCardsToUseDesc.keySet().retainAll(godCardsToUse);
-        }
         else
             printMessage("Error assigning");
     }
@@ -1008,7 +946,10 @@ public class Gui extends View {
 
     @Override
     public void onLossUpdate(String nickname) {
-        printMessage(nickname + " lost!");
+        if (!getNickname().equals(nickname))
+            printMessage(nickname + " lost!");
+        else
+            createEndGameMessage("YOU LOSE");
     }
 
     /**
@@ -1036,8 +977,7 @@ public class Gui extends View {
             playersNameTags.get(nickname).setEffect(glow);
 
         }
-        else
-            printMessage("Turn of: " + nickname);
+        printMessage("Turn of: " + nickname);
     }
 
     /**
@@ -1120,7 +1060,7 @@ public class Gui extends View {
             bottomBtns.setSpacing(marginLength);
 
             createButton("GodCards",buttonCoralSrc, bottomBtns, mouseEvent ->
-                    new GodCardsPopup(primaryStage, 0, godCardsToUseDesc), buttonCoralPressedSrc);
+                    new GodCardsPopup(primaryStage, 0, matchGodCards), buttonCoralPressedSrc);
 
             createButton("QUIT",buttonCoralSrc, bottomBtns, mouseEvent -> {
 
@@ -1131,15 +1071,16 @@ public class Gui extends View {
             }, buttonCoralPressedSrc);
 
             Platform.runLater(() -> bottomAnchorPane.getChildren().add(bottomBtns));
-
             AnchorPane.setBottomAnchor(bottomBtns, Gui.marginLength);
             AnchorPane.setRightAnchor(bottomBtns, Gui.marginLength);
         }
+
         else if (state.equals(Model.State.SETUP_PLAYERS.toString())) {
 
             Platform.runLater(() ->primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double)Gui.sceneWidth/Gui.sceneHeight)));
             Platform.runLater(() ->primaryStage.minHeightProperty().bind(root.widthProperty().divide((double)Gui.sceneWidth/Gui.sceneHeight)));
             Platform.runLater(() ->primaryStage.setScene(primaryScene));
+
             Label label = new Label("Waiting for players... ");
             label.setTextFill(Color.RED);
             label.setFont(new Font("Arial", fontSize));

@@ -151,7 +151,6 @@ public class VirtualView extends ViewObservable implements Runnable {
             String date, color;
             int numberOfPlayers;
 
-
             switch (parser.getRequest()) {
 
                 case Messages.ADD_PLAYER:

@@ -1,16 +1,14 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Glow;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-
 import static it.polimi.ingsw.client.gui.Gui.sceneHeight;
 import static it.polimi.ingsw.client.gui.Gui.sceneWidth;
 
@@ -19,25 +17,32 @@ import static it.polimi.ingsw.client.gui.Gui.sceneWidth;
  * with an image and a TextField to insert IP and Port values, and a play button which sends a request of connection.
  * If the request is successful, the home stage gives way to the main stage
  */
+
 public class HomeScene extends Scene {
 
     private static final String playButtonSrc = "file:src/main/resources/PlayButton.png";
     private static final String IPInsertionSrc = "file:src/main/resources/IP_insertion.png";
     private static final String PortInsertionSrc = "file:src/main/resources/Port_insertion.png";
+    private static final String homeBackgroundSrc = "file:src/main/resources/homeScreenBackground.png";
 
     public static final double networkReqRatio = 232.0/ sceneWidth;
     public static final double networkInsertionRatio = 100.0/ sceneWidth;
     public static final double playBtnRatio = 283.0/ sceneWidth;
 
-    public HomeScene(Pane parent, double v, double v1) {
-        super(parent, v, v1);
-    }
+    private static ImageView playBtn = new ImageView(playButtonSrc);
 
-    public void setHomeScene (AnchorPane home) {
+    public HomeScene(Pane home, double v, double v1, TextField IPInsertion, TextField portInsertion) {
+
+        super(home, v, v1);
+
+        home.prefWidthProperty().bind(home.widthProperty());
+        home.prefHeightProperty().bind(home.heightProperty());
+        home.setBackground(new Background(
+                new BackgroundImage(new Image(homeBackgroundSrc), BackgroundRepeat.NO_REPEAT,
+                        BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
+
 
         DropShadow shadow = new DropShadow();
-
-        ImageView playBtn = new ImageView(playButtonSrc);
         playBtn.setOnMouseEntered(mouseEvent -> playBtn.setEffect(shadow));
         playBtn.setOnMouseExited(mouseEvent -> playBtn.setEffect(null));
         playBtn.setPreserveRatio(true);
@@ -51,8 +56,6 @@ public class HomeScene extends Scene {
         IPNameTag.fitWidthProperty().bind(this.widthProperty().multiply(networkReqRatio));
         portNameTag.fitWidthProperty().bind(this.widthProperty().multiply(networkReqRatio));
 
-        TextField IPInsertion = new TextField ("IP");
-        TextField portInsertion = new TextField("Port");
         IPInsertion.prefWidthProperty().bind(this.widthProperty().multiply(networkInsertionRatio));
         portInsertion.prefWidthProperty().bind(this.widthProperty().multiply(networkInsertionRatio));
 
@@ -124,12 +127,11 @@ public class HomeScene extends Scene {
 
         AnchorPane.setBottomAnchor(playBtn, Gui.marginLength*2);
         AnchorPane.setRightAnchor(playBtn, (double) sceneHeight/3);
+    }
 
-        playBtn.setOnMouseClicked(mouseEvent -> {
-            //TODO: sistemare connessione
-            //onConnection(, );
 
-        });
+    protected ImageView getPlayBtn () {
+        return playBtn;
     }
 
 }
