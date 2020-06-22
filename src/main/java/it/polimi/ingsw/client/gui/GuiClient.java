@@ -28,7 +28,7 @@ public class GuiClient extends Application {
         view.setNumberOfPlayersObserver((nh));
         view.setStepChoiceObserver(nh);
         view.setBuilderSetupObserver(nh);
-        view.setDisconnectionObserver(nh);
+        //view.setDisconnectionObserver(nh);
         view.setGodCardChoiceObserver(nh);
         view.setStartPlayerObserver(nh);
         view.setConnectionObserver(nh);
@@ -47,7 +47,7 @@ public class GuiClient extends Application {
         nh.setStateObserver(view);
         nh.setPossibleBuildObserver(view);
         nh.setPossibleMoveObserver(view);
-        nh.setSocketErrorObserver(view);
+        nh.setSocketObserver(view);
 
         view.run();
 

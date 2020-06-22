@@ -127,6 +127,14 @@ public abstract class ViewObservable {
             System.out.println("builder build observer is not set");
     }
 
+    protected void notifyEarlyDisconnection(VirtualView view) {
+        if(disconnectionObserver != null)
+            disconnectionObserver.onEarlyDisconnection(view);
+        else
+            System.out.println("builder build observer is not set");
+
+    }
+
     protected void notifyGodCardChoice(String player, String godCard) {
         if(godCardChoiceObserver != null)
             godCardChoiceObserver.onGodCardChoice(player, godCard);

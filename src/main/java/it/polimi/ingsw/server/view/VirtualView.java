@@ -7,13 +7,12 @@ import it.polimi.ingsw.network.Messages;
 import it.polimi.ingsw.network.NetworkParser;
 import org.json.JSONException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -48,16 +47,7 @@ public class VirtualView extends ViewObservable implements Runnable {
 
 
         this.socket = socket;
-        try {
-            out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
-            //in = new Scanner(socket.getInputStream(), StandardCharsets.UTF_8);
-            in = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
-            this.socket.setSoTimeout(timeout);
-
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
 
     }
 
@@ -77,37 +67,72 @@ public class VirtualView extends ViewObservable implements Runnable {
     @Override
     public void run() {
         try {
-            boolean connected = socket.isConnected();
-            notifyConnection(this);
-            String message;
-
-            scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.schedule(() -> send(Messages.ping()), pingDelay, TimeUnit.SECONDS);
-
-
-            while((message = in.readLine()) != null && connected) {
-
-                System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
-
-                connected = handleMessage(message);
-            }
-
-            disconnect();
-
-        } catch(SocketTimeoutException e) {
+            socket.setSoTimeout(timeout);
+        } catch (SocketException e) {
             e.printStackTrace();
+            return;
+        }
+
+        try {
+            out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
+            return;
+        }
+
+        try {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        try {
+            notifyConnection(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.schedule(() -> out.println(Messages.ping()), pingDelay, TimeUnit.SECONDS);
+
+        String message = null;
+
+        while(true) {
+            try {
+                if ((message = in.readLine()) == null) {
+                    System.out.println(socket.getRemoteSocketAddress() + ": null read");
+                    break;
+                }
+            } catch (IOException e) {
+                System.err.println(socket.getRemoteSocketAddress() + ": " + e.getMessage());
+            }
+            System.out.println(socket.getRemoteSocketAddress() + ": " + message);
+            handleMessage(message);
+
+        }
+
+        disconnect();
+
+        if(nickname != null)
+            notifyDisconnection(nickname);
+        else
+            notifyEarlyDisconnection(this);
+
+    }
+
+    public void disconnect(){
+        try {
+            System.out.println(socket.getRemoteSocketAddress() + " disconnected.");
+            in.close();
+            out.close();
+            socket.close();
+        } catch (IOException ignored) {
+
         }
     }
 
-    public void disconnect() throws IOException {
-        in.close();
-        out.close();
-        socket.close();
-    }
-
-    public synchronized void send(String message) {
+    public synchronized void send(String message){
         System.out.println("Sending to " + socket.getRemoteSocketAddress() + " : " + message);
         out.println(message);
     }
@@ -115,11 +140,8 @@ public class VirtualView extends ViewObservable implements Runnable {
     /**
      * Parses Message from client and notifies Controller according to message data.
      * @param message String read from socket. Supposed to be a JSON String
-     * @return true if client is still connected. False if client wants to disconnect
      */
-    private boolean handleMessage(String message) {
-
-        boolean connected = true;
+    private void handleMessage(String message) {
 
         try{
             NetworkParser parser = new NetworkParser(message);
@@ -127,7 +149,7 @@ public class VirtualView extends ViewObservable implements Runnable {
             Coordinates src, dst;
             Coordinates builder1, builder2;
             String date, color;
-            int numberOfplayers;
+            int numberOfPlayers;
 
 
             switch (parser.getRequest()) {
@@ -151,8 +173,8 @@ public class VirtualView extends ViewObservable implements Runnable {
 
                 case Messages.SET_NUMBER_OF_PLAYERS:
                     try {
-                        numberOfplayers = parser.getNumberOfPlayers();
-                        notifyNumberOfPlayers(numberOfplayers);
+                        numberOfPlayers = parser.getNumberOfPlayers();
+                        notifyNumberOfPlayers(numberOfPlayers);
                     }
                     catch (JSONException numberException) {
                         send(Messages.errorMessage("Wrong format, be sure to insert coordinates as ints"));
@@ -235,9 +257,8 @@ public class VirtualView extends ViewObservable implements Runnable {
                     break;
 
                 case Messages.DISCONNECT:
-                    connected = false;
-                    notifyDisconnection(nickname);
-                    send(Messages.disconnect());
+
+                    //send(Messages.disconnect());
                     break;
 
                 case Messages.PONG:
@@ -248,8 +269,6 @@ public class VirtualView extends ViewObservable implements Runnable {
         } catch (JSONException e) {
             send(Messages.errorMessage(e.getMessage()));
         }
-
-        return connected;
     }
 
     /**

@@ -9,7 +9,7 @@ import java.util.*;
 public abstract class View extends ViewObservable implements BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
         ColorAssignmentObserver, ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver,
         BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChosenStepObserver, StartPlayerSetObserver,
-        SocketErrorObserver{
+        SocketObserver {
 
     public enum ViewState {
         CONNECTION, WAITING, NUMPLAYERS, NICKDATE, MATCHGODS, PLAYERGOD, STARTPLAYER, BUILDERCOLOR, BUILDERPLACEMENT, STEP, MOVE, BUILD
@@ -244,6 +244,12 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onStateUpdate(Model.State currState) {
+
+    }
+
+    @Override
+    public void onDisconnection() {
+        setState(ViewState.CONNECTION);
 
     }
 }

@@ -70,6 +70,7 @@ public class Cli extends View{
 
     @Override
     public  void run() {
+        printer.erase();
         printer.printTitle();
 
         String input = "";
@@ -570,7 +571,7 @@ public class Cli extends View{
     public void onWrongInsertionUpdate(String error) {
         super.onWrongInsertionUpdate(error);
 
-        printer.setInfoMessage("SERVER: Invalid Insertion");
+        printer.setInfoMessage(error);
         printer.print();
     }
 
@@ -817,6 +818,17 @@ public class Cli extends View{
         printer.setInfoMessage(message);
         printer.print();
         printer.erase();
+        printer.setAskMessage("Server to join: ");
+        printer.print();
+    }
+
+    @Override
+    public void onDisconnection() {
+        super.onDisconnection();
+        printer.setInfoMessage("Disconnecting");
+        printer.print();
+        printer.erase();
+        printer.printTitle();
         printer.setAskMessage("Server to join: ");
         printer.print();
     }

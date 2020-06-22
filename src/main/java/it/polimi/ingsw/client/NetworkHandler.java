@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 
 public class NetworkHandler extends ModelObservable implements Runnable, ConnectionObserver, BuilderBuildObserver, BuilderMoveObserver,
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
-        StepChoiceObserver, DisconnectionObserver, StartPlayerObserver {
+        StepChoiceObserver, StartPlayerObserver {
 
     private final int timeout = 5 * 1000;
     private PrintWriter out;
@@ -33,7 +33,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
     private ExecutorService executorS;
 
-    private SocketErrorObserver socketErrorObserver;
+    private SocketObserver socketObserver;
 
 
     public NetworkHandler(String ip, int port) {
@@ -74,8 +74,8 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         this.view = view;
     }
 
-    public void setSocketErrorObserver(SocketErrorObserver o) {
-        socketErrorObserver = o;
+    public void setSocketObserver(SocketObserver o) {
+        socketObserver = o;
     }
 
     /**
@@ -121,9 +121,12 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
                 notifyConnectionError(e.getMessage());
 
             } finally {
+
                 in.close();
                 out.close();
                 socket.close();
+
+                notifyDisconnection();
             }
 
         }
@@ -275,6 +278,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
                     send(Messages.pong());
                     break;
 
+
             }
 
         } catch (JSONException e) {
@@ -329,9 +333,8 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     }
 
     @Override
-    public void onDisconnection(String nickname) {
+    public void onDisconnection() {
         send(Messages.disconnect());
-
 
 
     }
@@ -356,6 +359,10 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     }
 
     public void notifyConnectionError(String message) {
-        socketErrorObserver.onConnectionError(message);
+        socketObserver.onConnectionError(message);
+    }
+
+    public void notifyDisconnection() {
+        socketObserver.onDisconnection();
     }
 }

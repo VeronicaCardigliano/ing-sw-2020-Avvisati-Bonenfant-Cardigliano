@@ -193,10 +193,13 @@ public class Model extends ModelObservableWithSelect {
                     x.getCell().removeOccupant();
                 }
 
-                found = players.remove(p);
+                found = true;
+                break;
             }
 
-        if (!found)
+        if(found)
+            players.removeIf(p -> p.getNickname().equals(playerName));
+        else
             throw new IllegalArgumentException("Player not found");
     }
 

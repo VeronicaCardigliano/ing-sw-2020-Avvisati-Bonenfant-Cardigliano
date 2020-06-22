@@ -1,5 +1,6 @@
 package it.polimi.ingsw.client;
 
-public interface SocketErrorObserver {
+public interface SocketObserver {
     void onConnectionError(String message);
+    void onDisconnection();
 }

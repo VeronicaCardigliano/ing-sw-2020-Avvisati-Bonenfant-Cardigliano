@@ -41,6 +41,20 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         views.removeIf(view -> view.getNickname().equals(nickname));
     }
 
+    public void removeAndDisconnectAll() {
+        for(VirtualView view : views) {
+            view.send(Messages.disconnect());
+            view.disconnect();
+
+        }
+
+        views = new ArrayList<>();
+    }
+
+    public boolean contains(VirtualView view) {
+        return views.contains(view);
+    }
+
     public void askStep(String nickname, ArrayList<String> stateList) {
         for (VirtualView view : views)
             if (view.getNickname().equals(nickname))

@@ -21,6 +21,11 @@ public class Controller extends AbstractController implements ConnectionObserver
         this.model = model;
         this.viewManager = viewManager;
 
+        setModelObservers(viewManager);
+
+    }
+
+    public void setModelObservers(ViewManager vm) {
         model.setBuilderBuiltObserver(viewManager);
         model.setBuilderMovementObserver(viewManager);
         model.setBuildersPlacedObserver(viewManager);
@@ -36,7 +41,6 @@ public class Controller extends AbstractController implements ConnectionObserver
         model.setStateObserver(viewManager);
         model.setPossibleBuildObserver(viewManager);
         model.setPossibleMoveObserver(viewManager);
-
     }
 
     /**
@@ -235,8 +239,11 @@ public class Controller extends AbstractController implements ConnectionObserver
             model.notifyLoss(playerToRemove);
             model.deletePlayer(playerToRemove);
             //TODO should i remove the player from the viewManager?
-            if (model.endGame())
+            if (model.endGame()) {
+                viewManager.removeAndDisconnectAll();
                 this.model = new Model();
+                setModelObservers(viewManager);
+            }
             else {
                 model.startTurn();
                 if (model.getCurrStep().equals("REQUIRED"))
@@ -255,30 +262,57 @@ public class Controller extends AbstractController implements ConnectionObserver
         viewManager.remove(nickname);
         model.deletePlayer(nickname);
         if (model.endGame()){
-            for (Player p : model.getPlayers())
-                viewManager.remove(p.getNickname());
+            viewManager.removeAndDisconnectAll();
             this.model = new Model();
+            setModelObservers(viewManager);
+
+        }
+
+
+    }
+
+    @Override
+    public void onEarlyDisconnection(VirtualView view) {
+        if(viewManager.contains(view)) {
+            viewManager.removeAndDisconnectAll();
+            model = new Model();
+            setModelObservers(viewManager);
         }
     }
 
     @Override
-    public synchronized void onConnection(VirtualView view) throws IOException {
+    public synchronized void onConnection(VirtualView view) {
 
-        if(viewManager.getNumberOfViews() == 0 && model.getCurrState().equals(Model.State.SETUP_NUMOFPLAYERS)) {
-            viewManager.add(view);
-            viewManager.askNumberOfPlayers();
+        switch (model.getCurrState()) {
+            case SETUP_NUMOFPLAYERS:
+                if(viewManager.getNumberOfViews() == 0) {
+                    viewManager.add(view);
+                    viewManager.askNumberOfPlayers();
+                } else {
+                    view.send(Messages.errorMessage("Someone is setting up the game."));
+                    view.send(Messages.disconnect());
+                    view.disconnect();
+                }
+                break;
+            case SETUP_PLAYERS:
+                if(viewManager.getNumberOfViews() < model.getNumberOfPlayers()) {
+                    viewManager.add(view);
+                    view.send(Messages.stepUpdate(Model.State.SETUP_PLAYERS));
 
-        } else if(model.getCurrState().equals(Model.State.SETUP_PLAYERS) && viewManager.getNumberOfViews() < model.getNumberOfPlayers()) {
-            viewManager.add(view);
+                    if(viewManager.getNumberOfViews() == model.getNumberOfPlayers())
+                        viewManager.askNickAndDate();
+                } else {
+                    view.send(Messages.errorMessage("Too many players connected"));
+                    view.send(Messages.disconnect());
+                    view.disconnect();
+                }
+                break;
 
-            //if now all needed clients are connected ask them to insert name and birth date
-            if(viewManager.getNumberOfViews() == model.getNumberOfPlayers())
-                viewManager.askNickAndDate();
-
-        } else {
-            view.send(Messages.errorMessage("Too many clients connected"));
-            view.send(Messages.disconnect());
-            view.disconnect();
+            default:
+                view.send(Messages.errorMessage("Game in progress... Retry Later"));
+                view.send(Messages.disconnect());
+                view.disconnect();
+                break;
         }
     }
 
