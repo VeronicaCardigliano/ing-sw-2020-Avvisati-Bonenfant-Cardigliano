@@ -102,19 +102,18 @@ public class Model extends ModelObservableWithSelect {
 
     public String getCurrStep () {return currStep;}
 
+    public void startTurn () {
+        currPlayer.startTurn();
+        currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
+    }
+
     public String getStartPlayerNickname() {return startPlayerNickname;}
 
     public void setStartPlayerNickname(String startPlayerNickname) {this.startPlayerNickname = startPlayerNickname;}
 
     public String getChallenger() {return challenger;}
 
-    public void setChallenger(String challenger ) {this.challenger = challenger;}
-
-
-    public void startTurn () {
-        currPlayer.startTurn();
-        currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
-    }
+    public void setChallenger(String challenger) {this.challenger = challenger;}
 
     public Set<String> getGodNames() {
         return this.cardsParser.getGodDescriptions().keySet();
@@ -159,7 +158,7 @@ public class Model extends ModelObservableWithSelect {
 
     /**
      * @return returns a copy of the list of players so that external methods can't modify the ArrayList
-    */
+     */
     public ArrayList<Player> getPlayers(){
         return new ArrayList<>(players);
     }
@@ -195,10 +194,7 @@ public class Model extends ModelObservableWithSelect {
                 }
 
                 found = players.remove(p);
-
-                if(players.size() == 1)
-                    notifyEndGame(players.get(0).getNickname());
-        }
+            }
 
         if (!found)
             throw new IllegalArgumentException("Player not found");
@@ -413,13 +409,11 @@ public class Model extends ModelObservableWithSelect {
             for(Player p : players)
                 if(p.getGodCard().winCondition()) {
                     notifyEndGame(p.getNickname());
-                    //model.flush();
                     currState = State.ENDGAME;
                     end = true;
                     break;
                 }
         }
-
         return end;
     }
 
@@ -447,14 +441,14 @@ public class Model extends ModelObservableWithSelect {
                         if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
                         }
-                            break;
+                        break;
 
                     case "BUILD":
                         if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
                                 currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
                         }
-                            break;
+                        break;
                 }
             }
         return possibleDstBuilder;
@@ -468,12 +462,7 @@ public class Model extends ModelObservableWithSelect {
         if (possibleDstBuilder1 == null || possibleDstBuilder2 == null)
             throw new IllegalArgumentException("Possible destinations arrays can't be null ");
 
-        if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) {
-
-            notifyLoss(currPlayer.getNickname());
-            deletePlayer(currPlayer.getNickname());
-            return false;
-        }
+        if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) return false;
         return true;
     }
 
@@ -483,14 +472,10 @@ public class Model extends ModelObservableWithSelect {
     public boolean hasNotLostDuringBuild() {
 
         if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty() &&
-                possibleDstBuilder1forDome.isEmpty() && possibleDstBuilder2forDome.isEmpty()) {
-
-            notifyLoss(currPlayer.getNickname());
-            deletePlayer(currPlayer.getNickname());
-            return false;
-        }
+                possibleDstBuilder1forDome.isEmpty() && possibleDstBuilder2forDome.isEmpty()) return false;
         return true;
     }
+
 
     public boolean effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
         boolean result = false;
@@ -510,19 +495,6 @@ public class Model extends ModelObservableWithSelect {
 
         if(result)
             currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
-        //build method increase the currStep of the player
-        /*if (result && correctBuilder) {
-
-            notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, true);
-
-
-            currStep = getCurrStep(currPlayer);
-            if (!currStep.equals("END"))
-                findPossibleDestinations();
-
-        } else
-            notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, false);*/
-
         notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result);
 
         return result;
@@ -549,24 +521,12 @@ public class Model extends ModelObservableWithSelect {
             result = currPlayer.move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
 
             if(result && possibleEnemyToPush != null) {
-               notifyBuilderPushed(possibleEnemyToPush.getPlayer().getNickname(), dst, possibleEnemyToPush.getCell());
+                notifyBuilderPushed(possibleEnemyToPush.getPlayer().getNickname(), dst, possibleEnemyToPush.getCell());
             }
 
             if(result)
                 currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
         }
-
-
-        //move method increases the currStep of the player
-        /*if (result && correctBuilder) {
-            currStep = getCurrStep(currPlayer);
-            notifyBuilderMovement(currPlayer.getNickname(),src, dst, true);
-
-            if (!currStep.equals("END"))
-                findPossibleDestinations();
-
-        } else
-            notifyBuilderMovement(currPlayer.getNickname(),src, dst, false);*/
 
         notifyBuilderMovement(currPlayer.getNickname(),src, dst, result);
 
@@ -600,79 +560,11 @@ public class Model extends ModelObservableWithSelect {
                     notifyPossibleBuilds(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
                 }
                 break;
-                /*
-            //for the following two cases, I'm not in the first step, so chosenBuilder is set
-            case "ENDORBUILD":
-                //View has to obtain the list of the possible build destinations for both builders and for the possible build of a dome
-                possibleDstBuilder1 = possibleDstCells(0, false);
-                possibleDstBuilder2 = possibleDstCells(1,false);
-                possibleDstBuilder1forDome = possibleDstCells(0,true);
-                possibleDstBuilder2forDome = possibleDstCells(1,true);
-                if (canBuild())
-                    result = true; //-> il controller chiede END or CONTINUE
-                else
-                    currPlayer.forceStep("END"); // + messaggio
-                break;
-            case "ENDORMOVE":
-                //View has to obtain the list of the possible build destinations for both builders and for the possible build of a dome
-                possibleDstBuilder1 = possibleDstCells(0, false);
-                possibleDstBuilder2 = possibleDstCells(1,false);
-
-                if (canMove())
-                    result = true; //-> il controller chiede END or CONTINUE
-                else
-                    currPlayer.forceStep("END"); // + messaggio
-                break;
-            //in both case I have to consider the two possibilities and if just one of these is possible, avoid the choice
-            case "BOTH":
-                boolean canMove, canBuild;
-                currStep = "MOVE";
-                possibleDstBuilder1 = possibleDstCells(0, false);
-                possibleDstBuilder2 = possibleDstCells(1, false);
-
-                //checking if there are possible destinations to move
-                canMove = canMove();
-
-                currStep = "BUILD";
-                possibleDstBuilder1 = possibleDstCells(0, false);
-                possibleDstBuilder2 = possibleDstCells(1,false);
-                possibleDstBuilder1forDome = possibleDstCells(0,true);
-                possibleDstBuilder2forDome = possibleDstCells(1,true);
-
-                //checking if there are possible destinations to build
-                canBuild = canBuild();
-
-                if (canBuild && canMove)
-                    result = true;
-                else if (canBuild)
-                    currPlayer.forceStep("BUILD");
-                else if (canMove)
-                    currPlayer.forceStep("MOVE");
-                else {
-                    notifyLoss(currPlayer.getNickname());
-                    deletePlayer(currPlayer.getNickname());
-                }
-
-                currStep = getCurrStep(currPlayer); */
-                //case END exception
         }
-        //return result;
     }
 
-    /*
-    private boolean canBuild() {
-
-        return (currPlayer.getBuilders().get(0).equals(chosenBuilder) && (!possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty())) ||
-                (currPlayer.getBuilders().get(1).equals(chosenBuilder) && (!possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty()));
-    }
-
-    private boolean canMove() {
-        return currPlayer.getBuilders().get(0).equals(chosenBuilder) && !possibleDstBuilder1.isEmpty() ||
-                currPlayer.getBuilders().get(1).equals(chosenBuilder) && !possibleDstBuilder2.isEmpty();
-    }
-    */
     /**
-     * This method is called when Step in currPlayer.GodCard is BOTH
+     * This method is called when Step in currPlayer.GodCard is REQUIRED
      * @param step is the effective step the user decides to do
      * @return if the step has been effectively set
      */
@@ -693,8 +585,4 @@ public class Model extends ModelObservableWithSelect {
         return changed;
     }
 
-
-    private void flush() {
-
-    }
 }

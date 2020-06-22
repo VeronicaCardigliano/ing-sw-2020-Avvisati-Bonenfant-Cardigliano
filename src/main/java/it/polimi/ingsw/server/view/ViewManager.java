@@ -144,7 +144,8 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     @Override
     public void onLossUpdate(String nickname) {
-        selectedView.send(Messages.lostGame(nickname));
+        for(VirtualView view : views)
+            view.send(Messages.lostGame(nickname));
 
         //cleanSelection();
     }

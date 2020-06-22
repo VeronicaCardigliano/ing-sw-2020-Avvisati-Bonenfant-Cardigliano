@@ -16,24 +16,6 @@ public class Server
         ViewManager vm = new ViewManager();
         Controller controller = new Controller(model, vm);
 
-        model.setBuilderBuiltObserver(vm);
-        model.setBuilderMovementObserver(vm);
-        model.setBuildersPlacedObserver(vm);
-        model.setChosenStepObserver(vm);
-        model.setColorAssignmentObserver(vm);
-        model.setEndGameObserver(vm);
-        model.setErrorsObserver(vm);
-        model.setGodChoiceObserver(vm);
-        model.setPlayerAddedObserver(vm);
-        model.setPlayerLoseObserver(vm);
-        model.setPlayerTurnObserver(vm);
-        model.setViewSelectObserver(vm);
-        model.setStateObserver(vm);
-        model.setPossibleBuildObserver(vm);
-        model.setPossibleMoveObserver(vm);
-
-
-
         MultiThreadServer server = new MultiThreadServer(port);
 
         server.startServer(vm, controller);

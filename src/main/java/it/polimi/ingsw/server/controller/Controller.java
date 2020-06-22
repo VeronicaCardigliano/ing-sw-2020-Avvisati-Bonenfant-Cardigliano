@@ -1,7 +1,7 @@
 package it.polimi.ingsw.server.controller;
 
-import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.Model;
+import it.polimi.ingsw.server.model.Player;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.network.Messages;
 import it.polimi.ingsw.server.view.ViewManager;
@@ -13,14 +13,29 @@ import java.util.Set;
 
 public class Controller extends AbstractController implements ConnectionObserver{
 
-    private final Model model;
+    private Model model;
     private final ViewManager viewManager;
-
 
     public Controller (Model model, ViewManager viewManager) {
 
         this.model = model;
         this.viewManager = viewManager;
+
+        model.setBuilderBuiltObserver(viewManager);
+        model.setBuilderMovementObserver(viewManager);
+        model.setBuildersPlacedObserver(viewManager);
+        model.setChosenStepObserver(viewManager);
+        model.setColorAssignmentObserver(viewManager);
+        model.setEndGameObserver(viewManager);
+        model.setErrorsObserver(viewManager);
+        model.setGodChoiceObserver(viewManager);
+        model.setPlayerAddedObserver(viewManager);
+        model.setPlayerLoseObserver(viewManager);
+        model.setPlayerTurnObserver(viewManager);
+        model.setViewSelectObserver(viewManager);
+        model.setStateObserver(viewManager);
+        model.setPossibleBuildObserver(viewManager);
+        model.setPossibleMoveObserver(viewManager);
 
     }
 
@@ -32,10 +47,9 @@ public class Controller extends AbstractController implements ConnectionObserver
     public synchronized void onNumberInsertion(int num) {
 
         if (model.getCurrState() == Model.State.SETUP_NUMOFPLAYERS && (model.getNumberOfPlayers() != 2 ||
-        model.getNumberOfPlayers() != 3)) {
+                model.getNumberOfPlayers() != 3)) {
 
             if (model.setNumberOfPlayers(num)) {
-
                 model.setNextState();
             }
 
@@ -55,7 +69,8 @@ public class Controller extends AbstractController implements ConnectionObserver
                 //setNextPlayer used to initialize first player :)
                 model.setNextPlayer();
                 model.setChallenger(model.getCurrPlayer());
-                viewManager.chooseMatchGodCards(model.getChallenger(), model.getNumberOfPlayers(), model.getGodDescriptions());
+                viewManager.chooseMatchGodCards(model.getChallenger(), model.getNumberOfPlayers(),
+                        model.getGodDescriptions());
 
             }
         }
@@ -68,7 +83,7 @@ public class Controller extends AbstractController implements ConnectionObserver
         if (model.getCurrState() == Model.State.SETUP_COLOR && model.getCurrPlayer().equals(nickname)) {
             if (model.assignColor(color)) {
                 model.setNextPlayer();
-                if (model.getCurrPlayer().equals(model.getStartPlayerNickname())){
+                if (model.getCurrPlayer().equals(model.getStartPlayerNickname())) {
                     model.setNextState();
                     viewManager.askBuilders(model.getCurrPlayer());
                 } else
@@ -81,7 +96,7 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onGodCardChoice(String nickname, String godCardName) {
         if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().equals(nickname) &&
-            model.currPlayerNullGodCard()) {
+                model.currPlayerNullGodCard()) {
 
             if (model.assignCard(godCardName)) {
                 model.setNextPlayer();
@@ -127,8 +142,11 @@ public class Controller extends AbstractController implements ConnectionObserver
                         viewManager.askStep(model.getCurrPlayer(), model.getCurrStateList());
                     else {
                         model.findPossibleDestinations();
+                        checkHasLost();
                     }
-                } else
+                }
+
+                else
                     viewManager.askBuilders(model.getCurrPlayer());
 
             } else viewManager.askBuilders(nickname);
@@ -144,8 +162,9 @@ public class Controller extends AbstractController implements ConnectionObserver
                 model.getCurrStep().equals("BUILD") &&
                 model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild() && !model.endGame()) {
 
-                manageNextState(nickname);
-            }
+            manageNextState(nickname);
+        }
+
     }
 
     @Override
@@ -155,8 +174,34 @@ public class Controller extends AbstractController implements ConnectionObserver
                 model.getCurrStep().equals("MOVE") && model.effectiveMove(src, dst) &&
                 model.hasNotLostDuringMove() && !model.endGame()) {
 
-                manageNextState(nickname);
+            manageNextState(nickname);
+        }
+    }
+
+//------------
+
+    @Override
+    public synchronized void onStepChoice(String player, String chosenStep) {
+        if (model.getCurrPlayer().equals(player) && model.getCurrStep().equals("REQUIRED")) {
+            if(!chosenStep.equals("END")) {
+                if (model.setStepChoice(chosenStep)){
+                    model.findPossibleDestinations();
+                    checkHasLost();
+                }
+
             }
+            else {
+                model.setNextPlayer();
+                model.startTurn();
+
+                if (model.getCurrStep().equals("REQUIRED"))
+                    viewManager.askStep(model.getCurrPlayer(), model.getCurrStateList());
+                else{
+                    model.findPossibleDestinations();
+                    checkHasLost();
+                }
+            }
+        }
     }
 
     private void manageNextState(String nickname) {
@@ -166,31 +211,41 @@ public class Controller extends AbstractController implements ConnectionObserver
             model.startTurn();
 
             if (model.getCurrStep().equals("REQUIRED"))
-                viewManager.askStep(model.getCurrPlayer(),
-                        model.getCurrStateList());
-            else
+                viewManager.askStep(model.getCurrPlayer(), model.getCurrStateList());
+            else{
                 model.findPossibleDestinations();
-
-        } else if (model.getCurrStep().equals("REQUIRED")) //check step
+                checkHasLost();
+            }
+        }
+        else if (model.getCurrStep().equals("REQUIRED"))
             viewManager.askStep(nickname, model.getCurrStateList());
-        else
+        else{
             model.findPossibleDestinations();
+            checkHasLost();
+        }
     }
 
-
-//------------
-
-    @Override
-    public synchronized void onStepChoice(String player, String chosenStep) {
-        if (model.getCurrPlayer().equals(player) && model.getCurrStep().equals("REQUIRED")) {
-            if(!chosenStep.equals("END")) {
-                if (model.setStepChoice(chosenStep))
-                    model.findPossibleDestinations();
-            }
+    /**
+     * requires That findPossibleDestination has been called right before
+     */
+    private void checkHasLost(){
+        if (!model.hasNotLostDuringMove() && !model.hasNotLostDuringBuild()){
+            String playerToRemove = model.getCurrPlayer();
+            model.setNextPlayer();
+            model.notifyLoss(playerToRemove);
+            model.deletePlayer(playerToRemove);
+            //TODO should i remove the player from the viewManager?
+            if (model.endGame())
+                this.model = new Model();
             else {
-                model.setNextPlayer();
                 model.startTurn();
-                model.findPossibleDestinations();
+                if (model.getCurrStep().equals("REQUIRED"))
+                    viewManager.askStep(model.getCurrPlayer(),model.getCurrStateList());
+                else{
+                    model.findPossibleDestinations();
+                    //recursive function to check if next player has lost too or not
+                    checkHasLost();
+                }
             }
         }
     }
@@ -199,18 +254,22 @@ public class Controller extends AbstractController implements ConnectionObserver
     public synchronized void onDisconnection(String nickname) {
         viewManager.remove(nickname);
         model.deletePlayer(nickname);
+        if (model.endGame()){
+            for (Player p : model.getPlayers())
+                viewManager.remove(p.getNickname());
+            this.model = new Model();
+        }
     }
 
     @Override
     public synchronized void onConnection(VirtualView view) throws IOException {
-        /*
+
         if(viewManager.getNumberOfViews() == 0 && model.getCurrState().equals(Model.State.SETUP_NUMOFPLAYERS)) {
             viewManager.add(view);
             viewManager.askNumberOfPlayers();
 
         } else if(model.getCurrState().equals(Model.State.SETUP_PLAYERS) && viewManager.getNumberOfViews() < model.getNumberOfPlayers()) {
             viewManager.add(view);
-            view.send(Messages.stepUpdate(Model.State.SETUP_PLAYERS));
 
             //if now all needed clients are connected ask them to insert name and birth date
             if(viewManager.getNumberOfViews() == model.getNumberOfPlayers())
@@ -220,45 +279,11 @@ public class Controller extends AbstractController implements ConnectionObserver
             view.send(Messages.errorMessage("Too many clients connected"));
             view.send(Messages.disconnect());
             view.disconnect();
-        }*/
-
-        switch (model.getCurrState()) {
-            case SETUP_NUMOFPLAYERS:
-                if(viewManager.getNumberOfViews() == 0) {
-                    viewManager.add(view);
-                    viewManager.askNumberOfPlayers();
-                } else {
-                    view.send(Messages.errorMessage("Someone is setting up the game."));
-                    view.send(Messages.disconnect());
-                    view.disconnect();
-                }
-                break;
-            case SETUP_PLAYERS:
-                if(viewManager.getNumberOfViews() < model.getNumberOfPlayers()) {
-                    viewManager.add(view);
-                    view.send(Messages.stepUpdate(Model.State.SETUP_PLAYERS));
-
-                    if(viewManager.getNumberOfViews() == model.getNumberOfPlayers())
-                        viewManager.askNickAndDate();
-                } else {
-                    view.send(Messages.errorMessage("Too many players connected"));
-                    view.send(Messages.disconnect());
-                    view.disconnect();
-                }
-                break;
-
-            default:
-                view.send(Messages.errorMessage("Game in progress... Retry Later"));
-                view.send(Messages.disconnect());
-                view.disconnect();
-                break;
         }
-
-
     }
 
     @Override
-    public synchronized void onSetStartPlayer(String nickname, String startPlayer) {
+    public void onSetStartPlayer(String nickname, String startPlayer) {
         if(model.getCurrState().equals(Model.State.SETUP_CARDS) && model.getChallenger().equals(nickname)) {
             if(model.setStartPlayer(nickname, startPlayer)) {
                 model.setStartPlayerNickname(startPlayer);
