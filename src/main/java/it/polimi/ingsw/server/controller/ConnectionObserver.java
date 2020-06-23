@@ -6,4 +6,6 @@ import java.io.IOException;
 
 public interface ConnectionObserver {
     void onConnection(VirtualView view) throws IOException;
+    void onDisconnection(String nickname);
+    void onEarlyDisconnection(VirtualView view);
 }

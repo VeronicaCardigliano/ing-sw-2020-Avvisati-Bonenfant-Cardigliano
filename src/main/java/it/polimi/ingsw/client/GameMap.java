@@ -8,9 +8,9 @@ import java.util.*;
 public abstract class GameMap {
 
     private static final int DOME = -1;
-    private final Map<Coordinates, Integer> heights = new HashMap<>();
-    protected final Map<String,String> chosenColorsForPlayer = new HashMap<>();
-    protected final Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
+    private Map<Coordinates, Integer> heights = new HashMap<>();
+    protected Map<String,String> chosenColorsForPlayer = new HashMap<>();
+    protected Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
 
     public static final int firstBuilderIndex = 0;
     public static final int secondBuilderIndex = 1;
@@ -62,6 +62,11 @@ public abstract class GameMap {
 
         occupiedCells.put(nickname, positions);
     }
+
+    public void removePlayer(String nickname) {
+        occupiedCells.remove(nickname);
+    }
+
     public void updateOccupiedCells(String nickname, Coordinates src, Coordinates dst) {
         ArrayList<Coordinates> selectedCells = occupiedCells.get(nickname);
 
@@ -90,8 +95,5 @@ public abstract class GameMap {
     public Map<Coordinates, Integer> getHeights() {
         return this.heights;
     }
-
-
-    //abstract public void show(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, int chosenBuilderNumber);
 
 }

@@ -39,6 +39,7 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     public void remove(String nickname) {
         views.removeIf(view -> view.getNickname().equals(nickname));
+
     }
 
     public void removeAndDisconnectAll() {

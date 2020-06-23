@@ -54,8 +54,8 @@ public class NetworkParser {
     }
 
 
-    public String getDate() throws JSONException {
-        String date = jsonObject.getString(Messages.DATE);
+    public String getDate() {
+        /*String date = jsonObject.getString(Messages.DATE);
 
         List<String> components = Arrays.asList(date.split("\\."));
 
@@ -81,7 +81,9 @@ public class NetworkParser {
                 //SHOULD SWITCH CASE TO VERIFY THAT DAY IS CORRECT
             }
         }
-        throw new JSONException("");
+        throw new JSONException("");*/
+
+        return jsonObject.getString(Messages.DATE);
 
     }
 

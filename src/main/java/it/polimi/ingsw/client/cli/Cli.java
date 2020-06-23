@@ -41,7 +41,6 @@ public class Cli extends View{
             result = Integer.parseInt(input);
         } catch (NumberFormatException e) {
             printer.setInfoMessage("You have to type a number.");
-            printer.setAskMessage("Input: ");
             printer.print();
             result = parseInteger();
         }
@@ -103,7 +102,7 @@ public class Cli extends View{
                             break;
 
                         case NUMPLAYERS:
-                            setNumberOfPlayers(parser.nextInt()); //i think this inserts \n automatically, that's why cli sends an empty message
+                            setNumberOfPlayers(parseInteger(input));
                             synchronized (this) {
                                 notifyNumberOfPlayers(getNumberOfPlayers());
                                 setState(ViewState.WAITING);
@@ -112,7 +111,7 @@ public class Cli extends View{
                         case NICKDATE:
                             setNickname(parser.nextLine());
                             printer.erase();
-                            printer.setAskMessage("Date (yyyy.mm.dd): ");
+                            printer.setAskMessage("Birth Date (yyyy.mm.dd): ");
                             printer.print();
                             setDate(in.nextLine());
                             printer.erase();
@@ -125,11 +124,12 @@ public class Cli extends View{
                         case MATCHGODS:
                             while (getMatchGodCards().size() < getNumberOfPlayers()) {
                                 if (parser.hasNext()) {
-                                    addMatchGodCard(getOption(parser.nextInt()));
+                                    addMatchGodCard(getOption(parseInteger(input)));
+                                    parser.nextLine(); //to read scanner buffer
                                 } else {
                                     chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
-                                    addMatchGodCard(getOption(in.nextInt()));
-                                    in.nextLine(); //to read new line character
+                                    addMatchGodCard(getOption(parseInteger()));
+                                    //in.nextLine(); //to read new line character
                                 }
 
 
@@ -146,20 +146,20 @@ public class Cli extends View{
                             break;
                         case STARTPLAYER:
                             synchronized (this) {
-                                notifySetStartPlayer(getNickname(), getOption(parser.nextInt()));
+                                notifySetStartPlayer(getNickname(), getOption(parseInteger(input)));
                                 setState(ViewState.WAITING);
                             }
                             break;
                         case PLAYERGOD:
                             synchronized (this) {
-                                notifyGodCardChoice(getNickname(), getOption(parser.nextInt()));
+                                notifyGodCardChoice(getNickname(), getOption(parseInteger(input)));
                                 setState(ViewState.WAITING);
                             }
                             break;
 
                         case BUILDERCOLOR:
                             synchronized (this) {
-                                notifyColorChoice(getNickname(), getOption(parser.nextInt()));
+                                notifyColorChoice(getNickname(), getOption(parseInteger(input)));
                                 setState(ViewState.WAITING);
                             }
                             break;
@@ -172,18 +172,20 @@ public class Cli extends View{
                             printer.erase();
 
                             while (getChosenBuilderPositions().size() < 2) {
-                                if (parser.hasNext())
-                                    row = parser.nextInt();
+                                if (parser.hasNext()) {
+                                    row = parseInteger(input);
+                                    parser.nextLine(); //to free Scanner buffer
+                                }
                                 else {
-                                    row = in.nextInt();
+                                    row = parseInteger();
                                 }
 
                                 printer.setAskMessage("COLUMN: ");
                                 printer.print();
-                                column = in.nextInt();
+                                column = parseInteger();
                                 addBuilderPosition(new Coordinates(row, column));
 
-                                in.nextLine(); //to read new line character
+                                //in.nextLine(); //to read new line character
 
                                 if (getChosenBuilderPositions().size() < 2) {
                                     printer.setAskMessage("Choose builder number " + (getChosenBuilderPositions().size() + 1) + "\nROW: ");
@@ -198,8 +200,8 @@ public class Cli extends View{
                             break;
                         case STEP:
                             synchronized (this) {
-                                notifyStepChoice(getNickname(), getOption(parser.nextInt()));
-                                setState(ViewState.WAITING); //todo atomicizzare queste 2 espressioni
+                                notifyStepChoice(getNickname(), getOption(parseInteger(input)));
+                                setState(ViewState.WAITING);
                             }
                             break;
 
@@ -223,6 +225,8 @@ public class Cli extends View{
                     printer.setInfoMessage(e.getMessage());
                     printer.print();
 
+                } catch (NoSuchElementException ignored) {
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -230,7 +234,7 @@ public class Cli extends View{
 
             } else {
                 quit = true;
-                notifyDisconnection(getNickname() != null ? getNickname() : "unknown");
+                notifyDisconnection();
 
             }
         }
@@ -247,14 +251,14 @@ public class Cli extends View{
         printer.erase();
         printer.setAskMessage("ROW: ");
         printer.print();
-        row = in.nextInt();
+        row = parseInteger();
 
         //ask
         printer.setAskMessage("COLUMN: ");
         printer.print();
-        column = in.nextInt();
+        column = parseInteger();
 
-        in.nextLine(); //to read new line character
+        //in.nextLine(); //to read new line character
 
         return new Coordinates(row, column);
     }
@@ -605,8 +609,10 @@ public class Cli extends View{
         if(result) {
             printer.setInfoMessage("\n" + nickname + " joined the game!");
         }
-        else
+        else {
             printer.setInfoMessage("Could not register nickname");
+            printer.setAskMessage("Nickname: ");
+        }
 
         printer.print();
     }
@@ -618,9 +624,6 @@ public class Cli extends View{
         printer.setInfoMessage(nickname + " has lost!");
         printer.print();
 
-        printer.erase();
-        printer.printTitle();
-        printer.setAskMessage("Server to join: ");
 
     }
 
@@ -825,6 +828,9 @@ public class Cli extends View{
     @Override
     public void onDisconnection() {
         super.onDisconnection();
+
+        gameMap = new CliGameMap();
+
         printer.setInfoMessage("Disconnecting");
         printer.print();
         printer.erase();

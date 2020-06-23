@@ -20,7 +20,7 @@ public class CyclingIterator<T> implements Iterator<T> {
     @Override
     public T next() {
         index ++;
-        if (index == data.size())
+        if (index >= data.size())
             index = 0;
         return data.get(index);
     }

@@ -260,7 +260,11 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onDisconnection(String nickname) {
         viewManager.remove(nickname);
-        model.deletePlayer(nickname);
+
+        //if player has lost he is no more in model
+        if(model.getPlayersNickname().contains(nickname))
+            model.deletePlayer(nickname);
+
         if (model.endGame()){
             viewManager.removeAndDisconnectAll();
             this.model = new Model();

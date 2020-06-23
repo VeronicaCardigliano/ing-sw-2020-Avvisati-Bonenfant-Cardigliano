@@ -5,6 +5,7 @@ import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.parser.GodCardParser;
+import org.json.JSONException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,10 +46,10 @@ public class Model extends ModelObservableWithSelect {
     /**
      * PossibleDst Arrays contains the list of Cells in which the player can move or build
      */
-    protected Set<Coordinates> possibleDstBuilder1;
-    protected Set<Coordinates> possibleDstBuilder2;
-    protected Set<Coordinates> possibleDstBuilder1forDome;
-    protected Set<Coordinates> possibleDstBuilder2forDome;
+    protected Set<Coordinates> possibleDstBuilder1 = new HashSet<>();
+    protected Set<Coordinates> possibleDstBuilder2 = new HashSet<>();
+    protected Set<Coordinates> possibleDstBuilder1forDome = new HashSet<>();
+    protected Set<Coordinates> possibleDstBuilder2forDome = new HashSet<>();
 
 
     /**
@@ -228,7 +229,7 @@ public class Model extends ModelObservableWithSelect {
     public boolean addPlayer (String nickname, String birthday) {
         boolean canAdd = true;
 
-        if (nickname == null) {
+        if (nickname == null || !checkDate(birthday)) {
             canAdd = false;
         }
 
@@ -270,6 +271,44 @@ public class Model extends ModelObservableWithSelect {
         notifyPlayerAdded(nickname, canAdd);
 
         return canAdd;
+    }
+
+    protected static boolean checkDate(String date) {
+        boolean dateOk = false;
+        List<String> components = Arrays.asList(date.split("\\."));
+
+        int thisYear = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
+        int thisMonth = Integer.parseInt(new SimpleDateFormat("MM").format(new Date()));
+        int thisDay = Integer.parseInt(new SimpleDateFormat("dd").format(new Date()));
+
+        int inputYear, inputMonth, inputDay;
+
+        //MUST VERIFY THAT DATE CONTAINS ONLY DOTS AND NUMBERS
+        if (date.matches("\\d{4}\\.\\d{2}\\.\\d{2}")){
+            inputYear = Integer.parseInt(components.get(0));
+            inputMonth = Integer.parseInt(components.get(1));
+            inputDay = Integer.parseInt(components.get(2));
+
+            //questo controllo assume ogni anno come bisestile ed include quindi anche il 29 Gennaio.
+            if(inputYear > 0 && inputMonth >= 1 && inputMonth <= 12) {
+                switch (inputMonth) {
+                    case 4:
+                    case 6:
+                    case 9:
+                    case 11:
+                        dateOk = inputDay >= 1 && inputDay <= 30;
+                        break;
+                    case 2:
+                        dateOk = inputDay >= 1 && inputDay <= 29;
+                        break;
+                    default:
+                        dateOk = inputDay >= 1 && inputDay <= 31;
+                        break;
+                }
+            }
+        }
+
+        return dateOk;
     }
 
 

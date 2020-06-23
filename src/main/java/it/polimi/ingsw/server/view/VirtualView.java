@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class VirtualView extends ViewObservable implements Runnable {
 
-    private final int timeout = 5 * 1000;
+    private final int timeout = 10 * 1000;
     private final int pingDelay = 2;
     private final Socket socket;
     private PrintWriter out;
@@ -41,7 +41,7 @@ public class VirtualView extends ViewObservable implements Runnable {
         setNumberOfPlayersObserver((controller));
         setStepChoiceObserver(controller);
         setBuilderSetupObserver(controller);
-        setDisconnectionObserver(controller);
+        //setDisconnectionObserver(controller);
         setGodCardChoiceObserver(controller);
         setStartPlayerObserver(controller);
 
@@ -106,6 +106,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                 }
             } catch (IOException e) {
                 System.err.println(socket.getRemoteSocketAddress() + ": " + e.getMessage());
+                break;
             }
             System.out.println(socket.getRemoteSocketAddress() + ": " + message);
             handleMessage(message);
@@ -161,8 +162,8 @@ public class VirtualView extends ViewObservable implements Runnable {
                             setNickname(parser.getName());
                             notifyNewPlayer(this.nickname, date);
                         } catch (JSONException e) {
-                            send(Messages.errorMessage("Wrong nickname and date format"));
-                            send(Messages.parseErrorPlayer());
+                            send(Messages.errorMessage("Parsing error: " + e.getMessage()));
+                            //send(Messages.parseErrorPlayer());
                         }
                     } else {
                         send(Messages.errorMessage("nickname already set"));
@@ -175,9 +176,9 @@ public class VirtualView extends ViewObservable implements Runnable {
                         numberOfPlayers = parser.getNumberOfPlayers();
                         notifyNumberOfPlayers(numberOfPlayers);
                     }
-                    catch (JSONException numberException) {
-                        send(Messages.errorMessage("Wrong format, be sure to insert coordinates as ints"));
-                        send(Messages.parseErrorNumber());
+                    catch (JSONException e) {
+                        send(Messages.errorMessage(e.getMessage()));
+                        //send(Messages.parseErrorNumber());
                     }
                     break;
 
@@ -186,9 +187,9 @@ public class VirtualView extends ViewObservable implements Runnable {
                     try {
                         color = parser.getColor();
                         notifyColorChoice(nickname, color);
-                    } catch (JSONException colorException){
-                        send(Messages.errorMessage("Error in stream, couldn't get color parameter"));
-                        send(Messages.parseErrorColor());
+                    } catch (JSONException e){
+                        send(Messages.errorMessage(e.getMessage()));
+                        //send(Messages.parseErrorColor());
                     }
                     break;
 
@@ -196,14 +197,18 @@ public class VirtualView extends ViewObservable implements Runnable {
                 case Messages.SET_GOD_CARD:
                     try {
                         notifyGodCardChoice(nickname, parser.getGodCardName());
-                    } catch (JSONException godNameException){
-                        send(Messages.errorMessage("Error in stream, couldn't get godCard name"));
-                        send(Messages.parseErrorGod());
+                    } catch (JSONException e){
+                        send(Messages.errorMessage(e.getMessage()));
+                        //send(Messages.parseErrorGod());
                     }
                     break;
 
                 case Messages.SET_MATCH_GOD_CARDS:
-                    notifyMatchGodCardsChoice(nickname, parser.getSetFromArray(Messages.GOD_DESCRIPTIONS));
+                    try {
+                        notifyMatchGodCardsChoice(nickname, parser.getSetFromArray(Messages.GOD_DESCRIPTIONS));
+                    } catch (JSONException e) {
+                        send(Messages.errorMessage(e.getMessage()));
+                    }
                     break;
 
                 case Messages.BUILDERS_PLACEMENT:
@@ -211,9 +216,9 @@ public class VirtualView extends ViewObservable implements Runnable {
                         builder1 = parser.getCoordArray().get(0);
                         builder2 = parser.getCoordArray().get(1);
                         notifySetupBuilders(nickname, builder1, builder2);
-                    } catch (JSONException coordinatesException){
-                        send(Messages.errorMessage(coordinatesException.getMessage()));
-                        send(Messages.parseErrorBuilders());
+                    } catch (JSONException e){
+                        send(Messages.errorMessage(e.getMessage()));
+                        //send(Messages.parseErrorBuilders());
                     }
                     break;
 
@@ -222,16 +227,19 @@ public class VirtualView extends ViewObservable implements Runnable {
                     try{
                         String stepChoice = parser.getStepChoice();
                         notifyStepChoice(nickname, stepChoice);
-                    } catch (JSONException stepException){
-                        send(Messages.errorMessage("Invalid format, be sure to insert coordinates as ints"));
-                        send(Messages.parseErrorStepChoice());
+                    } catch (JSONException e){
+                        send(Messages.errorMessage(e.getMessage()));
+                        //send(Messages.parseErrorStepChoice());
                     }
                     break;
 
 
                 case Messages.SET_START_PLAYER:
-                    //TODO try catch mancanti
-                    notifySetStartPlayer(nickname, parser.getAttribute(Messages.NAME));
+                    try {
+                        notifySetStartPlayer(nickname, parser.getAttribute(Messages.NAME));
+                    } catch (JSONException e) {
+                        send(Messages.errorMessage(e.getMessage()));
+                    }
                     break;
 
                 case Messages.MOVE:
@@ -239,8 +247,9 @@ public class VirtualView extends ViewObservable implements Runnable {
                         src = parser.getSrcCoordinates();
                         dst = parser.getDstCoordinates();
                         notifyMove(nickname, src, dst);
-                    } catch ( JSONException coordinatesException){
-                        send(Messages.parseErrorMove());
+                    } catch ( JSONException e){
+                        send(Messages.errorMessage(e.getMessage()));
+                        //send(Messages.parseErrorMove());
                     }
 
                     break;
@@ -251,7 +260,8 @@ public class VirtualView extends ViewObservable implements Runnable {
                         dst = parser.getDstCoordinates();
                         notifyBuild(nickname, src, dst, parser.getBuildDome());
                     } catch (JSONException e) {
-                        send(Messages.parseErrorBuild());
+                        send(Messages.errorMessage(e.getMessage()));
+                        //send(Messages.parseErrorBuild());
                     }
                     break;
 
@@ -265,6 +275,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     break;
 
             }
+            //todo tenere solo questo mega try/catch oppure quelli annidati?
         } catch (JSONException e) {
             send(Messages.errorMessage(e.getMessage()));
         }
@@ -277,5 +288,19 @@ public class VirtualView extends ViewObservable implements Runnable {
         connectionObserver.onConnection(this);
     }
 
+    protected void notifyDisconnection(String player) {
+        if(connectionObserver != null)
+            connectionObserver.onDisconnection(player);
+        else
+            System.out.println("disconnection observer is not set");
+    }
+
+    protected void notifyEarlyDisconnection(VirtualView view) {
+        if(connectionObserver != null)
+            connectionObserver.onEarlyDisconnection(view);
+        else
+            System.out.println("early disconnection observer is not set");
+
+    }
 
 }

@@ -30,10 +30,10 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     protected Set<Coordinates> possibleDstBuilder1forDome;
     protected Set<Coordinates> possibleDstBuilder2forDome;
 
-    private final Set<String> matchGodCards = new HashSet<>();
-    private final Map<String, String> chosenGodCardsForPlayer = new HashMap<>();
+    private Set<String> matchGodCards = new HashSet<>();
+    private Map<String, String> chosenGodCardsForPlayer = new HashMap<>();
 
-    private final ArrayList<Coordinates> chosenBuilderPositions = new ArrayList<>();
+    private ArrayList<Coordinates> chosenBuilderPositions = new ArrayList<>();
 
     protected GameMap gameMap;
     private String nickname;
@@ -128,6 +128,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public void notifyConnection(String ip, int port) {
         connectionObserver.onConnection(ip, port);
     }
+    public void notifyDisconnection() {connectionObserver.onDisconnection();}
 
     abstract public void build();
     abstract public void move();
@@ -216,15 +217,21 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
-        if(!result)
+        if(!result) {
             this.nickname = null;
-        this.date = null;
+            this.date = null;
+            setState(ViewState.NICKDATE);
+        }
 
     }
 
     @Override
     public void onLossUpdate(String nickname) {
-        setState(ViewState.CONNECTION);
+
+        gameMap.removePlayer(nickname);
+        chosenGodCardsForPlayer.remove(nickname);
+
+
 
     }
 
@@ -247,9 +254,24 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     }
 
+    /**
+     * called when network handler socket is disconnected from server.
+     * It changes the View state back to CONNECTION and reinitialize in-game data.
+     * It however does not reset the Map so you will have to create a new GameMap object.
+     *
+     */
     @Override
     public void onDisconnection() {
         setState(ViewState.CONNECTION);
+
+        //resetting all game data
+        matchGodCards = new HashSet<>();
+        chosenGodCardsForPlayer = new HashMap<>();
+        currentTurnBuilderPos = null;
+        chosenBuilderNum = 0;
+        chosenBuilderPositions = new ArrayList<>();
+
+
 
     }
 }

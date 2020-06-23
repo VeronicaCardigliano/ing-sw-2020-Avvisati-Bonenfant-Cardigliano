@@ -42,6 +42,20 @@ class ModelTest {
     }
 
     @Test
+    public void checkDateTest() {
+        assertFalse(Model.checkDate("test"));
+        assertFalse(Model.checkDate("1.1.1"));
+        assertTrue(Model.checkDate("1980.02.10"));
+        assertTrue(Model.checkDate("3000.01.01"));
+        assertFalse(Model.checkDate("1980.02.30"));
+
+        assertFalse(testModel.addPlayer("thomas", "3000.01.01"));
+        assertFalse(testModel.addPlayer("thomas1", "1980.02.30"));
+
+
+    }
+
+    @Test
     public void correctlyDeleted () {
         testModel.setNumberOfPlayers(2);
 

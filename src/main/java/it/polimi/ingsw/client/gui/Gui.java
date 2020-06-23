@@ -171,7 +171,7 @@ public class Gui extends View {
 
         primaryStage.setOnCloseRequest(windowEvent -> {
 
-            notifyDisconnection(getNickname());
+            notifyDisconnection();
             primaryStage.close();
             Platform.exit();
             System.exit(0);
@@ -1064,7 +1064,7 @@ public class Gui extends View {
 
             createButton("QUIT",buttonCoralSrc, bottomBtns, mouseEvent -> {
 
-                notifyDisconnection(getNickname());
+                notifyDisconnection();
                 primaryStage.close();
                 Platform.exit();
                 System.exit(0);
