@@ -348,12 +348,48 @@ public class GuiMap extends GameMap {
     /**
      * Resets the possible destinations cells after builder/destination choice
      */
-    protected void resetMap() {
+    protected void resetPossibleDestinations() {
         for (Node cell : tile.getChildren()) {
 
             cell.setOnMouseClicked(null);
             cell.setOnMouseEntered(null);
             cell.setStyle ("-fx-background-color: TRANSPARENT");
+        }
+    }
+
+    /**
+     * Removes the builders of a player who has lost from the cell, taking their coordinates from occupiedCells
+     * @param nickname of the losing player
+     */
+    protected void removeBuilders (String nickname) {
+
+        Coordinates builder1Coord, builder2Coord;
+        ImageView builder1, builder2;
+        builder1Coord = getOccupiedCells().get(nickname).get(0);
+        builder2Coord = getOccupiedCells().get(nickname).get(1);
+
+        StackPane cellBuilder1 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder1Coord));
+        builder1 = (ImageView) cellBuilder1.getChildren().get(getCurrentBuilderIndexInStack(builder1Coord));
+        Platform.runLater(() -> cellBuilder1.getChildren().remove(builder1));
+
+        StackPane cellBuilder2 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder2Coord));
+        builder2 = (ImageView) cellBuilder2.getChildren().get(getCurrentBuilderIndexInStack(builder1Coord));
+        Platform.runLater(() -> cellBuilder2.getChildren().remove(builder2));
+    }
+
+    /**
+     * Resets the map for a new match
+     */
+    protected void resetMap () {
+
+        for (int i = 0; i < tile.getChildren().size(); i++) {
+
+            StackPane cell = (StackPane) tile.getChildren().get(i);
+            cell.getChildren().clear();
+            cell.setOnMouseClicked(null);
+            cell.setOnMouseEntered(null);
+            cell.setStyle ("-fx-background-color: TRANSPARENT");
+
         }
     }
 

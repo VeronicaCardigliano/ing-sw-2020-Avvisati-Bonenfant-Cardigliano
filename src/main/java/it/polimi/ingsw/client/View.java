@@ -84,6 +84,10 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         chosenGodCardsForPlayer.put(player, godCard);
     }
 
+    public void deleteChosenGodCard (String player, String godCard) {
+        chosenGodCardsForPlayer.remove(player, godCard);
+    }
+
     public Map<String, String> getChosenGodCardsForPlayer() { return chosenGodCardsForPlayer; }
     public static Map<String, String> getChosenColorsForPlayer() {return chosenColorsForPlayer;}
 
@@ -231,8 +235,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         gameMap.removePlayer(nickname);
         chosenGodCardsForPlayer.remove(nickname);
 
-
-
     }
 
     @Override
@@ -270,7 +272,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         currentTurnBuilderPos = null;
         chosenBuilderNum = 0;
         chosenBuilderPositions = new ArrayList<>();
-
 
 
     }

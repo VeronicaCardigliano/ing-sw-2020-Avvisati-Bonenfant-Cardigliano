@@ -593,7 +593,7 @@ public class Gui extends View {
                     setChosenBuilderNum(2);
                 }
 
-                gameMap.resetMap();
+                gameMap.resetPossibleDestinations();
 
                 if(getState().toString().equals("MOVE")) {
                     printMessage("Select where you want to move");
@@ -631,7 +631,7 @@ public class Gui extends View {
 
             notifyMove(getNickname(), currentTurnBuilderPos, gameMap.indexToCoord(dstIndex));
             currentTurnBuilderPos = gameMap.indexToCoord(dstIndex);
-            gameMap.resetMap();
+            gameMap.resetPossibleDestinations();
         });
     }
 
@@ -661,7 +661,7 @@ public class Gui extends View {
                     gameMap.createBuilding(index, buildDome, getNickname());
 
                     notifyBuild(getNickname(), currentTurnBuilderPos, gameMap.indexToCoord(index), buildDome);
-                    gameMap.resetMap();
+                    gameMap.resetPossibleDestinations();
                 }
             });
     }
@@ -743,7 +743,7 @@ public class Gui extends View {
 
         if(result) {
             if (getNickname().equals(nickname))
-                gameMap.resetMap();
+                gameMap.resetPossibleDestinations();
 
             else
                 gameMap.createBuilding(gameMap.coordinatesToIndex(dst), dome, nickname);
@@ -759,7 +759,7 @@ public class Gui extends View {
         if(result) {
             if(getNickname().equals(nickname)) {
                 currentTurnBuilderPos = dst;
-                gameMap.resetMap();
+                gameMap.resetPossibleDestinations();
             }
 
             //does the effective move of the builder in map
@@ -842,11 +842,13 @@ public class Gui extends View {
     @Override
     public void onEndGameUpdate(String winnerNickname) {
 
-        if (!getNickname().equals(winnerNickname))
+        if (!getNickname().equals(winnerNickname)) {
+
             printMessage("Player " + winnerNickname + " wins!");
+            createEndGameMessage("YOU LOSE");
+        }
         else
             createEndGameMessage("YOU WIN!");
-        //printMessage("Player " + winnerNickname + " wins!!");
     }
 
     /**
@@ -885,15 +887,16 @@ public class Gui extends View {
 
         Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> {
 
+            notifyDisconnection();
+
             //resets all
             Platform.runLater(() -> primaryStage.setScene(homeScene));
             Platform.runLater(() -> playersRegion.getChildren().clear());
+            playersRegion.setBorder(null);
+            playersRegion.setBackground(null);
+
             Platform.runLater(() -> bottomAnchorPane.getChildren().clear());
-            for (int i = 0; i < tile.getChildren().size(); i++) {
-                StackPane cell = (StackPane) tile.getChildren().get(i);
-                cell.getChildren().clear();
-            }
-            Platform.runLater(() -> dialogRegion.getChildren().clear());
+            gameMap.resetMap();
             Platform.runLater(() -> dialogRegion.getChildren().clear());
         }, submitButtonPressed);
 
@@ -946,10 +949,17 @@ public class Gui extends View {
 
     @Override
     public void onLossUpdate(String nickname) {
-        if (!getNickname().equals(nickname))
+
+        if (!getNickname().equals(nickname)) {
             printMessage(nickname + " lost!");
+            gameMap.removeBuilders(nickname);
+        }
         else
             createEndGameMessage("YOU LOSE");
+
+        matchGodCards.remove(nickname);
+        deleteChosenGodCard(nickname, getChosenGodCardsForPlayer().get(nickname));
+        setPlayersRegion();
     }
 
     /**
@@ -1001,60 +1011,16 @@ public class Gui extends View {
     @Override
     public void onStateUpdate(Model.State currState) {
 
-        boolean firstPlayer = true;
         String state = currState.toString();
 
         if (state.equals(Model.State.SETUP_BUILDERS.toString())) {
-
-            Map<String, String> chosenGodCards = getChosenGodCardsForPlayer();
-
-            Platform.runLater(() ->playersRegion.getChildren().clear());
 
             playersRegion.setBorder(new Border(new BorderStroke(SEA, SEA, SEA,Color.TRANSPARENT, BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID,
                     BorderStrokeStyle.SOLID, null, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS, playersRegionInsets)));
 
             playersRegion.setBackground(new Background(new BackgroundFill(Color.ANTIQUEWHITE, null, playersRegionInsets)));
 
-            for (String player: chosenGodCards.keySet()) {
-
-                if (!firstPlayer) {
-
-                    ImageView vs = new ImageView(versusSrc);
-                    vs.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()));
-                    vs.setPreserveRatio(true);
-                    Platform.runLater(() -> playersRegion.getChildren().add(vs));
-                }
-
-                firstPlayer = false;
-
-                ImageView nameTag = new ImageView(nameTagSrc);
-                nameTag.setPreserveRatio(true);
-                nameTag.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()).divide(1.2));
-
-                StackPane tagImageText = new StackPane();
-
-                Text text = new Text(player + ": "+ chosenGodCards.get(player));
-                text.setFont(new Font ("Courier" ,(float)fontSize));
-                text.setStyle("-fx-font-weight: bold");
-
-                playersNameTags.put(player, text);
-
-                String color = gameMap.getChosenColorsForPlayer().get(player);
-                switch (color) {
-                    case "LIGHT_BLUE":
-                        text.setFill(Color.LIGHTBLUE);
-                        break;
-                    case "MAGENTA":
-                        text.setFill(Color.MAGENTA);
-                        break;
-                    case "WHITE":
-                        text.setFill(Color.WHITE);
-                        break;
-                }
-
-                Platform.runLater(() -> tagImageText.getChildren().addAll(nameTag, text));
-                Platform.runLater(() -> playersRegion.getChildren().add(tagImageText));
-            }
+            setPlayersRegion();
 
             HBox bottomBtns = new HBox();
             bottomBtns.setSpacing(marginLength);
@@ -1131,6 +1097,55 @@ public class Gui extends View {
         }
         else
             Platform.runLater(()->connectionErrorLbl.setText(message));
+    }
+
+    private void setPlayersRegion () {
+
+        boolean firstPlayer = true;
+        Map<String, String> chosenGodCards = getChosenGodCardsForPlayer();
+        Platform.runLater(() ->playersRegion.getChildren().clear());
+        playersNameTags.clear();
+
+        for (String player: chosenGodCards.keySet()) {
+
+            if (!firstPlayer) {
+
+                ImageView vs = new ImageView(versusSrc);
+                vs.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()));
+                vs.setPreserveRatio(true);
+                Platform.runLater(() -> playersRegion.getChildren().add(vs));
+            }
+
+            firstPlayer = false;
+
+            ImageView nameTag = new ImageView(nameTagSrc);
+            nameTag.setPreserveRatio(true);
+            nameTag.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()).divide(1.2));
+
+            StackPane tagImageText = new StackPane();
+
+            Text text = new Text(player + ": " + chosenGodCards.get(player));
+            text.setFont(new Font("Courier", (float) fontSize));
+            text.setStyle("-fx-font-weight: bold");
+
+            playersNameTags.put(player, text);
+
+            String color = gameMap.getChosenColorsForPlayer().get(player);
+            switch (color) {
+                case "LIGHT_BLUE":
+                    text.setFill(Color.LIGHTBLUE);
+                    break;
+                case "MAGENTA":
+                    text.setFill(Color.MAGENTA);
+                    break;
+                case "WHITE":
+                    text.setFill(Color.WHITE);
+                    break;
+            }
+
+            Platform.runLater(() -> tagImageText.getChildren().addAll(nameTag, text));
+            Platform.runLater(() -> playersRegion.getChildren().add(tagImageText));
+        }
     }
 }
 

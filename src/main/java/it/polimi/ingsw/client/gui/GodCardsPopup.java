@@ -127,9 +127,7 @@ public class GodCardsPopup extends Stage {
             this.setOnCloseRequest(windowEvent -> {
                 if (Gui.confirmQuit()) {
                     this.close();
-                    ownerStage.close();
-                    Platform.exit();
-                    System.exit(0);
+                    ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
                 } else
                     windowEvent.consume();
             });
