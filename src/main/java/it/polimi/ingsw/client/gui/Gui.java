@@ -47,8 +47,9 @@ public class Gui extends View {
     public final static int fontSize = 14;
     public final static double selectionOpacity = 0.7;
     public static final int godsForPlayer = 1;
-    public static final Color SEA = Color.rgb(51,184,253);
+    private static final Color SEA = Color.rgb(51,184,253);
     private final static int maxMessagesShown = 3;
+    private final static int maxNicknameLenght = 10;
 
     private static final String buttonCoralSrc = "file:src/main/resources/btn_coral.png";
     private static final String buttonCoralPressedSrc = "file:src/main/resources/btn_coral_pressed.png";
@@ -75,6 +76,7 @@ public class Gui extends View {
     private Insets playersRegionInsets;
     private int numMessages;
     private Label connectionErrorLbl;
+    private PlayerSetupPopup playerSetupPopup;
 
     private Map<String, Text> playersNameTags = new HashMap<>();
 
@@ -171,7 +173,8 @@ public class Gui extends View {
 
         primaryStage.setOnCloseRequest(windowEvent -> {
 
-            notifyDisconnection();
+            if (getState() != null)
+                notifyDisconnection();
             primaryStage.close();
             Platform.exit();
             System.exit(0);
@@ -266,6 +269,8 @@ public class Gui extends View {
     @Override
     public void askNumberOfPlayers() {
 
+        super.askNumberOfPlayers();
+
         setState(ViewState.NUMPLAYERS);
         Set<String> possibleNumPlayers = new HashSet<>();
 
@@ -295,19 +300,29 @@ public class Gui extends View {
     @Override
     public void askNickAndDate() {
 
-        setState(ViewState.NICKDATE);
+        super.askNickAndDate();
 
         TextField nickInsertion = new TextField ("nickname");
         TextField birthdayInsertion = new TextField("birthday");
 
         Platform.runLater(() -> {
-            PlayerSetupPopup popup = new PlayerSetupPopup(primaryStage, nickInsertion, birthdayInsertion);
+            playerSetupPopup = new PlayerSetupPopup(primaryStage, nickInsertion, birthdayInsertion);
 
-            popup.getSubmit().setOnMouseClicked(mouseEvent -> {
-                setNickname(nickInsertion.getText());
-                setDate(birthdayInsertion.getText());
-                notifyNewPlayer(getNickname(), getDate());
-                popup.close();
+            playerSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
+                if (nickInsertion.getText().length() > maxNicknameLenght) {
+                    playerSetupPopup.printError("Too long nickname. Max lenght: " + maxNicknameLenght);
+                }
+                else if (nickInsertion.getText().isEmpty() || birthdayInsertion.getText().isEmpty())
+                {
+                    playerSetupPopup.printError("You must enter a name and a date");
+                }
+
+                else {
+                    setNickname(nickInsertion.getText());
+                    setDate(birthdayInsertion.getText());
+                    notifyNewPlayer(getNickname(), getDate());
+                    playerSetupPopup.close();
+                }
             });
         });
     }
@@ -319,7 +334,7 @@ public class Gui extends View {
     @Override
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
 
-        setState(ViewState.MATCHGODS);
+        super.chooseMatchGodCards(numOfPlayers, godDescriptionsParam);
 
         Platform.runLater(() -> {
             GodCardsPopup popup = new GodCardsPopup(primaryStage, numOfPlayers, godDescriptionsParam);
@@ -342,7 +357,7 @@ public class Gui extends View {
     @Override
     public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenCards) {
 
-        setState(ViewState.PLAYERGOD);
+        super.askGodCard(godDescriptions, chosenCards);
         matchGodCards = godDescriptions;
         Map<String, String> availableGods = new HashMap<>();
 
@@ -370,7 +385,7 @@ public class Gui extends View {
     @Override
     public void chooseStartPlayer(Set<String> players) {
 
-        setState(ViewState.STARTPLAYER);
+        super.chooseStartPlayer(players);
 
         ChoiceBox<String> choiceBox= new ChoiceBox<>();
         Platform.runLater(() -> {
@@ -391,6 +406,8 @@ public class Gui extends View {
      */
     @Override
     public void askBuilderColor(Set<String> chosenColors) {
+
+        super.askBuilderColor(chosenColors);
 
         Set<String> availableColors = new HashSet<>(Set.of("MAGENTA", "WHITE", "LIGHT_BLUE"));
         availableColors.removeAll(chosenColors);
@@ -420,7 +437,8 @@ public class Gui extends View {
     @Override
     public void placeBuilders () {
 
-        setState(ViewState.BUILDERPLACEMENT);
+        super.placeBuilders();
+
         printMessage("Click cells to place your builders");
 
         for (int i = 0; i < tile.getChildren().size(); i++) {
@@ -498,6 +516,10 @@ public class Gui extends View {
      * @param message error or information messages received from server
      */
     private void printMessage(String message) {
+
+        if (getState().equals(ViewState.NICKDATE)) {
+            playerSetupPopup.printError(message);
+        }
 
         Text messageText = new Text(message);
         messageText.setFont(new Font("Arial", fontSize));
@@ -741,6 +763,8 @@ public class Gui extends View {
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
 
+        super.onBuilderBuild(nickname, src, dst, dome, result);
+
         if(result) {
             if (getNickname().equals(nickname))
                 gameMap.resetPossibleDestinations();
@@ -784,21 +808,15 @@ public class Gui extends View {
     @Override
     public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
 
-        this.possibleDstBuilder1 = possibleDstBuilder1;
-        this.possibleDstBuilder2 = possibleDstBuilder2;
-        this.possibleDstBuilder1forDome = possibleDstBuilder1forDome;
-        this.possibleDstBuilder2forDome = possibleDstBuilder2forDome;
+        super.updatePossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2,possibleDstBuilder1forDome, possibleDstBuilder2forDome);
         buildDome = false;
-        setState(ViewState.BUILD);
         build();
     }
 
     @Override
     public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
-        this.possibleDstBuilder1 = possibleDstBuilder1;
-        this.possibleDstBuilder2 = possibleDstBuilder2;
-        setState(ViewState.MOVE);
 
+        super.updatePossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2);
         if (getChosenBuilderNum() == 0)
             gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, 0, null);
         move();
@@ -833,9 +851,10 @@ public class Gui extends View {
 
     @Override
     public void onColorAssigned(String nickname, String color, boolean result) {
-        if(result)
-            gameMap.setChosenColorsForPlayer(nickname, color);
-        else
+
+        super.onColorAssigned(nickname, color, result);
+
+        if (!result)
             printMessage("Invalid insertion of color.");
     }
 
@@ -916,10 +935,11 @@ public class Gui extends View {
 
     @Override
     public void onGodCardAssigned(String nickname, String card, boolean result) {
+
+        super.onGodCardAssigned(nickname, card, result);
         if(result) {
             if(getNickname().equals(nickname))
                 printMessage("GodCard assigned correctly.");
-            setChosenGodCard(nickname, card);
         } else
             printMessage("Invalid insertion of godCard.");
     }
@@ -937,18 +957,20 @@ public class Gui extends View {
      */
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
+
+        super.onPlayerAdded(nickname, result);
         if(result)
             printMessage(nickname + " joined the game!");
         else {
-            setNickname(null);
-            setDate(null);
-            printMessage("Invalid nickname or date. Could not join the game.");
+            printMessage("Invalid nickname or date.");
             askNickAndDate();
         }
     }
 
     @Override
     public void onLossUpdate(String nickname) {
+
+        super.onLossUpdate(nickname);
 
         if (!getNickname().equals(nickname)) {
             printMessage(nickname + " lost!");
@@ -958,7 +980,6 @@ public class Gui extends View {
             createEndGameMessage("YOU LOSE");
 
         matchGodCards.remove(nickname);
-        deleteChosenGodCard(nickname, getChosenGodCardsForPlayer().get(nickname));
         setPlayersRegion();
     }
 
@@ -970,12 +991,13 @@ public class Gui extends View {
     @Override
     public void onPlayerTurn(String nickname) {
 
+        super.onPlayerTurn(nickname);
+
         String state = getState().toString();
         if (currentTurnBuilderPos != null) {
 
             gameMap.resetBuilder(currentTurnBuilderPos);
             currentTurnBuilderPos = null;
-            setChosenBuilderNum(0);
         }
 
         if (state.equals("BUILD") || state.equals("MOVE") || state.equals("STEP") || state.equals("BUILDERPLACEMENT")) {

@@ -85,12 +85,12 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * @param cellStack stackPane of the cell
+     * @param cellStackCoord stackPane of the cell
      * @return the position of the current index in the cell StackPane
      */
-    protected int getCurrentBuilderIndexInStack(Coordinates cellStack) {
+    protected int getCurrentBuilderIndexInStack(Coordinates cellStackCoord) {
         int result = 0;
-        if (getHeight(cellStack) != 0)
+        if (getHeight(cellStackCoord) != 0)
             result = builderIndexInStack;
 
         return result;
@@ -136,10 +136,10 @@ public class GuiMap extends GameMap {
      */
     protected void resetBuilder (Coordinates builderCell) {
 
-        StackPane oldBuilder = (StackPane) tile.getChildren().get(coordinatesToIndex(builderCell));
+        StackPane oldBuilderCell = (StackPane) tile.getChildren().get(coordinatesToIndex(builderCell));
 
         int currBuilderIndexStack = getCurrentBuilderIndexInStack(builderCell);
-        ImageView builder = (ImageView) oldBuilder.getChildren().get(currBuilderIndexStack);
+        ImageView builder = (ImageView) oldBuilderCell.getChildren().get(currBuilderIndexStack);
         builder.setOpacity(1);
     }
 
@@ -159,7 +159,7 @@ public class GuiMap extends GameMap {
         if (oldHeight != 0)
                 Platform.runLater(() -> clickedCell.getChildren().remove(buildingIndexInStack));
 
-        modifyHeight(indexToCoord(dstIndex), buildDome);
+        //modifyHeight(indexToCoord(dstIndex), buildDome);
 
         //adds the right image in function to height
         if (buildDome) {
@@ -375,6 +375,7 @@ public class GuiMap extends GameMap {
         StackPane cellBuilder2 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder2Coord));
         builder2 = (ImageView) cellBuilder2.getChildren().get(getCurrentBuilderIndexInStack(builder1Coord));
         Platform.runLater(() -> cellBuilder2.getChildren().remove(builder2));
+        occupiedCells.remove(nickname);
     }
 
     /**

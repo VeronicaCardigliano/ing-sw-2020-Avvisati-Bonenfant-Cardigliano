@@ -7,6 +7,8 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
@@ -15,6 +17,7 @@ public class PlayerSetupPopup extends Stage{
 
     AnchorPane anchorPane;
     private Button submit;
+    private static Text errorMessage = new Text();
 
     //initOwner sets the Stage in which the popup'll appear
     public PlayerSetupPopup(Stage ownerStage, TextField nickInsertion, TextField birthdayInsertion) {
@@ -73,7 +76,7 @@ public class PlayerSetupPopup extends Stage{
         AnchorPane.setLeftAnchor(birthdayInsertion,Gui.marginLength);
         AnchorPane.setTopAnchor(birthdayInsertion,Gui.marginLength*5);
 
-        anchorPane.setPrefSize((float) Gui.sceneWidth/3, (float) Gui.sceneHeight/2.5);
+        anchorPane.setPrefSize((float) Gui.sceneWidth/2.5, (float) Gui.sceneHeight/2.5);
 
         AnchorPane.setRightAnchor(submit, Gui.marginLength);
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
@@ -96,4 +99,19 @@ public class PlayerSetupPopup extends Stage{
     protected Button getSubmit() {
         return submit;
     }
+
+    protected void printError (String error) {
+
+        if (errorMessage.getText().equals("")) {
+            errorMessage.setFill(Color.RED);
+            errorMessage.setFont(new Font("Arial", Gui.fontSize));
+            AnchorPane.setBottomAnchor(errorMessage, Gui.marginLength);
+            AnchorPane.setLeftAnchor(errorMessage, Gui.marginLength);
+        }
+
+        if (!anchorPane.getChildren().contains(errorMessage))
+            Platform.runLater(() -> anchorPane.getChildren().add(errorMessage));
+        errorMessage.setText(error);
+    }
+
 }

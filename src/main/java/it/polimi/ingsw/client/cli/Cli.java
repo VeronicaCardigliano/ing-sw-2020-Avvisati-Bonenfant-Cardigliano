@@ -621,6 +621,7 @@ public class Cli extends View{
     public void onLossUpdate(String nickname) {
         super.onLossUpdate(nickname);
 
+        gameMap.removePlayer(nickname);
         printer.setInfoMessage(nickname + " has lost!");
         printer.print();
 
@@ -630,6 +631,7 @@ public class Cli extends View{
     @Override
     public void onPlayerTurn(String nickname) {
         super.onPlayerTurn(nickname);
+        currentTurnBuilderPos = null;
 
         printer.setInfoMessage("Now playing: " + nickname);
         printer.print();
