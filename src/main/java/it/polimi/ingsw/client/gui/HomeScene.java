@@ -20,16 +20,16 @@ import static it.polimi.ingsw.client.gui.Gui.sceneWidth;
 
 public class HomeScene extends Scene {
 
-    private static final String playButtonSrc = "file:src/main/resources/PlayButton.png";
-    private static final String IPInsertionSrc = "file:src/main/resources/IP_insertion.png";
-    private static final String PortInsertionSrc = "file:src/main/resources/Port_insertion.png";
-    private static final String homeBackgroundSrc = "file:src/main/resources/homeScreenBackground.png";
+    private static final String playButtonSrc = "/PlayButton.png";
+    private static final String IPInsertionSrc = "/IP_insertion.png";
+    private static final String PortInsertionSrc = "/Port_insertion.png";
+    private static final String homeBackgroundSrc = "/homeScreenBackground.png";
 
     public static final double networkReqRatio = 232.0/ sceneWidth;
     public static final double networkInsertionRatio = 100.0/ sceneWidth;
     public static final double playBtnRatio = 283.0/ sceneWidth;
 
-    private static ImageView playBtn = new ImageView(playButtonSrc);
+    private ImageView playBtn = new ImageView(new Image (getClass().getResourceAsStream(playButtonSrc)));
 
     public HomeScene(Pane home, double v, double v1, TextField IPInsertion, TextField portInsertion) {
 
@@ -38,7 +38,7 @@ public class HomeScene extends Scene {
         home.prefWidthProperty().bind(home.widthProperty());
         home.prefHeightProperty().bind(home.heightProperty());
         home.setBackground(new Background(
-                new BackgroundImage(new Image(homeBackgroundSrc), BackgroundRepeat.NO_REPEAT,
+                new BackgroundImage(new Image(getClass().getResourceAsStream(homeBackgroundSrc)), BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
 
@@ -47,8 +47,8 @@ public class HomeScene extends Scene {
         playBtn.setOnMouseExited(mouseEvent -> playBtn.setEffect(null));
         playBtn.setPreserveRatio(true);
 
-        ImageView IPNameTag = new ImageView(IPInsertionSrc);
-        ImageView portNameTag = new ImageView(PortInsertionSrc);
+        ImageView IPNameTag = new ImageView(new Image(getClass().getResourceAsStream(IPInsertionSrc)));
+        ImageView portNameTag = new ImageView(new Image(getClass().getResourceAsStream(PortInsertionSrc)));
 
         IPNameTag.setPreserveRatio(true);
         portNameTag.setPreserveRatio(true);

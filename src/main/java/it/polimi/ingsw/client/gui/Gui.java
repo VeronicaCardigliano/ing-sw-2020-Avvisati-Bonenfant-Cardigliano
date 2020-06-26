@@ -51,14 +51,14 @@ public class Gui extends View {
     private final static int maxMessagesShown = 3;
     private final static int maxNicknameLenght = 10;
 
-    private static final String buttonCoralSrc = "file:src/main/resources/btn_coral.png";
-    private static final String buttonCoralPressedSrc = "file:src/main/resources/btn_coral_pressed.png";
-    protected static final String submitButton = "file:src/main/resources/btn_submit.png";
-    protected static final String submitButtonPressed = "file:src/main/resources/btn_submit_pressed.png";
-    private static final String nameTagSrc = "file:src/main/resources/nameTag.png";
-    private static final String versusSrc = "file:src/main/resources/versus.png";
-    private static final String backgroundSrc = "file:src/main/resources/SantoriniBoard.png";
-    private static final String titleSrc = "file:src/main/resources/title.png";
+    private static final String buttonCoralSrc = "/btn_coral.png";
+    private static final String buttonCoralPressedSrc = "/btn_coral_pressed.png";
+    protected static final String submitButton = "/btn_submit.png";
+    protected static final String submitButtonPressed = "/btn_submit_pressed.png";
+    private static final String nameTagSrc = "/nameTag.png";
+    private static final String versusSrc = "/versus.png";
+    private static final String backgroundSrc = "/SantoriniBoard.png";
+    private static final String titleSrc = "/title.png";
 
     private Map<String, String> matchGodCards = new HashMap<>();
     private Stage primaryStage;
@@ -152,7 +152,7 @@ public class Gui extends View {
         root.setCenter(tile);
 
         root.setBackground(new Background(
-                new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
+                new BackgroundImage(new Image(getClass().getResourceAsStream(backgroundSrc)), BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         primaryStage.minWidthProperty().bind(home.heightProperty().multiply((double)sceneWidth/sceneHeight));
@@ -191,7 +191,7 @@ public class Gui extends View {
         StackPane titlePane = new StackPane();
         titlePane.prefHeightProperty().bind(s.heightProperty().multiply(mapPatioFromTop));
         titlePane.prefWidthProperty().bind(s.widthProperty());
-        ImageView title = new ImageView (titleSrc);
+        ImageView title = new ImageView (new Image(getClass().getResourceAsStream(titleSrc)));
 
         title.setPreserveRatio(true);
 
@@ -219,7 +219,7 @@ public class Gui extends View {
     private Button createButton(String btnName, String backgroundSrc, Pane parent, EventHandler<MouseEvent> handler, String pressedBtnSrc) {
 
         Button button = new Button(btnName);
-        button.setBackground(new Background(new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
+        button.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(backgroundSrc)), BackgroundRepeat.NO_REPEAT,
                 BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         button.setOnMouseEntered(mouseEvent -> {
@@ -235,14 +235,14 @@ public class Gui extends View {
 
         button.setOnMousePressed(mouseEvent -> {
             Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(pressedBtnSrc), BackgroundRepeat.NO_REPEAT,
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(pressedBtnSrc)), BackgroundRepeat.NO_REPEAT,
                     BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         });
 
         button.setOnMouseReleased(mouseEvent -> {
             Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(backgroundSrc), BackgroundRepeat.NO_REPEAT,
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(backgroundSrc)), BackgroundRepeat.NO_REPEAT,
                     BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         });
@@ -309,19 +309,19 @@ public class Gui extends View {
             playerSetupPopup = new PlayerSetupPopup(primaryStage, nickInsertion, birthdayInsertion);
 
             playerSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
-                if (nickInsertion.getText().length() > maxNicknameLenght) {
+                String nickname = nickInsertion.getText();
+                String birthday = birthdayInsertion.getText();
+                if (nickname.length() > maxNicknameLenght) {
                     playerSetupPopup.printError("Too long nickname. Max lenght: " + maxNicknameLenght);
                 }
-                else if (nickInsertion.getText().isEmpty() || birthdayInsertion.getText().isEmpty())
-                {
+                else if (nickname.isEmpty() || birthday.isEmpty()) {
+
                     playerSetupPopup.printError("You must enter a name and a date");
                 }
-
                 else {
-                    setNickname(nickInsertion.getText());
-                    setDate(birthdayInsertion.getText());
+                    setNickname(nickname);
+                    setDate(birthday);
                     notifyNewPlayer(getNickname(), getDate());
-                    playerSetupPopup.close();
                 }
             });
         });
@@ -469,7 +469,7 @@ public class Gui extends View {
 
                     if (!occupiedCellsIndexes.contains(index)) {
 
-                        gameMap.createBuilder(gameMap.getChosenColorsForPlayer().get(getNickname()), index);
+                        gameMap.createBuilder(getChosenColorsForPlayer().get(getNickname()), index);
 
                         //if the key "currPlayer" is already present, it means that the first builder position is been added
                         if (!gameMap.getOccupiedCells().containsKey(getNickname()))
@@ -517,21 +517,27 @@ public class Gui extends View {
      */
     private void printMessage(String message) {
 
-        if (getState().equals(ViewState.NICKDATE)) {
-            playerSetupPopup.printError(message);
-        }
-
         Text messageText = new Text(message);
         messageText.setFont(new Font("Arial", fontSize));
         messageText.setFill(Color.RED);
 
-        if (numMessages >= maxMessagesShown) {
-            numMessages = 0;
-            Platform.runLater(() -> bottomMessagesVBox.getChildren().clear());
-        }
+        //TODO: send game in progress as Connection Error, in the specific update
+        if(getState() == null)
+            onConnectionError(message);
 
-        Platform.runLater(() -> bottomMessagesVBox.getChildren().add(messageText));
-        numMessages++;
+        if (getState().equals(ViewState.NICKDATE) && getNickname() == null)
+            playerSetupPopup.printError(message);
+
+        else {
+
+            if (numMessages >= maxMessagesShown) {
+                numMessages = 0;
+                Platform.runLater(() -> bottomMessagesVBox.getChildren().clear());
+            }
+
+            Platform.runLater(() -> bottomMessagesVBox.getChildren().add(messageText));
+            numMessages++;
+        }
     }
 
     /**
@@ -762,9 +768,8 @@ public class Gui extends View {
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
-
-        super.onBuilderBuild(nickname, src, dst, dome, result);
-
+        
+        gameMap.modifyHeight(dst, dome);
         if(result) {
             if (getNickname().equals(nickname))
                 gameMap.resetPossibleDestinations();
@@ -833,8 +838,8 @@ public class Gui extends View {
                 printMessage("Builders positioned correctly.");
             else {
                 gameMap.setOccupiedCells(nickname, positionBuilder1, positionBuilder2);
-                gameMap.createBuilder(gameMap.getChosenColorsForPlayer().get(nickname), gameMap.coordinatesToIndex(positionBuilder1));
-                gameMap.createBuilder(gameMap.getChosenColorsForPlayer().get(nickname), gameMap.coordinatesToIndex(positionBuilder2));
+                gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), gameMap.coordinatesToIndex(positionBuilder1));
+                gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), gameMap.coordinatesToIndex(positionBuilder2));
             }
         }
         else
@@ -864,22 +869,23 @@ public class Gui extends View {
         if (!getNickname().equals(winnerNickname)) {
 
             printMessage("Player " + winnerNickname + " wins!");
-            createEndGameMessage("YOU LOSE");
+            createEndGameMessage("YOU LOSE", Color.BLUE);
         }
         else
-            createEndGameMessage("YOU WIN!");
+            createEndGameMessage("YOU WIN!", Color.LIGHTSALMON);
     }
 
     /**
      * Creates and end game message of victory or loss with a button to  eventually play again.
      * @param message string to print
      */
-    private void createEndGameMessage(String message) {
+    private void createEndGameMessage(String message, Color color) {
 
         Text text = new Text(message);
         //text.prefWidthProperty().bind(playersRegion.prefWidthProperty().subtract(marginLength*2));
         text.setFont(new Font ("Courier" ,fontSize*3));
-        text.setFill(Color.LIGHTSALMON);
+
+        text.setFill(color);
 
         Blend blend = new Blend();
         blend.setMode(BlendMode.MULTIPLY);
@@ -958,12 +964,19 @@ public class Gui extends View {
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
 
-        super.onPlayerAdded(nickname, result);
-        if(result)
-            printMessage(nickname + " joined the game!");
-        else {
-            printMessage("Invalid nickname or date.");
-            askNickAndDate();
+        if(result) {
+
+            if (getNickname() != null && getNickname().equals(nickname))
+                Platform.runLater(() -> playerSetupPopup.close());
+            else
+                printMessage (nickname + " joined the game!");
+        }
+        else if (getNickname() != null && getNickname().equals(nickname))
+            playerSetupPopup.printError("Invalid nickname or date.");
+        if (!result) {
+            setNickname(null);
+            setNickname(null);
+            setState(ViewState.NICKDATE);
         }
     }
 
@@ -977,7 +990,7 @@ public class Gui extends View {
             gameMap.removeBuilders(nickname);
         }
         else
-            createEndGameMessage("YOU LOSE");
+            createEndGameMessage("YOU LOSE", Color.BLUE);
 
         matchGodCards.remove(nickname);
         setPlayersRegion();
@@ -1132,7 +1145,7 @@ public class Gui extends View {
 
             if (!firstPlayer) {
 
-                ImageView vs = new ImageView(versusSrc);
+                ImageView vs = new ImageView(new Image(getClass().getResourceAsStream(versusSrc)));
                 vs.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()));
                 vs.setPreserveRatio(true);
                 Platform.runLater(() -> playersRegion.getChildren().add(vs));
@@ -1140,7 +1153,7 @@ public class Gui extends View {
 
             firstPlayer = false;
 
-            ImageView nameTag = new ImageView(nameTagSrc);
+            ImageView nameTag = new ImageView(new Image(getClass().getResourceAsStream(nameTagSrc)));
             nameTag.setPreserveRatio(true);
             nameTag.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()).divide(1.2));
 
@@ -1152,7 +1165,7 @@ public class Gui extends View {
 
             playersNameTags.put(player, text);
 
-            String color = gameMap.getChosenColorsForPlayer().get(player);
+            String color = getChosenColorsForPlayer().get(player);
             switch (color) {
                 case "LIGHT_BLUE":
                     text.setFill(Color.LIGHTBLUE);

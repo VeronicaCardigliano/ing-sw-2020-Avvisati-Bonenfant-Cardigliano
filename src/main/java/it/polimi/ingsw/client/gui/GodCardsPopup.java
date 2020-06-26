@@ -1,6 +1,5 @@
 package it.polimi.ingsw.client.gui;
 
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,13 +14,18 @@ import javafx.stage.WindowEvent;
 
 import java.util.*;
 
+/**
+ * This class is a Popup which shows the cards contained in godCardsDescriptions keyValues(), used both for
+ * setup purpose, to choose match/player cards, and during the match to show matchGodCards powers.
+ * The base is a VBox with a tilePane with the cards, buttons and another VBox with the label (with different alignments)
+ */
 public class GodCardsPopup extends Stage {
 
     private final static int gap = 10;
     private final static int cardsWidth = 100;
-    private Map<String, ImageView> cards;
     private Set<String> chosenGodCards;
     private Button submit;
+    private TilePane tilePane;
 
     private int maxSelectionsNum;
     private int selectionsNum;
@@ -33,15 +37,13 @@ public class GodCardsPopup extends Stage {
         setTitle("GodCards");
         setResizable(false);
         this.chosenGodCards = new HashSet<>();
-        this.cards = new HashMap<>();
-        initializeCards();
         this.selectionsNum = 0;
         VBox vbox = new VBox();
         VBox labelBox = new VBox();
         Label label = new Label();
         submit = new Button("Submit");
-        TilePane tilePane = new TilePane();
 
+        tilePane = new TilePane();
         tilePane.setHgap(gap);
         tilePane.setVgap(gap);
 
@@ -93,14 +95,14 @@ public class GodCardsPopup extends Stage {
 
             submit.setOnMousePressed(mouseEvent -> {
                 Button pressedButton = (Button) mouseEvent.getSource();
-                pressedButton.setBackground(new Background(new BackgroundImage(new Image(Gui.submitButtonPressed), BackgroundRepeat.NO_REPEAT,
+                pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButtonPressed)), BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
             });
 
             submit.setOnMouseReleased(mouseEvent -> {
                 Button pressedButton = (Button) mouseEvent.getSource();
-                pressedButton.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
+                pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
             });
@@ -115,14 +117,9 @@ public class GodCardsPopup extends Stage {
 
         vbox.setAlignment(Pos.BOTTOM_RIGHT);
 
+        initializeImages(godCardsDescriptions);
 
-        for (String s: godCardsDescriptions.keySet()) {
-            ImageView tmp = cards.get(s);
-            tilePane.getChildren().add(tmp);
-
-            tmp.setOnMouseEntered(mouseEvent -> Tooltip.install(tmp, new Tooltip(godCardsDescriptions.get(s))));
-        }
-
+        // only if the match is not in phase GAME, so it is a setup popup, it creates a "confirmQuit" message
         if (maxSelections != 0) {
             this.setOnCloseRequest(windowEvent -> {
                 if (Gui.confirmQuit()) {
@@ -150,62 +147,33 @@ public class GodCardsPopup extends Stage {
         return submit;
     }
 
-    private void initializeCards() {
+    private void initializeImages(Map<String, String> godCardsDescriptions) {
+        //takes the keyset (names) of all the gods to show in the popup, based on the game phase and chosen ones
+        for (String s: godCardsDescriptions.keySet()) {
 
-        ImageView card01 = new ImageView ("file:src/main/resources/01.png");
-        ImageView card02 = new ImageView ("file:src/main/resources/02.png");
-        ImageView card03 = new ImageView ("file:src/main/resources/03.png");
-        ImageView card04 = new ImageView ("file:src/main/resources/04.png");
-        ImageView card05 = new ImageView ("file:src/main/resources/05.png");
-        ImageView card06 = new ImageView ("file:src/main/resources/06.png");
-        ImageView card08 = new ImageView ("file:src/main/resources/08.png");
-        ImageView card09 = new ImageView ("file:src/main/resources/09.png");
-        ImageView card10 = new ImageView ("file:src/main/resources/10.png");
-        ImageView card16 = new ImageView ("file:src/main/resources/16.png");
-        ImageView card21 = new ImageView ("file:src/main/resources/21.png");
-        ImageView card23 = new ImageView ("file:src/main/resources/23.png");
-        ImageView card29 = new ImageView ("file:src/main/resources/29.png");
-        ImageView card30 = new ImageView ("file:src/main/resources/30.png");
+            ImageView tmp = new ImageView (new Image (getClass().getResourceAsStream("/" + s + ".png")));
+            tmp.setFitWidth(cardsWidth);
+            tmp.setPreserveRatio(true);
 
-        cards.put("Apollo", card01);
-        cards.put("Artemis", card02);
-        cards.put("Athena", card03);
-        cards.put("Atlas", card04);
-        cards.put("Demeter", card05);
-        cards.put("Hephaestus", card06);
-        cards.put("Minotaur", card08);
-        cards.put("Pan", card09);
-        cards.put("Prometheus", card10);
-        cards.put("Chronus", card16);
-        cards.put("Hestia", card21);
-        cards.put("Limus", card23);
-        cards.put("Triton", card29);
-        cards.put("Zeus", card30);
+            tmp.setOnMouseClicked(mouseEvent -> {
 
-        for (ImageView card: cards.values()) {
-            card.setFitWidth(cardsWidth);
-            card.setPreserveRatio(true);
-        }
-
-        for (String godCardName: cards.keySet()) {
-
-            ImageView image = cards.get(godCardName);
-            image.setOnMouseClicked(mouseEvent -> {
-
-                if (chosenGodCards.contains(godCardName)) {
+                if (chosenGodCards.contains(s)) {
                     selectionsNum--;
-                    image.setOpacity(1);
-                    chosenGodCards.remove(godCardName);
+                    tmp.setOpacity(1);
+                    chosenGodCards.remove(s);
                 }
 
                 else if (selectionsNum < maxSelectionsNum) {
                     selectionsNum++;
-                    image.setOpacity(Gui.selectionOpacity);
-                    chosenGodCards.add(godCardName);
+                    tmp.setOpacity(Gui.selectionOpacity);
+                    chosenGodCards.add(s);
                 }
 
             });
+
+            tilePane.getChildren().add(tmp);
+
+            tmp.setOnMouseEntered(mouseEvent -> Tooltip.install(tmp, new Tooltip(godCardsDescriptions.get(s))));
         }
     }
-
 }

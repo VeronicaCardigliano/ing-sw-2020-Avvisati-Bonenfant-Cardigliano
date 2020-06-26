@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -108,13 +109,13 @@ public class GuiMap extends GameMap {
         ImageView builder = null;
         switch (color) {
             case "LIGHT_BLUE":
-                builder = new ImageView("file:src/main/resources/BuilderLightBlue.png");
+                builder = new ImageView(new Image(getClass().getResourceAsStream("/BuilderLightBlue.png")));
                 break;
             case "MAGENTA":
-                builder = new ImageView("file:src/main/resources/BuilderMagenta.png");
+                builder = new ImageView(new Image(getClass().getResourceAsStream("/BuilderMagenta.png")));
                 break;
             case "WHITE":
-                builder = new ImageView("file:src/main/resources/BuilderWhite.png");
+                builder = new ImageView(new Image(getClass().getResourceAsStream("/BuilderWhite.png")));
                 break;
         }
 
@@ -165,29 +166,29 @@ public class GuiMap extends GameMap {
         if (buildDome) {
             switch (oldHeight) {
                 case 0:
-                    newBuilding = new ImageView ("file:src/main/resources/groundDome.png");
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/groundDome.png")));
                     break;
                 case 1:
-                    newBuilding = new ImageView ("file:src/main/resources/domeFirstLevel.png");
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeFirstLevel.png")));
                     break;
                 case 2:
-                    newBuilding = new ImageView ("file:src/main/resources/domeSecondLevel.png");
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeSecondLevel.png")));
                     break;
                 case 3:
-                    newBuilding = new ImageView ("file:src/main/resources/domeThirdLevel.png");
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeThirdLevel.png")));
                     break;
             }
         }
         else {
             switch (getHeight(indexToCoord(dstIndex))) {
                 case 1:
-                    newBuilding = new ImageView ("file:src/main/resources/firstLevel.png");
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/firstLevel.png")));
                     break;
                 case 2:
-                    newBuilding = new ImageView ("file:src/main/resources/secondLevel.png");
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/secondLevel.png")));
                     break;
                 case 3:
-                    newBuilding = new ImageView ("file:src/main/resources/thirdLevel.png");
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/thirdLevel.png")));
                     break;
             }
         }

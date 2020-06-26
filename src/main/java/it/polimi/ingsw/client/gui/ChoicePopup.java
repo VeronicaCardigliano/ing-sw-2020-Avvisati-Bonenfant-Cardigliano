@@ -30,7 +30,7 @@ public class ChoicePopup extends Stage {
 
         submit = new Button("Submit");
 
-        submit.setBackground(new Background(new BackgroundImage(new Image(Gui.submitButton), BackgroundRepeat.NO_REPEAT,
+        submit.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
                 BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         submit.setPrefWidth((float) Gui.sceneWidth/14);
@@ -50,14 +50,14 @@ public class ChoicePopup extends Stage {
         submit.setOnMousePressed(mouseEvent -> {
 
             Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(Gui.submitButtonPressed), BackgroundRepeat.NO_REPEAT,
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButtonPressed)), BackgroundRepeat.NO_REPEAT,
                     BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         });
 
         submit.setOnMouseReleased(mouseEvent -> {
             Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
                     BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         });

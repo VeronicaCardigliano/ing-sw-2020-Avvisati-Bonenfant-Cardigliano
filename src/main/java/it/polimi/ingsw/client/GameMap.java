@@ -30,16 +30,6 @@ public abstract class GameMap {
         this.possibleDstBuilder2 = possibleDstBuilder2;
     }
 
-    //Used only by GUI???
-    public void setChosenColorsForPlayer (String nickname, String chosenColor) {
-        chosenColorsForPlayer.put(nickname, chosenColor);
-    }
-
-    public Map<String,String> getChosenColorsForPlayer () {
-        return chosenColorsForPlayer;
-    }
-
-
     public void setChosenBuilderNumber(int chosenBuilderNumber) {
         this.chosenBuilderNumber = chosenBuilderNumber;
     }

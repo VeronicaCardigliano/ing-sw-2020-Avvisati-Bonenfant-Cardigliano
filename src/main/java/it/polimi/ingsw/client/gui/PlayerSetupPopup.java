@@ -17,7 +17,7 @@ public class PlayerSetupPopup extends Stage{
 
     AnchorPane anchorPane;
     private Button submit;
-    private static Text errorMessage = new Text();
+    private Text errorMessage = new Text();
 
     //initOwner sets the Stage in which the popup'll appear
     public PlayerSetupPopup(Stage ownerStage, TextField nickInsertion, TextField birthdayInsertion) {
@@ -32,7 +32,7 @@ public class PlayerSetupPopup extends Stage{
         Label birthdayRequest = new Label ("Insert birthday in the format aaaa.mm.gg: ");
         this.submit = new Button("Submit");
 
-        submit.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
+        submit.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
                 BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         submit.setPrefWidth((float) Gui.sceneWidth/14);
@@ -52,14 +52,14 @@ public class PlayerSetupPopup extends Stage{
         submit.setOnMousePressed(mouseEvent -> {
 
             Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(Gui.submitButtonPressed), BackgroundRepeat.NO_REPEAT,
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButtonPressed)), BackgroundRepeat.NO_REPEAT,
                     BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         });
 
         submit.setOnMouseReleased(mouseEvent -> {
             Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
+            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
                     BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
         });
@@ -103,14 +103,13 @@ public class PlayerSetupPopup extends Stage{
     protected void printError (String error) {
 
         if (errorMessage.getText().equals("")) {
+            Platform.runLater(() -> anchorPane.getChildren().add(errorMessage));
             errorMessage.setFill(Color.RED);
             errorMessage.setFont(new Font("Arial", Gui.fontSize));
             AnchorPane.setBottomAnchor(errorMessage, Gui.marginLength);
             AnchorPane.setLeftAnchor(errorMessage, Gui.marginLength);
         }
 
-        if (!anchorPane.getChildren().contains(errorMessage))
-            Platform.runLater(() -> anchorPane.getChildren().add(errorMessage));
         errorMessage.setText(error);
     }
 
