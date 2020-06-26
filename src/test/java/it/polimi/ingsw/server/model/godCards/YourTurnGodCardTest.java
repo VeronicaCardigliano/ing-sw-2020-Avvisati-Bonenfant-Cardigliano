@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.godCards;
 
+import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
@@ -25,7 +26,7 @@ public class YourTurnGodCardTest {
         builder1 = new Builder(player);
         builder2 = new Builder(player);
 
-        prometheusCard = (new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json")).createCard(player, "Prometheus");
+        prometheusCard = (new GodCardParser(Model.jsonPath)).createCard(player, "Prometheus");
     }
 
     @BeforeEach

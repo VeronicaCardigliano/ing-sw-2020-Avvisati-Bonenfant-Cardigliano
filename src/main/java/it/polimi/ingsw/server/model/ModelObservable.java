@@ -180,9 +180,9 @@ public abstract class ModelObservable {
             System.out.println("color assigned observer is not set");
     }
 
-    public void notifyMatchGodCards(String nickname, Set<String> matchGodCards, boolean result) {
+    public void notifyMatchGodCards(Set<String> matchGodCards, boolean result) {
         if(godChoiceObserver != null) {
-            godChoiceObserver.onMatchGodCardsAssigned(nickname, matchGodCards, result);
+            godChoiceObserver.onMatchGodCardsAssigned(matchGodCards, result);
         } else
             System.out.println("color assigned observer is not set");
 

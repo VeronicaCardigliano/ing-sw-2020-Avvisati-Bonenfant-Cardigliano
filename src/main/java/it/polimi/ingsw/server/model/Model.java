@@ -5,7 +5,6 @@ import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.parser.GodCardParser;
-import org.json.JSONException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
  */
 
 public class Model extends ModelObservableWithSelect {
-    private final static String jsonPath = "src/main/java/it/polimi/ingsw/server/parser/cards.json";
+    public final static String jsonPath = "/cards.json";
 
     private static final int maxNumberOfPlayers = 3;
     private static final int minNumberOfPlayers = 2;
@@ -267,7 +266,7 @@ public class Model extends ModelObservableWithSelect {
             });
         }
 
-        notifyViewSelection(nickname);
+        //notifyViewSelection(nickname);
         notifyPlayerAdded(nickname, canAdd);
 
         return canAdd;
@@ -323,7 +322,7 @@ public class Model extends ModelObservableWithSelect {
         }
 
         notifyViewSelection(getCurrPlayer());
-        notifyMatchGodCards(currPlayer.getNickname(), Set.copyOf(matchGodCards), set);
+        notifyMatchGodCards(Set.copyOf(matchGodCards), set);
 
         return set;
     }

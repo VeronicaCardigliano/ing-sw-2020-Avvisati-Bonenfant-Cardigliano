@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -24,12 +26,15 @@ public class GodCardParser {
         String jsonString = null;
         Set<String> godNames;
 
+
         try {
-            //I need to save the file content in a string
-            jsonString = new String(Files.readAllBytes(Paths.get(path)));
-        } catch (IOException e) {
-            e.printStackTrace();
+            InputStream fileStream = getClass().getResourceAsStream(path);
+            jsonString = new String(fileStream.readAllBytes());
+        } catch (NullPointerException | IOException e) {
+            System.out.println("Configuration file not found");
         }
+
+
         if (jsonString != null)
             this.jsonObject = new JSONObject(jsonString);
         else

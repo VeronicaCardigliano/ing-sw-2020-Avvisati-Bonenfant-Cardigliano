@@ -1,4 +1,5 @@
 package it.polimi.ingsw.server.model.godCards;
+import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
@@ -48,7 +49,7 @@ public class  YourMoveGodCardTest {
         testBoard.getCell(3, 3).addDome();
 
 
-        parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
+        parser = new GodCardParser(Model.jsonPath);
 
     }
 

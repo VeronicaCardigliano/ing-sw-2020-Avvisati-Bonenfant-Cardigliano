@@ -15,7 +15,6 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     private Model model;
     private final ViewManager viewManager;
-
     public Controller (Model model, ViewManager viewManager) {
 
         this.model = model;
@@ -162,11 +161,18 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
 
+
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().equals(nickname) &&
                 model.getCurrStep().equals("BUILD") &&
-                model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild() && !model.endGame()) {
+                model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild()) {
 
-            manageNextState(nickname);
+            if(!model.endGame())
+                manageNextState(nickname);
+            else {
+                viewManager.removeAndDisconnectAll();
+                model = new Model();
+                setModelObservers(viewManager);
+            }
         }
 
     }
@@ -176,9 +182,15 @@ public class Controller extends AbstractController implements ConnectionObserver
 
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().equals(nickname) &&
                 model.getCurrStep().equals("MOVE") && model.effectiveMove(src, dst) &&
-                model.hasNotLostDuringMove() && !model.endGame()) {
+                model.hasNotLostDuringMove()) {
 
-            manageNextState(nickname);
+            if(!model.endGame())
+                manageNextState(nickname);
+            else {
+                viewManager.removeAndDisconnectAll();
+                model = new Model();
+                setModelObservers(viewManager);
+            }
         }
     }
 
@@ -261,15 +273,12 @@ public class Controller extends AbstractController implements ConnectionObserver
     public synchronized void onDisconnection(String nickname) {
         viewManager.remove(nickname);
 
+
         //if player has lost he is no more in model
-        if(model.getPlayersNickname().contains(nickname))
-            model.deletePlayer(nickname);
-
-        if (model.endGame()){
+        if(model.getPlayersNickname().contains(nickname)) {
             viewManager.removeAndDisconnectAll();
-            this.model = new Model();
+            model = new Model();
             setModelObservers(viewManager);
-
         }
 
 

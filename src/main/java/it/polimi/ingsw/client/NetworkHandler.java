@@ -23,7 +23,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
         StepChoiceObserver, StartPlayerObserver {
 
-    private final int timeout = 10 * 1000;
+    private final int timeout = 0 * 1000;
     private PrintWriter out;
     private View view;
     private int port;
@@ -245,6 +245,10 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
                 case Messages.ENDGAME:
                     notifyEndGame(parser.getAttribute(Messages.WINNER));
+                    break;
+
+                case Messages.SET_MATCH_GOD_CARDS:
+                    notifyMatchGodCards(parser.getSetFromArray(Messages.GOD_DESCRIPTIONS), parser.getResult());
                     break;
 
                 case Messages.GOD_CARD_ASSIGNED:

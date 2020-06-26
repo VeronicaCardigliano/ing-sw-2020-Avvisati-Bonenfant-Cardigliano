@@ -239,12 +239,22 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
-        if(result)
-            for(VirtualView view : views)
+        for(VirtualView view : views) {
+            if(view.getNickname() != null && view.getNickname().equals(nickname) && !view.registered())
+                selectedView = view;
+        }
+
+
+        if(result) {
+            selectedView.register();
+
+            for (VirtualView view : views)
                 view.send(Messages.playerAdded(nickname, true));
+        }
         else {
             selectedView.setNickname(null);
             selectedView.send(Messages.playerAdded(nickname, false));
+
         }
 
         //cleanSelection();
@@ -260,8 +270,12 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     }
 
     @Override
-    public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
-        selectedView.send(Messages.setGodCardsToUse(nickname, godCardsToUse, result));
+    public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
+        if(result)
+            for(VirtualView view : views)
+                view.send(Messages.setGodCardsToUse(godCardsToUse, true));
+        else
+            selectedView.send(Messages.setGodCardsToUse(godCardsToUse, false));
     }
 
     @Override

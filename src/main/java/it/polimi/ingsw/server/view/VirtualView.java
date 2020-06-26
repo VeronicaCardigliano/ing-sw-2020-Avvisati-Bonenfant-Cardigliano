@@ -12,7 +12,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -24,12 +23,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class VirtualView extends ViewObservable implements Runnable {
 
-    private final int timeout = 10 * 1000;
+    private final int timeout = 0 * 1000;
     private final int pingDelay = 2;
     private final Socket socket;
     private PrintWriter out;
     private BufferedReader in;
     private String nickname;
+    private boolean registered = false;
     private ConnectionObserver connectionObserver;
     private ScheduledExecutorService scheduler;
 
@@ -63,6 +63,13 @@ public class VirtualView extends ViewObservable implements Runnable {
         return nickname;
     }
 
+    public void register() {
+        registered = true;
+    }
+
+    public boolean registered() {
+        return registered;
+    }
 
     @Override
     public void run() {

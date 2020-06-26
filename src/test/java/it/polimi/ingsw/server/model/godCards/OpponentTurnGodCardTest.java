@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.godCards;
 
+import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
@@ -34,7 +35,7 @@ public class OpponentTurnGodCardTest {
         player2 = new Player("player2");
         player3 = new Player("player3");
 
-        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
+        GodCardParser parser = new GodCardParser(Model.jsonPath);
 
         athena = parser.createCard(player1, "Athena");
         defaultCard = parser.createCard(player2, "default");

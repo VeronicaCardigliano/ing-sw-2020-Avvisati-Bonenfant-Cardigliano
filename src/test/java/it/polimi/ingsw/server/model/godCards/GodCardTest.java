@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.godCards;
 
+import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
@@ -62,7 +63,7 @@ class GodCardTest {
         opponent2.setBuilders(builder5, builder6);
 
         System.out.println("giving player1 a default card...");
-        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
+        GodCardParser parser = new GodCardParser(Model.jsonPath);
         godCard = parser.createCard(player, "default");
         player.setGodCard(godCard);
 

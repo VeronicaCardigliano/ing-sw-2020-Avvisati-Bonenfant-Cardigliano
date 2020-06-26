@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.godCards;
 
+import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
@@ -45,7 +46,7 @@ class YourBuildGodCardTest {
 
         System.out.println("giving player1 Atlas card...");
 
-        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
+        GodCardParser parser = new GodCardParser(Model.jsonPath);
 
         godCardAtlas = parser.createCard(player, "Atlas");
         godCardDemeter = parser.createCard(player, "Demeter");

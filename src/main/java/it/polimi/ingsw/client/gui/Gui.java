@@ -951,7 +951,7 @@ public class Gui extends View {
     }
 
     @Override
-    public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
+    public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
         if(result)
             printMessage("GodCards correctly chosen. Wait for the other players to choose theirs.");
         else

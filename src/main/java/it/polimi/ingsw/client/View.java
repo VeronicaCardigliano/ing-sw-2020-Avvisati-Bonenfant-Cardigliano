@@ -207,7 +207,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
 
     @Override
-    public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
+    public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
 
     }
 

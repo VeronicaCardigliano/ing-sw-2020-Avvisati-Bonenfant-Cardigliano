@@ -345,8 +345,8 @@ public abstract class Messages {
         return (new JSONObject()).put(NUMBER_OF_PLAYERS, numOfPlayers).put(GOD_DESCRIPTIONS, godDescriptions).put(TYPE, CHOOSE_MATCH_GOD_CARDS).toString();
     }
 
-    public static String setGodCardsToUse(String nickname, Set<String> godNames, boolean result) {
-        return (new JSONObject(setGodCardsToUse(nickname, godNames))).put(RESULT, result).toString();
+    public static String setGodCardsToUse(Set<String> godNames, boolean result) {
+        return (new JSONObject()).put(TYPE, SET_MATCH_GOD_CARDS).put(GOD_DESCRIPTIONS, godNames).put(RESULT, result).toString();
     }
 
     public static String setGodCardsToUse(String nickname, Set<String> godNames) {
@@ -354,7 +354,7 @@ public abstract class Messages {
         JSONArray arr = new JSONArray(godNames);
 
         message.put(TYPE, SET_MATCH_GOD_CARDS);
-        message.put(GOD_DESCRIPTIONS, arr);
+        message.put(GOD_DESCRIPTIONS, arr); //magari cambiare nome (era usato per la mappa dio - descrizione)
         message.put(NAME, nickname);
 
         return message.toString();

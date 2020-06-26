@@ -669,13 +669,14 @@ public class Cli extends View{
     }
 
     @Override
-    public void onMatchGodCardsAssigned(String nickname, Set<String> godCardsToUse, boolean result) {
-        super.onMatchGodCardsAssigned(nickname, godCardsToUse, result);
+    public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
+        super.onMatchGodCardsAssigned(godCardsToUse, result);
 
         if(!result) {
             chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
         } else {
-            printer.setInfoMessage(nickname + "chose " + godCardsToUse);
+            printer.setInfoMessage("GodCards to use: " + godCardsToUse);
+            printer.print();
         }
     }
 

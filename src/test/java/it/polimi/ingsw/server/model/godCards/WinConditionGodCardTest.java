@@ -44,7 +44,7 @@ class WinConditionGodCardTest {
         player1.setBuilders(builder1, builder2);
         player2.setBuilders(builder3, builder4);
 
-        GodCardParser parser = new GodCardParser("src/main/java/it/polimi/ingsw/server/parser/cards.json");
+        GodCardParser parser = new GodCardParser(Model.jsonPath);
         godCardPan = parser.createCard(player1, "Pan");
         godCardChronus = parser.createCard(player2, "Chronus");
 
