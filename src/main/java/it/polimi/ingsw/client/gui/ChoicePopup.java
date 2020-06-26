@@ -1,12 +1,15 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -18,7 +21,9 @@ import java.util.Set;
 
 public class ChoicePopup extends Stage {
 
+    private AnchorPane anchorPane = new AnchorPane();
     private Button submit;
+    private Text errorMessage = new Text();
 
     public ChoicePopup(Stage ownerStage, Set<String> choices, String requestLabel, String title, ChoiceBox<String> choiceBox) {
 
@@ -26,7 +31,7 @@ public class ChoicePopup extends Stage {
         this.setTitle(title);
         this.setResizable(false);
 
-        AnchorPane anchorPane = new AnchorPane();
+        anchorPane = new AnchorPane();
 
         submit = new Button("Submit");
 
@@ -100,4 +105,26 @@ public class ChoicePopup extends Stage {
     protected Button getSubmit() {
         return submit;
     }
+
+    protected void addChildren(Node node) {
+        Platform.runLater(() -> anchorPane.getChildren().add(node));
+    }
+
+    protected boolean isChildPresent (Node node) {
+        return anchorPane.getChildren().contains(node);
+    }
+
+    protected void printError (String error) {
+
+        if (errorMessage.getText().equals("")) {
+            Platform.runLater(() -> anchorPane.getChildren().add(errorMessage));
+            errorMessage.setFill(Color.DARKRED);
+            errorMessage.setFont(new Font("Arial", Gui.fontSize));
+            AnchorPane.setBottomAnchor(errorMessage, Gui.marginLength);
+            AnchorPane.setLeftAnchor(errorMessage, Gui.marginLength);
+        }
+
+        errorMessage.setText(error);
+    }
+
 }

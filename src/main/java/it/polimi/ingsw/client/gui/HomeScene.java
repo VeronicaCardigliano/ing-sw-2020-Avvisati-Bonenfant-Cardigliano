@@ -125,7 +125,7 @@ public class HomeScene extends Scene {
         AnchorPane.setBottomAnchor(networkRequests, (double) sceneHeight/10);
         AnchorPane.setLeftAnchor(networkRequests, (double) sceneWidth/10);
 
-        AnchorPane.setBottomAnchor(playBtn, Gui.marginLength*2);
+        AnchorPane.setBottomAnchor(playBtn, Gui.marginLength*2.5);
         AnchorPane.setRightAnchor(playBtn, (double) sceneHeight/3);
     }
 

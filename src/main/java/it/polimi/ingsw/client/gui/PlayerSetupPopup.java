@@ -1,23 +1,22 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
-public class PlayerSetupPopup extends Stage{
+public class PlayerSetupPopup extends Stage {
 
-    AnchorPane anchorPane;
+    private AnchorPane anchorPane;
     private Button submit;
-    private Text errorMessage = new Text();
 
     //initOwner sets the Stage in which the popup'll appear
     public PlayerSetupPopup(Stage ownerStage, TextField nickInsertion, TextField birthdayInsertion) {
@@ -100,17 +99,12 @@ public class PlayerSetupPopup extends Stage{
         return submit;
     }
 
-    protected void printError (String error) {
+    protected void addChildren(Node node) {
+        Platform.runLater(() -> anchorPane.getChildren().add(node));
+    }
 
-        if (errorMessage.getText().equals("")) {
-            Platform.runLater(() -> anchorPane.getChildren().add(errorMessage));
-            errorMessage.setFill(Color.RED);
-            errorMessage.setFont(new Font("Arial", Gui.fontSize));
-            AnchorPane.setBottomAnchor(errorMessage, Gui.marginLength);
-            AnchorPane.setLeftAnchor(errorMessage, Gui.marginLength);
-        }
-
-        errorMessage.setText(error);
+    protected boolean isChildPresent(Node node) {
+        return anchorPane.getChildren().contains(node);
     }
 
 }

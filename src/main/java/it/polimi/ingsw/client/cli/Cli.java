@@ -29,6 +29,7 @@ public class Cli extends View{
 
 
     public Cli() {
+        super();
         in = new Scanner(System.in);
         gameMap = new CliGameMap();
         printer.print();

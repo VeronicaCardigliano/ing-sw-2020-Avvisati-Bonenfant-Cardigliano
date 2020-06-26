@@ -1,7 +1,9 @@
 package it.polimi.ingsw.client.gui;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
@@ -9,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -21,11 +24,11 @@ import java.util.*;
  */
 public class GodCardsPopup extends Stage {
 
-    private final static int gap = 10;
     private final static int cardsWidth = 100;
     private Set<String> chosenGodCards;
     private Button submit;
     private TilePane tilePane;
+    private AnchorPane bottomPane = new AnchorPane();
 
     private int maxSelectionsNum;
     private int selectionsNum;
@@ -44,8 +47,8 @@ public class GodCardsPopup extends Stage {
         submit = new Button("Submit");
 
         tilePane = new TilePane();
-        tilePane.setHgap(gap);
-        tilePane.setVgap(gap);
+        tilePane.setHgap(Gui.marginLength/2);
+        tilePane.setVgap(Gui.marginLength/2);
 
         vbox.setBackground(new Background(new BackgroundFill(Color.LIGHTSLATEGREY, null, null)));
 
@@ -107,15 +110,18 @@ public class GodCardsPopup extends Stage {
 
             });
 
-            vbox.getChildren().add(submit);
+            bottomPane.getChildren().add(submit);
+            AnchorPane.setRightAnchor(submit, Gui.marginLength/2);
+            AnchorPane.setBottomAnchor(submit, Gui.marginLength/2);
+            vbox.getChildren().add(bottomPane);
         }
 
         vbox.setBorder(new Border(new BorderStroke(Color.TRANSPARENT, Color.TRANSPARENT, Color. TRANSPARENT,Color.TRANSPARENT,
                 null, null, null, null, CornerRadii.EMPTY,
-                BorderStroke.MEDIUM, new Insets(gap, gap, gap, gap))));
-        vbox.setSpacing(gap);
+                BorderStroke.MEDIUM, new Insets(Gui.marginLength/2, Gui.marginLength/2, Gui.marginLength/2, Gui.marginLength/2))));
+        vbox.setSpacing(Gui.marginLength/2);
 
-        vbox.setAlignment(Pos.BOTTOM_RIGHT);
+        vbox.setAlignment(Pos.CENTER);
 
         initializeImages(godCardsDescriptions);
 
@@ -141,6 +147,14 @@ public class GodCardsPopup extends Stage {
 
     protected Set<String> getChosenGodCards() {
         return chosenGodCards;
+    }
+
+    protected void addErrorMessage(Text node) {
+        Platform.runLater(() -> bottomPane.getChildren().add(node));
+    }
+
+    protected boolean isPresentOnBottom (Node node) {
+        return bottomPane.getChildren().contains(node);
     }
 
     protected Button getSubmit() {

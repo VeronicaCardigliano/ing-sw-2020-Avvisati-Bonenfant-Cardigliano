@@ -75,10 +75,13 @@ public class Gui extends View {
     private boolean buildDome;
     private Insets playersRegionInsets;
     private int numMessages;
-    private Label connectionErrorLbl;
+    private Text connectionErrorText = new Text();
+    private Text setupErrorText = new Text();
     private PlayerSetupPopup playerSetupPopup;
-
+    private ChoicePopup choiceSetupPopup;
+    private GodCardsPopup godCardsPopup;
     private Map<String, Text> playersNameTags = new HashMap<>();
+    private boolean challenger;
 
     /**
      * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
@@ -92,9 +95,11 @@ public class Gui extends View {
      */
     public Gui(Stage primaryStageParam) {
 
+        super();
         this.primaryStage = primaryStageParam;
 
         this.home = new AnchorPane();
+
         TextField IPInsertion = new TextField ("IP");
         TextField portInsertion = new TextField("Port");
 
@@ -109,6 +114,12 @@ public class Gui extends View {
                 onConnectionError("WRONG FORMAT: Insert an Integer as port value");
             }
         });;
+
+        setupErrorText.setFill(Color.RED);
+        setupErrorText.setFont(new Font("Arial", fontSize));
+        AnchorPane.setBottomAnchor(setupErrorText, Gui.marginLength);
+        AnchorPane.setLeftAnchor(setupErrorText, Gui.marginLength);
+        challenger = false;
 
         this.root = new BorderPane();
         this.primaryScene = new Scene (root, sceneWidth, sceneHeight);
@@ -173,7 +184,7 @@ public class Gui extends View {
 
         primaryStage.setOnCloseRequest(windowEvent -> {
 
-            if (getState() != null)
+            if (getState() != ViewState.CONNECTION)
                 notifyDisconnection();
             primaryStage.close();
             Platform.exit();
@@ -257,6 +268,83 @@ public class Gui extends View {
         return button;
     }
 
+
+    /**
+     * Private method used to print maxMessagesShown messages in the bottom left of the scene.
+     * @param message error or information messages received from server
+     */
+    private void printMessage(String message, boolean onPopup) {
+
+        String currState = getState().toString();
+
+        switch (currState) {
+
+            case "CONNECTION":
+                if (!home.getChildren().contains(connectionErrorText)) {
+                    connectionErrorText.setText(message);
+                    connectionErrorText.setFill(Color.RED);
+                    Platform.runLater(()->home.getChildren().add(connectionErrorText));
+                    AnchorPane.setBottomAnchor(connectionErrorText, marginLength);
+                    AnchorPane.setLeftAnchor(connectionErrorText, (double) sceneWidth/10);
+                }
+                else
+                    Platform.runLater(()->connectionErrorText.setText(message));
+                break;
+            case "NUMPLAYERS":
+                printOnPrimaryStage(message);
+
+            case "NICKDATE":
+                if (onPopup) {
+                    if (!playerSetupPopup.isChildPresent(setupErrorText))
+                        playerSetupPopup.addChildren(setupErrorText);
+
+                    setupErrorText.setText(message);
+                }
+                else
+                    printOnPrimaryStage(message);
+                 break;
+            case "STARTPLAYER":
+            case "BUILDERCOLOR":
+                setupErrorText.setText(message);
+                if (!choiceSetupPopup.isChildPresent(setupErrorText))
+                    choiceSetupPopup.addChildren(setupErrorText);
+                break;
+            case "MATCHGODS":
+            case "PLAYERGOD":
+                if (onPopup) {
+                    setupErrorText.setText(message);
+                    setupErrorText.setFill(Color.DARKRED);
+                    AnchorPane.setBottomAnchor(setupErrorText, Gui.marginLength/2);
+                    AnchorPane.setLeftAnchor(setupErrorText, Gui.marginLength/2);
+                    if (!godCardsPopup.isPresentOnBottom(setupErrorText))
+                        godCardsPopup.addErrorMessage(setupErrorText);
+                }
+                else
+                    printOnPrimaryStage(message);
+                break;
+            case "BUILDERPLACEMENT":
+            case "STEP":
+            case "MOVE":
+            case "BUILD":
+                printOnPrimaryStage(message);
+                break;
+        }
+    }
+
+    private void printOnPrimaryStage (String message) {
+
+        Text messageText = new Text(message);
+        messageText.setFont(new Font("Arial", fontSize));
+        messageText.setFill(Color.RED);
+
+        if (numMessages >= maxMessagesShown) {
+            numMessages = 0;
+            Platform.runLater(() -> bottomMessagesVBox.getChildren().clear());
+        }
+        Platform.runLater(() -> bottomMessagesVBox.getChildren().add(messageText));
+        numMessages++;
+    }
+
     @Override
     public void run() {
         primaryStage.show();
@@ -266,6 +354,7 @@ public class Gui extends View {
      * Creates a ChoicePopup allowing the first player to choose the number of players of the match, with a
      * choiceBox to show which are the possibilities
      */
+
     @Override
     public void askNumberOfPlayers() {
 
@@ -274,21 +363,21 @@ public class Gui extends View {
         setState(ViewState.NUMPLAYERS);
         Set<String> possibleNumPlayers = new HashSet<>();
 
-        if (home.getChildren().contains(connectionErrorLbl))
-            Platform.runLater(()->home.getChildren().remove(connectionErrorLbl));
+        if (home.getChildren().contains(connectionErrorText))
+            Platform.runLater(()->home.getChildren().remove(connectionErrorText));
 
         for (int i = minNumberOfPlayers; i <= maxNumberOfPlayers; i++)
             possibleNumPlayers.add(String.valueOf(i));
 
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
         Platform.runLater(() -> {
-            ChoicePopup popup = new ChoicePopup(primaryStage, possibleNumPlayers,
+            choiceSetupPopup = new ChoicePopup(primaryStage, possibleNumPlayers,
                     "You're the first player! Select number of players: ", "New match", choiceBox);
 
-            popup.getSubmit().setOnMouseClicked(mouseEvent -> {
+            choiceSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
 
                 notifyNumberOfPlayers(Integer.parseInt(choiceBox.getValue()));
-                popup.close();
+                choiceSetupPopup.close();
             });
         });
     }
@@ -312,11 +401,11 @@ public class Gui extends View {
                 String nickname = nickInsertion.getText();
                 String birthday = birthdayInsertion.getText();
                 if (nickname.length() > maxNicknameLenght) {
-                    playerSetupPopup.printError("Too long nickname. Max lenght: " + maxNicknameLenght);
+                    printMessage("Too long nickname. Max lenght: " + maxNicknameLenght, true);
                 }
                 else if (nickname.isEmpty() || birthday.isEmpty()) {
 
-                    playerSetupPopup.printError("You must enter a name and a date");
+                    printMessage("You must enter a name and a date", true);
                 }
                 else {
                     setNickname(nickname);
@@ -335,16 +424,16 @@ public class Gui extends View {
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
 
         super.chooseMatchGodCards(numOfPlayers, godDescriptionsParam);
+        challenger = true;
 
         Platform.runLater(() -> {
-            GodCardsPopup popup = new GodCardsPopup(primaryStage, numOfPlayers, godDescriptionsParam);
+            godCardsPopup = new GodCardsPopup(primaryStage, numOfPlayers, godDescriptionsParam);
 
-            popup.getSubmit().setOnMouseClicked(mouseEvent -> {
-                if (popup.getSelectionsNum() == numOfPlayers) {
-
-                    notifyMatchGodCardsChoice(getNickname(), popup.getChosenGodCards());
-                    popup.close();
-                }
+            godCardsPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
+                if (godCardsPopup.getSelectionsNum() == numOfPlayers)
+                    notifyMatchGodCardsChoice(getNickname(), godCardsPopup.getChosenGodCards());
+                else
+                    printMessage("Not all cards have been chosen yet", true);
             });
         });
     }
@@ -366,14 +455,13 @@ public class Gui extends View {
 
 
         Platform.runLater(() -> {
-            GodCardsPopup popup = new GodCardsPopup(primaryStage, godsForPlayer, availableGods);
+            godCardsPopup = new GodCardsPopup(primaryStage, godsForPlayer, availableGods);
 
-            popup.getSubmit().setOnMouseClicked(mouseEvent -> {
-                if (popup.getSelectionsNum() == godsForPlayer) {
-
-                    notifyGodCardChoice(getNickname(), popup.getChosenGodCards().iterator().next());
-                    popup.close();
-                }
+            godCardsPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
+                if (godCardsPopup.getSelectionsNum() == godsForPlayer)
+                    notifyGodCardChoice(getNickname(), godCardsPopup.getChosenGodCards().iterator().next());
+                else
+                    printMessage("GodCard still not chosen", true);
             });
         });
     }
@@ -389,11 +477,9 @@ public class Gui extends View {
 
         ChoiceBox<String> choiceBox= new ChoiceBox<>();
         Platform.runLater(() -> {
-            ChoicePopup popup = new ChoicePopup(primaryStage, players, "Choose the first player", "StartPlayer", choiceBox);
-            popup.getSubmit().setOnMouseClicked(mouseEvent -> {
-
+            choiceSetupPopup = new ChoicePopup(primaryStage, players, "Choose the first player", "StartPlayer", choiceBox);
+            choiceSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
                 notifySetStartPlayer(getNickname(), choiceBox.getValue());
-                popup.close();
             });
         });
     }
@@ -420,12 +506,9 @@ public class Gui extends View {
 
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
         Platform.runLater(() -> {
-            ChoicePopup popup = new ChoicePopup(primaryStage, printableColors, "Choose builders color", "Builders color", choiceBox);
-            popup.getSubmit().setOnMouseClicked(mouseEvent -> {
-
-                notifyColorChoice(getNickname(), choiceBox.getValue().replace(' ','_').toUpperCase());
-                popup.close();
-            });
+            choiceSetupPopup = new ChoicePopup(primaryStage, printableColors, "Choose builders color", "Builders color", choiceBox);
+            choiceSetupPopup.getSubmit().setOnMouseClicked(mouseEvent ->
+                    notifyColorChoice(getNickname(), choiceBox.getValue().replace(' ','_').toUpperCase()));
         });
     }
 
@@ -439,7 +522,7 @@ public class Gui extends View {
 
         super.placeBuilders();
 
-        printMessage("Click cells to place your builders");
+        printMessage("Click cells to place your builders", false);
 
         for (int i = 0; i < tile.getChildren().size(); i++) {
 
@@ -512,35 +595,6 @@ public class Gui extends View {
     }
 
     /**
-     * Private method used to print maxMessagesShown messages in the bottom left of the scene.
-     * @param message error or information messages received from server
-     */
-    private void printMessage(String message) {
-
-        Text messageText = new Text(message);
-        messageText.setFont(new Font("Arial", fontSize));
-        messageText.setFill(Color.RED);
-
-        //TODO: send game in progress as Connection Error, in the specific update
-        if(getState() == null)
-            onConnectionError(message);
-
-        if (getState().equals(ViewState.NICKDATE) && getNickname() == null)
-            playerSetupPopup.printError(message);
-
-        else {
-
-            if (numMessages >= maxMessagesShown) {
-                numMessages = 0;
-                Platform.runLater(() -> bottomMessagesVBox.getChildren().clear());
-            }
-
-            Platform.runLater(() -> bottomMessagesVBox.getChildren().add(messageText));
-            numMessages++;
-        }
-    }
-
-    /**
      * Shows the possible destinations for a move for both builders if the builder hasn't been chosen and gives the possibility
      * to choose the turn builder. Otherwise, it allows to move with the chosen builder calling moveOnBuilderChosen()
      */
@@ -552,12 +606,12 @@ public class Gui extends View {
             //getChosenBuilderNum() returns 0 until a turn builder is chosen, until the user don't choose it prints all the possible dsts
             gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, 0, null);
 
-            printMessage("Select your turn builder");
+            printMessage("Select your turn builder", false);
             chooseTurnBuilder();
         }
 
         else {
-            printMessage("Select where you want to move");
+            printMessage("Select where you want to move", false);
             moveOnBuilderChosen();
         }
     }
@@ -624,11 +678,11 @@ public class Gui extends View {
                 gameMap.resetPossibleDestinations();
 
                 if(getState().toString().equals("MOVE")) {
-                    printMessage("Select where you want to move");
+                    printMessage("Select where you want to move", false);
                     moveOnBuilderChosen();
                 }
                 else {
-                    printMessage("Select where you want to build");
+                    printMessage("Select where you want to build", false);
                     if ((!possibleDstBuilder1forDome.isEmpty() && getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
                             getChosenBuilderNum() == 2))
                         askForDome();
@@ -720,17 +774,21 @@ public class Gui extends View {
         dialogRegion.setAlignment(Pos.CENTER);
     }
 
+    /**
+     * Shows the possible destinations after the choice of building a dome or not (if yes, shows just where a dome can
+     * be built), then it proceeds with the BUILD step
+     */
     private void afterDomeChoice() {
 
         Platform.runLater(() -> dialogRegion.getChildren().clear());
         gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
                 possibleDstBuilder2forDome, getChosenBuilderNum(), buildDome, null);
         if (getChosenBuilderNum() == 0) {
-            printMessage("Select your turn builder");
+            printMessage("Select your turn builder",false);
             chooseTurnBuilder();
         }
         else {
-            printMessage("Select where you want to build");
+            printMessage("Select where you want to build", false);
             buildToDst();
         }
     }
@@ -746,7 +804,7 @@ public class Gui extends View {
             else {
                 gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
                         possibleDstBuilder2forDome, getChosenBuilderNum(), buildDome, null);
-                printMessage("Select your turn builder");
+                printMessage("Select your turn builder", false);
                 chooseTurnBuilder();
             }
         }
@@ -760,7 +818,7 @@ public class Gui extends View {
             else {
                 gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
                         possibleDstBuilder2forDome, getChosenBuilderNum(), buildDome, null);
-                printMessage("Select where you want to build");
+                printMessage("Select where you want to build", false);
                 buildToDst();
             }
         }
@@ -768,18 +826,16 @@ public class Gui extends View {
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
-        
-        gameMap.modifyHeight(dst, dome);
+
         if(result) {
             if (getNickname().equals(nickname))
                 gameMap.resetPossibleDestinations();
-
             else
                 gameMap.createBuilding(gameMap.coordinatesToIndex(dst), dome, nickname);
         }
 
         else
-            printMessage("Could not build");
+            printMessage("Could not build", false);
     }
 
     @Override
@@ -801,15 +857,23 @@ public class Gui extends View {
                 gameMap.setOccupiedCells(nickname, gameMap.getOccupiedCells().get(nickname).get(GameMap.firstBuilderIndex), dst);
         }
         else
-            printMessage("Could not move.");
+            printMessage("Could not move.", false);
     }
 
+    /**
+     * @param nickname player whose builder have been pushed
+     * @param src old position of the builder
+     * @param dst new position in which the builder have been pushed from an opponent during move
+     */
     @Override
     public void onBuilderPushed(String nickname, Coordinates src, Coordinates dst) {
 
         gameMap.pushBuilder(nickname,src, dst);
     }
 
+    /**
+     * Updates the possible set of coordinates of cells in which the player in the BUILD step can build a new floor
+     */
     @Override
     public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
 
@@ -818,6 +882,9 @@ public class Gui extends View {
         build();
     }
 
+    /**
+     * Updates the possible set of coordinates of cells in which the player in the MOVE step can move his builders
+     */
     @Override
     public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
 
@@ -835,7 +902,7 @@ public class Gui extends View {
                 node.setOnMouseClicked(null);
 
             if (getNickname().equals(nickname))
-                printMessage("Builders positioned correctly.");
+                printMessage("Builders positioned correctly.", false);
             else {
                 gameMap.setOccupiedCells(nickname, positionBuilder1, positionBuilder2);
                 gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), gameMap.coordinatesToIndex(positionBuilder1));
@@ -843,32 +910,51 @@ public class Gui extends View {
             }
         }
         else
-            printMessage("ERROR in builders placement");
+            printMessage("ERROR in builders placement", false);
     }
 
+    /**
+     * @param nickname the player who chose the step from a list of possible ones
+     * @param step chosen step
+     */
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
-        if(result)
-            printMessage(nickname + " chose " + step);
-        else
-            printMessage("ERROR: wrong step.");
+
+        if(result && !getNickname().equals(nickname))
+            printMessage(nickname + " chose " + step, false);
+        else if (getNickname().equals(nickname) && !result)
+            printMessage("ERROR: wrong step.", false);
     }
 
+    /**
+     * Closes the choiceSetupPopup of color choice for the player who has successfully chosen his color
+     * @param nickname of the player who chose the color
+     * @param color chosen color
+     * @param result true if successful, false if unsuccessful
+     */
     @Override
     public void onColorAssigned(String nickname, String color, boolean result) {
 
         super.onColorAssigned(nickname, color, result);
 
-        if (!result)
-            printMessage("Invalid insertion of color.");
+        if (getNickname().equals(nickname)) {
+            if (result)
+                Platform.runLater(()->choiceSetupPopup.close());
+            else
+                printMessage("Invalid insertion of color.", true);
+        }
     }
 
+    /**
+     * Prints endGame messages of loss and victory and a normal message to inform about who won
+     * @param winnerNickname name of the player who won
+     */
     @Override
     public void onEndGameUpdate(String winnerNickname) {
 
         if (!getNickname().equals(winnerNickname)) {
 
-            printMessage("Player " + winnerNickname + " wins!");
+            printMessage("Player " + winnerNickname + " wins!", false);
             createEndGameMessage("YOU LOSE", Color.BLUE);
         }
         else
@@ -928,65 +1014,97 @@ public class Gui extends View {
         playAgainBtn.setTextFill(Color.WHITESMOKE);
     }
 
-
     @Override
     public void onWrongInsertionUpdate(String error) {
-        printMessage(error);
-    }
-
-    @Override
-    public void onWrongNumberInsertion() {
-        printMessage("Invalid number Insertion.");
-    }
-
-    @Override
-    public void onGodCardAssigned(String nickname, String card, boolean result) {
-
-        super.onGodCardAssigned(nickname, card, result);
-        if(result) {
-            if(getNickname().equals(nickname))
-                printMessage("GodCard assigned correctly.");
-        } else
-            printMessage("Invalid insertion of godCard.");
-    }
-
-    @Override
-    public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
-        if(result)
-            printMessage("GodCards correctly chosen. Wait for the other players to choose theirs.");
-        else
-            printMessage("Error assigning");
+        printMessage(error, false);
     }
 
     /**
-     * Prints a message to notify the entry of a new player, if the result is false asks again for nick and birthday.
+     * Prints a message of wrong number insertion and asks again the num of players.
+     */
+    @Override
+    public void onWrongNumberInsertion() {
+        printMessage("Invalid number Insertion.", false);
+        askNumberOfPlayers();
+    }
+
+    /**
+     * Closes godCardsPopup if result is true, otherwise prints an error message
+     * @param nickname name of the player who chose his godCard
+     * @param card chosen GodCard
+     * @param result true or false if the choice was successful or not
+     */
+    @Override
+    public void onGodCardAssigned(String nickname, String card, boolean result) {
+        super.onGodCardAssigned(nickname, card, result);
+
+        if(getNickname().equals(nickname)) {
+            if (result) {
+                printMessage("GodCard assigned correctly.", false);
+                Platform.runLater(() -> godCardsPopup.close());
+            }
+            else
+                printMessage("Invalid insertion of godCard.", true);
+        }
+        else if (result) {
+            printMessage(nickname + " chose " + card + "godCard", false);
+        }
+    }
+
+    /**
+     * For the challenger, if result is positive (result = true), closes the godCardsPopup, otherwise prints an error message.
+     * @param godCardsToUse the godCards of the match chosen by the challenger
+     * @param result true if the insertion was successful
+     */
+    @Override
+    public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
+
+        if (challenger) {
+            if (result) {
+                printMessage("Godcards correctly chosen", false);
+                Platform.runLater(() -> godCardsPopup.close());
+            }
+            else
+                printMessage("Error assigning cards", true);
+        }
+    }
+
+    /**
+     * Prints a message to notify the entry of a new player and closes his player setup popup.
+     * If the result is false prints a message of error and resets nick and date
      */
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
 
+        boolean onPopup = false;
         if(result) {
-
             if (getNickname() != null && getNickname().equals(nickname))
                 Platform.runLater(() -> playerSetupPopup.close());
-            else
-                printMessage (nickname + " joined the game!");
+            //if Nickname == null, it means the setUp player popup is still open
+            else  if (getNickname() == null)
+                onPopup = true;
+            printMessage (nickname + " joined the game!", onPopup);
         }
-        else if (getNickname() != null && getNickname().equals(nickname))
-            playerSetupPopup.printError("Invalid nickname or date.");
-        if (!result) {
-            setNickname(null);
-            setNickname(null);
-            setState(ViewState.NICKDATE);
-        }
+        else if (getNickname() != null && getNickname().equals(nickname)) {
+                printMessage("Invalid nickname or date.", true);
+                setNickname(null);
+                setDate(null);
+            }
     }
 
+    /**
+     * Super removes the player from the map of players - godCards.
+     * This method sends a normal message to all the players about who has lost, and an endgame one to the player who lost
+     * It also removes the loser builders from the map through the method remove builders of gameMap
+     * @param nickname player who lost
+     */
     @Override
     public void onLossUpdate(String nickname) {
 
         super.onLossUpdate(nickname);
 
         if (!getNickname().equals(nickname)) {
-            printMessage(nickname + " lost!");
+            printMessage(nickname + " lost!", false);
             gameMap.removeBuilders(nickname);
         }
         else
@@ -1014,6 +1132,7 @@ public class Gui extends View {
         }
 
         if (state.equals("BUILD") || state.equals("MOVE") || state.equals("STEP") || state.equals("BUILDERPLACEMENT")) {
+
             for (String player : playersNameTags.keySet())
                 playersNameTags.get(player).setEffect(null);
 
@@ -1022,7 +1141,7 @@ public class Gui extends View {
             playersNameTags.get(nickname).setEffect(glow);
 
         }
-        printMessage("Turn of: " + nickname);
+        printMessage("Turn of: " + nickname, false);
     }
 
     /**
@@ -1032,10 +1151,14 @@ public class Gui extends View {
      */
     @Override
     public void onStartPlayerSet(String nickname, boolean result) {
-        if(result)
-            printMessage("The starting player is" + nickname);
-        else
-            printMessage("ERROR: could not set starting player.");
+        if (challenger) {
+            if (result)
+                Platform.runLater(() -> choiceSetupPopup.close());
+            else
+                printMessage("ERROR: could not set starting player.", false);
+        }
+        if (result)
+            printMessage("The starting player is" + nickname, false);
     }
 
     /**
@@ -1121,19 +1244,13 @@ public class Gui extends View {
      */
     @Override
     public void onConnectionError(String message) {
-
-        if (!home.getChildren().contains(connectionErrorLbl)) {
-            connectionErrorLbl = new Label(message);
-            connectionErrorLbl.setTextFill(Color.DARKRED);
-            connectionErrorLbl.setFont(new Font("Arial", fontSize));
-            Platform.runLater(()->home.getChildren().add(connectionErrorLbl));
-            AnchorPane.setBottomAnchor(connectionErrorLbl, marginLength);
-            AnchorPane.setLeftAnchor(connectionErrorLbl, (double) sceneWidth/10);
-        }
-        else
-            Platform.runLater(()->connectionErrorLbl.setText(message));
+        printMessage(message, false);
     }
 
+    /**
+     * This method is used to set the players region (left side of the root borderPane) with players' names and nametags
+     * images and their chosen godCards
+     */
     private void setPlayersRegion () {
 
         boolean firstPlayer = true;
@@ -1155,7 +1272,7 @@ public class Gui extends View {
 
             ImageView nameTag = new ImageView(new Image(getClass().getResourceAsStream(nameTagSrc)));
             nameTag.setPreserveRatio(true);
-            nameTag.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()).divide(1.2));
+            nameTag.fitWidthProperty().bind(playersRegion.prefWidthProperty().subtract(playersRegionInsets.getRight()));
 
             StackPane tagImageText = new StackPane();
 

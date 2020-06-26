@@ -160,7 +160,7 @@ public class GuiMap extends GameMap {
         if (oldHeight != 0)
                 Platform.runLater(() -> clickedCell.getChildren().remove(buildingIndexInStack));
 
-        //modifyHeight(indexToCoord(dstIndex), buildDome);
+        modifyHeight(indexToCoord(dstIndex), buildDome);
 
         //adds the right image in function to height
         if (buildDome) {
