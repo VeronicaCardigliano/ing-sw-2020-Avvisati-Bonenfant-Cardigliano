@@ -1301,6 +1301,11 @@ public class Gui extends View {
             Platform.runLater(() -> playersRegion.getChildren().add(tagImageText));
         }
     }
+
+    @Override
+    public void onDisconnectionObserver(String nickname) {
+
+    }
 }
 
 

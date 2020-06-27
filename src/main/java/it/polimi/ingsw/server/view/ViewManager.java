@@ -42,6 +42,10 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
 
     }
 
+    public void remove(VirtualView view) {
+        views.remove(view);
+    }
+
     public void removeAndDisconnectAll() {
         for(VirtualView view : views) {
             view.send(Messages.disconnect());
@@ -50,6 +54,12 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         }
 
         views = new ArrayList<>();
+    }
+
+    public void notifyDisconnection(String nickname) {
+        for(VirtualView view : views) {
+            view.send(Messages.playerDisconnected(nickname));
+        }
     }
 
     public boolean contains(VirtualView view) {

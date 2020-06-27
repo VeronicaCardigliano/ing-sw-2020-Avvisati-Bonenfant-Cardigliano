@@ -19,7 +19,6 @@ public class CliClient {
         view.setNumberOfPlayersObserver((nh));
         view.setStepChoiceObserver(nh);
         view.setBuilderSetupObserver(nh);
-        //view.setDisconnectionObserver(nh);
         view.setGodCardChoiceObserver(nh);
         view.setStartPlayerObserver(nh);
         view.setConnectionObserver(nh);
@@ -38,8 +37,9 @@ public class CliClient {
         nh.setStateObserver(view);
         nh.setPossibleBuildObserver(view);
         nh.setPossibleMoveObserver(view);
-
+        nh.setOpponentDisconnectionObserver(view);
         nh.setSocketObserver(view);
+        nh.setStartPlayerSetObserver(view);
 
         //(new Thread(nh)).start();
         view.run();

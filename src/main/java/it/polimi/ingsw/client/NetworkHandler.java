@@ -23,7 +23,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
         StepChoiceObserver, StartPlayerObserver {
 
-    private final int timeout = 0 * 1000;
+    private final int timeout = 10 * 1000;
     private PrintWriter out;
     private View view;
     private int port;
@@ -34,6 +34,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     private ExecutorService executorS;
 
     private SocketObserver socketObserver;
+    private OpponentDisconnectionObserver opponentDisconnectionObserver;
 
 
     public NetworkHandler(String ip, int port) {
@@ -78,6 +79,10 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         socketObserver = o;
     }
 
+    public void setOpponentDisconnectionObserver(OpponentDisconnectionObserver o) {
+        opponentDisconnectionObserver = o;
+    }
+
     /**
      * run function for the Network Manager thread.
      * It creates the socket and connects it to the Game Server.
@@ -110,7 +115,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
             String message;
 
             try {
-                while ((message = in.readLine()) != null && connected) {
+                while (connected && (message = in.readLine()) != null) {
                     if (!Messages.ping().equals(message))
                         ;//System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
 
@@ -259,10 +264,18 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
                     notifyPlayerAdded(parser.getAttribute(Messages.NAME), parser.getResult());
                     break;
 
+                case Messages.SET_START_PLAYER:
+                    notifyStartPlayerSet(parser.getAttribute(Messages.NAME), parser.getResult());
+                    break;
+
                 case Messages.STATE_UPDATE:
                     Model.State state = Model.State.valueOf(parser.getAttribute(Messages.STATE));
 
                     notifyState(state);
+                    break;
+
+                case Messages.PLAYER_DISCONNECTED:
+                    notifyOpponentDisconnection(parser.getAttribute(Messages.NAME));
                     break;
 
 
@@ -368,5 +381,9 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
     public void notifyDisconnection() {
         socketObserver.onDisconnection();
+    }
+
+    public void notifyOpponentDisconnection(String nickname) {
+        opponentDisconnectionObserver.onDisconnectionObserver(nickname);
     }
 }

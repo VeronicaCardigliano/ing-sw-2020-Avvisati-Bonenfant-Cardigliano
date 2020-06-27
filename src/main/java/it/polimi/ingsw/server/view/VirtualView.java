@@ -10,7 +10,6 @@ import org.json.JSONException;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,7 +22,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class VirtualView extends ViewObservable implements Runnable {
 
-    private final int timeout = 0 * 1000;
+    private final int timeout = 10 * 1000;
+    private boolean connected;
     private final int pingDelay = 2;
     private final Socket socket;
     private PrintWriter out;
@@ -41,7 +41,6 @@ public class VirtualView extends ViewObservable implements Runnable {
         setNumberOfPlayersObserver((controller));
         setStepChoiceObserver(controller);
         setBuilderSetupObserver(controller);
-        //setDisconnectionObserver(controller);
         setGodCardChoiceObserver(controller);
         setStartPlayerObserver(controller);
 
@@ -63,6 +62,9 @@ public class VirtualView extends ViewObservable implements Runnable {
         return nickname;
     }
 
+    /**
+     * it flags a Virtual View as registered: nickname + date submisssion has been accepted.
+     */
     public void register() {
         registered = true;
     }
@@ -101,11 +103,14 @@ public class VirtualView extends ViewObservable implements Runnable {
         }
 
         scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        //first ping sent
         scheduler.schedule(() -> out.println(Messages.ping()), pingDelay, TimeUnit.SECONDS);
 
         String message = null;
+        connected = true;
 
-        while(true) {
+        while(connected) {
             try {
                 if ((message = in.readLine()) == null) {
                     System.out.println(socket.getRemoteSocketAddress() + ": null read");
@@ -115,34 +120,39 @@ public class VirtualView extends ViewObservable implements Runnable {
                 System.err.println(socket.getRemoteSocketAddress() + ": " + e.getMessage());
                 break;
             }
-            System.out.println(socket.getRemoteSocketAddress() + ": " + message);
+            if(!message.equals(Messages.pong()))
+                System.out.println(socket.getRemoteSocketAddress() + ": " + message);
+
             handleMessage(message);
 
         }
 
-        disconnect();
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         if(nickname != null)
             notifyDisconnection(nickname);
         else
-            notifyEarlyDisconnection(this);
+            notifyEarlyDisconnection(this); //notifies disconnection when view has still not been registered
 
     }
 
     public void disconnect(){
-        try {
-            System.out.println(socket.getRemoteSocketAddress() + " disconnected.");
-            in.close();
-            out.close();
-            socket.close();
-        } catch (IOException ignored) {
 
-        }
+        System.out.println(socket.getRemoteSocketAddress() + " disconnected.");
+        connected = false;
+
     }
 
     public synchronized void send(String message){
-        System.out.println("Sending to " + socket.getRemoteSocketAddress() + " : " + message);
-        out.println(message);
+        if(!socket.isClosed()) {
+            if (!message.equals(Messages.ping()))
+                System.out.println("Sending to " + socket.getRemoteSocketAddress() + " : " + message);
+            out.println(message);
+        }
     }
 
     /**
@@ -273,7 +283,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     break;
 
                 case Messages.DISCONNECT:
-
+                    connected = false;
                     //send(Messages.disconnect());
                     break;
 

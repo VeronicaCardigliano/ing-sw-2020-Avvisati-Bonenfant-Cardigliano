@@ -623,6 +623,7 @@ public class Cli extends View{
     public void onPlayerAdded(String nickname, boolean result) {
         super.onPlayerAdded(nickname, result);
 
+
         if(result) {
             printer.setInfoMessage("\n" + nickname + " joined the game!");
         }
@@ -632,6 +633,7 @@ public class Cli extends View{
         }
 
         printer.print();
+        printer.erase();
     }
 
     @Override
@@ -657,6 +659,8 @@ public class Cli extends View{
     @Override
     public void onStartPlayerSet(String nickname, boolean result) {
         super.onStartPlayerSet(nickname, result);
+
+        printer.erase();
 
         if(result)
             printer.setInfoMessage("The starting player is: " + nickname);
@@ -861,6 +865,12 @@ public class Cli extends View{
         printer.erase();
         printer.printTitle();
         printer.setAskMessage("Server to join: ");
+        printer.print();
+    }
+
+    @Override
+    public void onDisconnectionObserver(String nickname) {
+        printer.setInfoMessage(nickname + " disconnected");
         printer.print();
     }
 }

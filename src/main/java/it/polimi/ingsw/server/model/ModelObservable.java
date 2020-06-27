@@ -205,5 +205,7 @@ public abstract class ModelObservable {
     public void notifyStartPlayerSet(String startPlayer, boolean result) {
         if(startPlayerSetObserver != null)
             startPlayerSetObserver.onStartPlayerSet(startPlayer, result);
+        else
+            System.out.println("start player set observer is not set");
     }
 }

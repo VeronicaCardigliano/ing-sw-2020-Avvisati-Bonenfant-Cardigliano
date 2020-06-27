@@ -29,7 +29,7 @@ public abstract class Messages {
     public static final String DISCONNECT = "disconnect";
     public static final String ERROR = "error";
     public static final String ERROR_NUMBER = "errorNumber"; //for ERROR
-    public static final String INFO = "info";
+    public static final String PLAYER_DISCONNECTED = "playerDisconnected";
     public static final String SET_MATCH_GOD_CARDS = "setMatchGodCards";
     public static final String SET_START_PLAYER = "setStartPlayer";
     public static final String PING = "ping";
@@ -82,7 +82,7 @@ public abstract class Messages {
     public static final String GOD_DESCRIPTIONS = "godDescriptions";        //for ASK_GOD
     public static final String CHOSEN_GOD_CARDS = "chosenGodCards";         //for ASK_GOD
     public static final String CHOSEN_COLORS = "chosenColors";              //for ASK_COLOR
-    public static final String MESSAGE = "message";                         //for INFO
+    public static final String MESSAGE = "message";                         //for PLAYER_DISCONNECTED
     public static final String PLAYERS = "players";                         //for CHOOSE_START_PLAYER
 
 
@@ -337,8 +337,8 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, SET_GOD_CARD).put(GOD_CARD, godCardName).toString();
     }
 
-    public static String info(String message) {
-        return ((new JSONObject()).put(TYPE, INFO).put(MESSAGE, message).toString());
+    public static String playerDisconnected(String nickname) {
+        return ((new JSONObject()).put(TYPE, PLAYER_DISCONNECTED).put(NAME, nickname).toString());
     }
 
     public static String chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptions) {

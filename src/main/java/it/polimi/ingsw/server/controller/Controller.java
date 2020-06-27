@@ -1,13 +1,11 @@
 package it.polimi.ingsw.server.controller;
 
 import it.polimi.ingsw.server.model.Model;
-import it.polimi.ingsw.server.model.Player;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.network.Messages;
 import it.polimi.ingsw.server.view.ViewManager;
 import it.polimi.ingsw.server.view.VirtualView;
 
-import java.io.IOException;
 import java.util.Set;
 
 
@@ -20,11 +18,11 @@ public class Controller extends AbstractController implements ConnectionObserver
         this.model = model;
         this.viewManager = viewManager;
 
-        setModelObservers(viewManager);
+        setModelObservers();
 
     }
 
-    public void setModelObservers(ViewManager vm) {
+    public void setModelObservers() {
         model.setBuilderBuiltObserver(viewManager);
         model.setBuilderMovementObserver(viewManager);
         model.setBuildersPlacedObserver(viewManager);
@@ -40,6 +38,7 @@ public class Controller extends AbstractController implements ConnectionObserver
         model.setStateObserver(viewManager);
         model.setPossibleBuildObserver(viewManager);
         model.setPossibleMoveObserver(viewManager);
+        model.setStartPlayerSetObserver(viewManager);
     }
 
     /**
@@ -171,7 +170,7 @@ public class Controller extends AbstractController implements ConnectionObserver
             else {
                 viewManager.removeAndDisconnectAll();
                 model = new Model();
-                setModelObservers(viewManager);
+                setModelObservers();
             }
         }
 
@@ -189,7 +188,7 @@ public class Controller extends AbstractController implements ConnectionObserver
             else {
                 viewManager.removeAndDisconnectAll();
                 model = new Model();
-                setModelObservers(viewManager);
+                setModelObservers();
             }
         }
     }
@@ -254,7 +253,7 @@ public class Controller extends AbstractController implements ConnectionObserver
             if (model.endGame()) {
                 viewManager.removeAndDisconnectAll();
                 this.model = new Model();
-                setModelObservers(viewManager);
+                setModelObservers();
             }
             else {
                 model.startTurn();
@@ -273,12 +272,13 @@ public class Controller extends AbstractController implements ConnectionObserver
     public synchronized void onDisconnection(String nickname) {
         viewManager.remove(nickname);
 
+        viewManager.notifyDisconnection(nickname);
 
         //if player has lost he is no more in model
         if(model.getPlayersNickname().contains(nickname)) {
             viewManager.removeAndDisconnectAll();
             model = new Model();
-            setModelObservers(viewManager);
+            setModelObservers();
         }
 
 
@@ -287,9 +287,10 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public void onEarlyDisconnection(VirtualView view) {
         if(viewManager.contains(view)) {
+            viewManager.remove(view);
             viewManager.removeAndDisconnectAll();
             model = new Model();
-            setModelObservers(viewManager);
+            setModelObservers();
         }
     }
 

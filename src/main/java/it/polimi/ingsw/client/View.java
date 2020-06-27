@@ -9,7 +9,7 @@ import java.util.*;
 public abstract class View extends ViewObservable implements BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
         ColorAssignmentObserver, ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver,
         BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChosenStepObserver, StartPlayerSetObserver,
-        SocketObserver {
+        SocketObserver, OpponentDisconnectionObserver {
 
     public enum ViewState {
         CONNECTION, WAITING, NUMPLAYERS, NICKDATE, MATCHGODS, PLAYERGOD, STARTPLAYER, BUILDERCOLOR, BUILDERPLACEMENT, STEP, MOVE, BUILD
@@ -213,10 +213,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onStartPlayerSet(String nickname, boolean result) {
-        /*if(result)
-            System.out.println("The starting player is" + nickname);
-        else
-            System.out.println(red + "\nERROR:"+ Color.RESET + " could not set starting player.");*/
+        if(!result)
+            setState(ViewState.STARTPLAYER);
     }
 
     /**
