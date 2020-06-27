@@ -1,7 +1,6 @@
 package it.polimi.ingsw.client.cli;
 
 import it.polimi.ingsw.client.GameMap;
-import it.polimi.ingsw.client.Color;
 import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
@@ -37,10 +36,10 @@ public class CliGameMap extends GameMap {
         result.append(printHorizontalIndexes());
         result.append(printFirstLine());
         for (i=0; i < IslandBoard.dimension - 1; i++) {
-            result.append(printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNumber()));
+            result.append(printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNum()));
             result.append(printCentralLine());
         }
-        result.append(printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNumber()));
+        result.append(printContents(i, getPossibleDst().get(0), getPossibleDst().get(1), getChosenBuilderNum()));
         result.append(printLastLine());
 
         return result.toString();

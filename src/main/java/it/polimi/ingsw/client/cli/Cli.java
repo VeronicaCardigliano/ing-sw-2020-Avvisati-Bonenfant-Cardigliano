@@ -1,7 +1,6 @@
 package it.polimi.ingsw.client.cli;
 
 
-import it.polimi.ingsw.client.Color;
 import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
@@ -9,7 +8,7 @@ import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static it.polimi.ingsw.client.Color.returnColor;
+import static it.polimi.ingsw.client.cli.Color.returnColor;
 
 
 /**
@@ -20,8 +19,11 @@ public class Cli extends View{
     private final Printer printer = new Printer(System.out);
     private boolean quit = false;
 
+    private ArrayList<Coordinates> chosenBuilderPositions = new ArrayList<>();
     private ArrayList<String> inputOptions;
+    public static final String red = Color.ANSI_RED.escape();
     private static final String crownSymbol = "\u2654";
+    private Set<String> matchGodCards = new HashSet<>();
 
     private Map<String, String> allGodCards;
 
@@ -35,8 +37,15 @@ public class Cli extends View{
         printer.print();
     }
 
+    private void addBuilderPosition(Coordinates coord) {
+        chosenBuilderPositions.add(coord);
+    }
 
-    int parseInteger(String input) {
+    private ArrayList<Coordinates> getChosenBuilderPositions() {
+        return chosenBuilderPositions;
+    }
+
+    private int parseInteger(String input) {
         int result = 0;
         try {
             result = Integer.parseInt(input);
@@ -49,7 +58,7 @@ public class Cli extends View{
         return result;
     }
 
-    int parseInteger() {
+    private int parseInteger() {
         boolean ok = false;
         int result = 0;
 
@@ -67,6 +76,15 @@ public class Cli extends View{
 
         return result;
     }
+
+    private void addMatchGodCard(String godCard) throws Exception{
+        if(!matchGodCards.contains(godCard))
+            matchGodCards.add(godCard);
+        else
+            throw new Exception("GodCard already chosen!");
+    }
+
+    private Set<String> getMatchGodCards() { return Set.copyOf(matchGodCards);}
 
     @Override
     public  void run() {
@@ -266,7 +284,7 @@ public class Cli extends View{
 
     private Coordinates chooseTurnBuilder () {
         gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
-        gameMap.setChosenBuilderNumber(0);
+        gameMap.setChosenBuilderNum(0);
         printer.setGameMapString(gameMap.toString());
 
         Coordinates src;
@@ -286,13 +304,11 @@ public class Cli extends View{
         }
 
         if (Coordinates.equals(gameMap.getOccupiedCells().get(getNickname()).get(0), src))
-            setChosenBuilderNum(1);
+            gameMap.setChosenBuilderNum(1);
         else
-            setChosenBuilderNum(2);
+            gameMap.setChosenBuilderNum(2);
         return src;
     }
-
-
 
 
     private String displayMap(Map<String, String> map) {
@@ -302,7 +318,7 @@ public class Cli extends View{
 
         for(String godName : map.keySet()) {
             i++;
-            result.append(i).append(") ").append(View.red).append(godName).append(Color.RESET).append(": ").append(map.get(godName)).append("\n");
+            result.append(i).append(") ").append(red).append(godName).append(Color.RESET).append(": ").append(map.get(godName)).append("\n");
             inputOptions.add(i, godName);
         }
 
@@ -653,6 +669,7 @@ public class Cli extends View{
 
     @Override
     public void onStateUpdate(Model.State currState) {
+
         super.onStateUpdate(currState);
 
         printer.erase();
@@ -718,11 +735,11 @@ public class Cli extends View{
 
         //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
 
-        if (getChosenBuilderNum() == 0)
+        if (gameMap.getChosenBuilderNum() == 0)
             currentTurnBuilderPos = chooseTurnBuilder();
 
-        if ((!possibleDstBuilder1forDome.isEmpty() && getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
-                getChosenBuilderNum() == 2)) {
+        if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
+                gameMap.getChosenBuilderNum() == 2)) {
             printer.setAskMessage("Select what you want to build: insert 'D' for dome or 'B' for building: ");
             printer.print();
             buildType = in.nextLine().toUpperCase();
@@ -740,19 +757,19 @@ public class Cli extends View{
 
         if (buildType.equals("D")) {
             buildDome = true;
-            if (getChosenBuilderNum() == 1)
+            if (gameMap.getChosenBuilderNum() == 1)
                 possibleDstBuilder = possibleDstBuilder1forDome;
             else
                 possibleDstBuilder = possibleDstBuilder2forDome;
         }
         else {
-            if (getChosenBuilderNum() == 1)
+            if (gameMap.getChosenBuilderNum() == 1)
                 possibleDstBuilder = possibleDstBuilder1;
             else
                 possibleDstBuilder = possibleDstBuilder2;
         }
 
-        if (getChosenBuilderNum() == 1)
+        if (gameMap.getChosenBuilderNum() == 1)
             gameMap.setPossibleDst(possibleDstBuilder, null);
         else
             gameMap.setPossibleDst(null, possibleDstBuilder);
@@ -780,10 +797,10 @@ public class Cli extends View{
 
         //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
 
-        if (getChosenBuilderNum() == 0)
+        if (gameMap.getChosenBuilderNum() == 0)
             currentTurnBuilderPos = chooseTurnBuilder();
 
-        if (getChosenBuilderNum() == 1) {
+        if (gameMap.getChosenBuilderNum() == 1) {
             possibleDstBuilder = possibleDstBuilder1;
             gameMap.setPossibleDst(possibleDstBuilder, null);
         }
@@ -792,7 +809,7 @@ public class Cli extends View{
             gameMap.setPossibleDst(null, possibleDstBuilder);
         }
 
-        gameMap.setChosenBuilderNumber(getChosenBuilderNum());
+        gameMap.setChosenBuilderNum(gameMap.getChosenBuilderNum());
 
         printer.erase();
         printer.setGameMapString(gameMap.toString());
@@ -833,7 +850,11 @@ public class Cli extends View{
     public void onDisconnection() {
         super.onDisconnection();
 
+        gameMap.setChosenBuilderNum(0);
         gameMap = new CliGameMap();
+
+        chosenBuilderPositions = new ArrayList<>();
+        matchGodCards = new HashSet<>();
 
         printer.setInfoMessage("Disconnecting");
         printer.print();

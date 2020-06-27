@@ -29,7 +29,8 @@ public class Event {
             this.type = type;
             this.srcCell = srcCell;
             this.dstCell = dstCell;
-        } else
+        }
+        else
             throw new NullPointerException("Event is incomplete");
 
     }
@@ -46,9 +47,9 @@ public class Event {
         return dstCell.getHeight();
     }
 
-    public boolean builtDome() {
+    /*public boolean builtDome() {
         return type == EventType.BUILD_DOME;
-    }
+    } */
 
     public Cell getSrcCell() { return srcCell; }
 

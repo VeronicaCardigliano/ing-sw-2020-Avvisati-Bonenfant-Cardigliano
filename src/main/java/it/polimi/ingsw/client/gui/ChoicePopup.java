@@ -8,8 +8,6 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -21,9 +19,8 @@ import java.util.Set;
 
 public class ChoicePopup extends Stage {
 
-    private AnchorPane anchorPane = new AnchorPane();
+    private AnchorPane anchorPane;
     private Button submit;
-    private Text errorMessage = new Text();
 
     public ChoicePopup(Stage ownerStage, Set<String> choices, String requestLabel, String title, ChoiceBox<String> choiceBox) {
 
@@ -114,6 +111,7 @@ public class ChoicePopup extends Stage {
         return anchorPane.getChildren().contains(node);
     }
 
+    /*
     protected void printError (String error) {
 
         if (errorMessage.getText().equals("")) {
@@ -125,6 +123,6 @@ public class ChoicePopup extends Stage {
         }
 
         errorMessage.setText(error);
-    }
+    }*/
 
 }

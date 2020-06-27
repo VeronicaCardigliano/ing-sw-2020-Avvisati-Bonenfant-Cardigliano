@@ -245,7 +245,7 @@ public class Controller extends AbstractController implements ConnectionObserver
      * requires That findPossibleDestination has been called right before
      */
     private void checkHasLost(){
-        if (!model.hasNotLostDuringMove() && !model.hasNotLostDuringBuild()){
+        if (!model.hasNotLostDuringMove() || !model.hasNotLostDuringBuild()){
             String playerToRemove = model.getCurrPlayer();
             model.setNextPlayer();
             model.notifyLoss(playerToRemove);

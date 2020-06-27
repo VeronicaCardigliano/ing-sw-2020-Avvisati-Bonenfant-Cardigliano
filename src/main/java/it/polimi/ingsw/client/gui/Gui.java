@@ -113,7 +113,7 @@ public class Gui extends View {
             catch (NumberFormatException e) {
                 onConnectionError("WRONG FORMAT: Insert an Integer as port value");
             }
-        });;
+        });
 
         setupErrorText.setFill(Color.RED);
         setupErrorText.setFont(new Font("Arial", fontSize));
@@ -478,9 +478,7 @@ public class Gui extends View {
         ChoiceBox<String> choiceBox= new ChoiceBox<>();
         Platform.runLater(() -> {
             choiceSetupPopup = new ChoicePopup(primaryStage, players, "Choose the first player", "StartPlayer", choiceBox);
-            choiceSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
-                notifySetStartPlayer(getNickname(), choiceBox.getValue());
-            });
+            choiceSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> notifySetStartPlayer(getNickname(), choiceBox.getValue()));
         });
     }
 
@@ -601,10 +599,10 @@ public class Gui extends View {
     @Override
     public void move() {
 
-        if (getChosenBuilderNum() == 0) {
+        if (gameMap.getChosenBuilderNum() == 0) {
 
             //getChosenBuilderNum() returns 0 until a turn builder is chosen, until the user don't choose it prints all the possible dsts
-            gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, 0, null);
+            gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, null);
 
             printMessage("Select your turn builder", false);
             chooseTurnBuilder();
@@ -664,7 +662,7 @@ public class Gui extends View {
                     secondBuilderCell.getChildren().get(gameMap.getCurrentBuilderIndexInStack(coordOfSecondBuilderCell)).setOnMouseClicked(null);
                     secondBuilderCell.getChildren().get(gameMap.getCurrentBuilderIndexInStack(coordOfSecondBuilderCell)).setOnMouseEntered(null);
                     currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
-                    setChosenBuilderNum(1);
+                    gameMap.setChosenBuilderNum(1);
                 }
 
                 else {
@@ -672,7 +670,7 @@ public class Gui extends View {
                     firstBuilderCell.getChildren().get(gameMap.getCurrentBuilderIndexInStack(coordOfFirstBuilderCell)).setOnMouseClicked(null);
                     firstBuilderCell.getChildren().get(gameMap.getCurrentBuilderIndexInStack(coordOfFirstBuilderCell)).setOnMouseEntered(null);
                     currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
-                    setChosenBuilderNum(2);
+                    gameMap.setChosenBuilderNum(2);
                 }
 
                 gameMap.resetPossibleDestinations();
@@ -683,8 +681,8 @@ public class Gui extends View {
                 }
                 else {
                     printMessage("Select where you want to build", false);
-                    if ((!possibleDstBuilder1forDome.isEmpty() && getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
-                            getChosenBuilderNum() == 2))
+                    if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
+                            gameMap.getChosenBuilderNum() == 2))
                         askForDome();
                     buildToDst();
                 }
@@ -699,7 +697,7 @@ public class Gui extends View {
      */
     private void moveOnBuilderChosen() {
 
-        gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum(), mouseEvent -> {
+        gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, mouseEvent -> {
             int dstIndex = 0;
             StackPane clickedCell = (StackPane) mouseEvent.getSource();
 
@@ -724,7 +722,7 @@ public class Gui extends View {
     private void buildToDst() {
 
         gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome,
-                getChosenBuilderNum(), buildDome, mouseEvent -> {
+                buildDome, mouseEvent -> {
 
                 //if the turnBuilder have been chosen
                 if (currentTurnBuilderPos != null) {
@@ -782,8 +780,8 @@ public class Gui extends View {
 
         Platform.runLater(() -> dialogRegion.getChildren().clear());
         gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
-                possibleDstBuilder2forDome, getChosenBuilderNum(), buildDome, null);
-        if (getChosenBuilderNum() == 0) {
+                possibleDstBuilder2forDome, buildDome, null);
+        if (gameMap.getChosenBuilderNum() == 0) {
             printMessage("Select your turn builder",false);
             chooseTurnBuilder();
         }
@@ -796,14 +794,14 @@ public class Gui extends View {
     @Override
     public void build() {
 
-        if (getChosenBuilderNum() == 0) {
+        if (gameMap.getChosenBuilderNum() == 0) {
 
             //if the player can build a dome somewhere, he's asked what he wants to build
             if (!possibleDstBuilder1forDome.isEmpty() && !possibleDstBuilder2forDome.isEmpty())
                 askForDome();
             else {
                 gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
-                        possibleDstBuilder2forDome, getChosenBuilderNum(), buildDome, null);
+                        possibleDstBuilder2forDome, buildDome, null);
                 printMessage("Select your turn builder", false);
                 chooseTurnBuilder();
             }
@@ -811,13 +809,13 @@ public class Gui extends View {
 
         else {
 
-            if ((!possibleDstBuilder1forDome.isEmpty() && getChosenBuilderNum() == 1) ||
-                    (!possibleDstBuilder2forDome.isEmpty() && getChosenBuilderNum() == 2))
+            if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) ||
+                    (!possibleDstBuilder2forDome.isEmpty() && gameMap.getChosenBuilderNum() == 2))
                 askForDome();
 
             else {
                 gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
-                        possibleDstBuilder2forDome, getChosenBuilderNum(), buildDome, null);
+                        possibleDstBuilder2forDome, buildDome, null);
                 printMessage("Select where you want to build", false);
                 buildToDst();
             }
@@ -889,8 +887,8 @@ public class Gui extends View {
     public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
 
         super.updatePossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2);
-        if (getChosenBuilderNum() == 0)
-            gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, 0, null);
+        if (gameMap.getChosenBuilderNum() == 0)
+            gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, null);
         move();
     }
 
@@ -1122,7 +1120,7 @@ public class Gui extends View {
     @Override
     public void onPlayerTurn(String nickname) {
 
-        super.onPlayerTurn(nickname);
+        gameMap.setChosenBuilderNum(0);
 
         String state = getState().toString();
         if (currentTurnBuilderPos != null) {
@@ -1164,14 +1162,13 @@ public class Gui extends View {
     /**
      * When the match is in the state SETUP_BUILDERS, the playersRegion is featured with players nicknames and gods,
      * when the match is in SETUP_PLAYERS, the user is advised to wait for players to enter
-     * @param currState currState of the game
+     * @param currState currState of the model
      */
     @Override
     public void onStateUpdate(Model.State currState) {
+        super.onStateUpdate(currState);
 
-        String state = currState.toString();
-
-        if (state.equals(Model.State.SETUP_BUILDERS.toString())) {
+        if (currState.equals(Model.State.SETUP_BUILDERS)) {
 
             playersRegion.setBorder(new Border(new BorderStroke(SEA, SEA, SEA,Color.TRANSPARENT, BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID,
                     BorderStrokeStyle.SOLID, null, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS, playersRegionInsets)));
@@ -1199,7 +1196,7 @@ public class Gui extends View {
             AnchorPane.setRightAnchor(bottomBtns, Gui.marginLength);
         }
 
-        else if (state.equals(Model.State.SETUP_PLAYERS.toString())) {
+        else if (currState.equals(Model.State.SETUP_PLAYERS)) {
 
             Platform.runLater(() ->primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double)Gui.sceneWidth/Gui.sceneHeight)));
             Platform.runLater(() ->primaryStage.minHeightProperty().bind(root.widthProperty().divide((double)Gui.sceneWidth/Gui.sceneHeight)));
@@ -1245,6 +1242,11 @@ public class Gui extends View {
     @Override
     public void onConnectionError(String message) {
         printMessage(message, false);
+    }
+
+    @Override
+    public void onDisconnection() {
+        gameMap.setChosenBuilderNum(0);
     }
 
     /**

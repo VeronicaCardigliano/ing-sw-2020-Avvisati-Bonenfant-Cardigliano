@@ -6,10 +6,9 @@ import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
 import it.polimi.ingsw.server.parser.GodCardParser;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,6 +65,7 @@ class GodCardTest {
         GodCardParser parser = new GodCardParser(Model.jsonPath);
         godCard = parser.createCard(player, "default");
         player.setGodCard(godCard);
+        assertEquals(godCard.getPlayer(), player);
 
         //Demeter is used to check the choice after REQUIRED state
         opponentGodCard = parser.createCard(opponent, "Demeter");
@@ -285,11 +285,11 @@ class GodCardTest {
         //builder 5 can only perform a build
         opponentGodCard2.startTurn();
 
-        assertTrue(opponentGodCard2.currStateList.size()==1);
+        assertEquals(1, opponentGodCard2.currStateList.size());
         assertTrue(opponentGodCard2.currStateList.contains("BUILD"));
-        assertTrue(opponentGodCard2.currState.equals("BUILD"));
+        assertEquals("BUILD", opponentGodCard2.currState);
         assertFalse(opponentGodCard2.currStateList.contains("MOVE"));
-        assertFalse(opponentGodCard2.currState.equals("END"));
+        assertNotEquals("END", opponentGodCard2.currState);
 
     }
 
@@ -306,7 +306,7 @@ class GodCardTest {
         cell4.setOccupant(builder4);
         //check non locking feature of setNextState
 
-        assertFalse(opponentGodCard.currState.equals("REQUIRED"));
+        assertNotEquals("REQUIRED", opponentGodCard.currState);
         assertTrue(opponentGodCard.askMove(0,0, 1, 1));
         assertTrue(opponentGodCard.move(0,0, 1, 1));
 
@@ -321,10 +321,10 @@ class GodCardTest {
         gameMap.getCell(0,0).addBlock();
         //All cells nearby have dome except the one in 0,0 which has height 3. Only one build will be allowed
 
-        assertTrue(gameMap.getCell(0,0).getHeight()==3);
+        assertEquals(3, gameMap.getCell(0, 0).getHeight());
         assertTrue(opponentGodCard.askBuild(1,1, 0, 0, true));
         assertTrue(opponentGodCard.build(1,1, 0, 0, true));
-        assertFalse(opponentGodCard.currState.equals("REQUIRED"));
+        assertNotEquals("REQUIRED", opponentGodCard.currState);
         assertTrue(opponentGodCard.currStateList.contains("END"));
 
     }
@@ -341,15 +341,26 @@ class GodCardTest {
         cell3.setOccupant(builder3);
         cell4.setOccupant(builder4);
 
-        assertFalse(opponentGodCard.currState.equals("REQUIRED"));
+        assertNotEquals("REQUIRED", opponentGodCard.currState);
         assertTrue(opponentGodCard.askMove(0,0, 1, 1));
         assertTrue(opponentGodCard.move(0,0, 1, 1));
         assertTrue(opponentGodCard.askBuild(1,1, 0, 0, false));
         assertTrue(opponentGodCard.build(1,1, 0, 0, false));
-        assertTrue(opponentGodCard.currState.equals("REQUIRED"));
+        assertEquals("REQUIRED", opponentGodCard.currState);
         assertTrue(opponentGodCard.currStateList.contains("END"));
         assertTrue(opponentGodCard.currStateList.contains("BUILD"));
 
+    }
+
+    @Test
+    public void expectedExceptionIfPlayerNull() {
+        ArrayList<ArrayList<String>> states = new ArrayList<>();
+        Assertions.assertThrows(RuntimeException.class, () -> new GodCard(null, "Zesu", "best god", states));
+    }
+
+    @Test
+    public void expectedExceptionIfWrongState() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> godCard.forceState("HELLO"));
     }
 
 

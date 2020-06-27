@@ -1,7 +1,6 @@
 package it.polimi.ingsw.server.model;
 
 import it.polimi.ingsw.server.model.gameMap.Builder;
-import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.godCards.GodCard;
 
 import java.util.ArrayList;
@@ -36,12 +35,6 @@ public class Player {
         this.birthday = birthday;
 
     }
-
-
-    public boolean move(Coordinates src, Coordinates dst){
-    return godCard.move(src.getI(), src.getJ(), dst.getI(), dst.getJ());
-    }
-
 
     public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
         return godCard.move(i_src, j_src, i_dst, j_dst);

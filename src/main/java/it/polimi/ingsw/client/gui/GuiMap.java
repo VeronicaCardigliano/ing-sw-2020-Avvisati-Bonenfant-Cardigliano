@@ -27,6 +27,7 @@ public class GuiMap extends GameMap {
     private TilePane tile;
 
     GuiMap(TilePane tilePane, Scene s) {
+
         super();
         this.tile = tilePane;
         this.scene = s;
@@ -228,14 +229,13 @@ public class GuiMap extends GameMap {
     /**
      * Makes possible destinations light up and makes them opaque when mouse enters
      * @param cellIndex index of the possible destination cell
-     * @param chosenBuilder chosen turn builder of the current turn
      */
-    private void setPossibleDstCell(int cellIndex, int chosenBuilder) {
+    private void setPossibleDstCell(int cellIndex) {
 
         StackPane cell = (StackPane) tile.getChildren().get(cellIndex);
         cell.setStyle("-fx-background-color: radial-gradient(center 50% 50%, radius 75%, LIGHTGOLDENRODYELLOW , TRANSPARENT)");
 
-        if (chosenBuilder != 0) {
+        if (getChosenBuilderNum() != 0) {
             cell.setOnMouseEntered(mouseEvent -> {
                 StackPane cellToHandle = (StackPane) mouseEvent.getSource();
                 cellToHandle.setOpacity(Gui.selectionOpacity);
@@ -267,21 +267,21 @@ public class GuiMap extends GameMap {
      * @param event handles the actions when a possibleDst is clicked
      */
     protected void showPossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
-                                    int chosenBuilder, EventHandler<MouseEvent> event){
+                                       EventHandler<MouseEvent> event){
 
-        if (chosenBuilder == 0 || chosenBuilder == 1) {
+        if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 1) {
             for (Coordinates coord: possibleDstBuilder1)
-                setPossibleDstCell(coordinatesToIndex(coord), chosenBuilder);
+                setPossibleDstCell(coordinatesToIndex(coord));
         }
 
-        if (chosenBuilder == 0 || chosenBuilder == 2) {
+        if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 2) {
             for (Coordinates coord: possibleDstBuilder2)
-                setPossibleDstCell(coordinatesToIndex(coord), chosenBuilder);
+                setPossibleDstCell(coordinatesToIndex(coord));
         }
 
-        if (chosenBuilder == 1)
+        if (getChosenBuilderNum() == 1)
             chooseDst(possibleDstBuilder1, event);
-        else if (chosenBuilder == 2)
+        else if (getChosenBuilderNum() == 2)
             chooseDst(possibleDstBuilder2, event);
     }
 
@@ -291,37 +291,37 @@ public class GuiMap extends GameMap {
      */
     protected void showPossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
                                      Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome,
-                                     int chosenBuilder, boolean buildDome, EventHandler<MouseEvent> event) {
+                                        boolean buildDome, EventHandler<MouseEvent> event) {
 
-        if (chosenBuilder == 0 || chosenBuilder == 1) {
+        if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 1) {
             if (buildDome) {
                 for (Coordinates coord: possibleDstBuilder1forDome)
-                    setPossibleDstCell(coordinatesToIndex(coord), chosenBuilder);
+                    setPossibleDstCell(coordinatesToIndex(coord));
             }
             else {
                 for (Coordinates coord : possibleDstBuilder1)
-                    setPossibleDstCell(coordinatesToIndex(coord), chosenBuilder);
+                    setPossibleDstCell(coordinatesToIndex(coord));
             }
         }
 
-        if (chosenBuilder == 0 || chosenBuilder == 2) {
+        if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 2) {
             if (buildDome) {
                 for (Coordinates coord: possibleDstBuilder2forDome)
-                    setPossibleDstCell(coordinatesToIndex(coord), chosenBuilder);
+                    setPossibleDstCell(coordinatesToIndex(coord));
             }
             else {
                 for (Coordinates coord: possibleDstBuilder2)
-                    setPossibleDstCell(coordinatesToIndex(coord), chosenBuilder);
+                    setPossibleDstCell(coordinatesToIndex(coord));
             }
         }
 
-        if (chosenBuilder == 1) {
+        if (getChosenBuilderNum() == 1) {
             if (buildDome)
                 chooseDst(possibleDstBuilder1forDome, event);
             else
                 chooseDst(possibleDstBuilder1, event);
         }
-        else if (chosenBuilder == 2) {
+        else if (getChosenBuilderNum() == 2) {
             if (buildDome)
                 chooseDst(possibleDstBuilder2forDome, event);
             else

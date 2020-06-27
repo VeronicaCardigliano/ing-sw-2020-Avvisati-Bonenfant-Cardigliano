@@ -4,6 +4,8 @@ import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.junit.jupiter.api.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,8 +53,7 @@ class ModelTest {
 
         assertFalse(testModel.addPlayer("thomas", "3000.01.01"));
         assertFalse(testModel.addPlayer("thomas1", "1980.02.30"));
-
-
+        //Assertions.assertThrows(ParseException.class, ()-> testModel.addPlayer("veronica", "2010 02 03"));
     }
 
     @Test
@@ -118,7 +119,6 @@ class ModelTest {
         assertTrue(testModel.assignColor("LIGHT_BLUE"));
     }
 
-
     @Test
     public void athenaVSPrometheus() {
 
@@ -142,20 +142,24 @@ class ModelTest {
         testModel.setNextPlayer();
         testModel.setNextState();
 
-        System.out.println("SETUP_BUILDERS");
+        System.out.println("SETUP_COLOR");
 
         assertTrue(testModel.assignColor("WHITE"));
-        assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(0,0), new Coordinates(0,1)));
         testModel.setNextPlayer();
         assertTrue(testModel.assignColor("MAGENTA"));
+        testModel.setNextPlayer();
+        testModel.setNextState();
+
+        System.out.println("SETUP_BUILDERS");
+
+        assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(0,0), new Coordinates(0,1)));
+        testModel.setNextPlayer();
         assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(4,4), new Coordinates(4,3)));
-
-
+        testModel.setNextPlayer();
         testModel.setNextState();
 
         System.out.println("GAME");
 
-        testModel.setNextPlayer();
         testModel.startTurn();
         //player1
         assertEquals("MOVE", testModel.getCurrStep());
@@ -178,6 +182,7 @@ class ModelTest {
         assertEquals("MOVE", testModel.getCurrStep());
         testModel.findPossibleDestinations();
         assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(3,4)));
+        assertFalse(testModel.effectiveMove(new Coordinates(4,3), new Coordinates(4,2)));
         testModel.effectiveMove(new Coordinates(4,4), new Coordinates(3,4));
         assertEquals("BUILD", testModel.getCurrStep());
         testModel.findPossibleDestinations();
@@ -199,6 +204,7 @@ class ModelTest {
 
         //player2
         testModel.startTurn();
+        assertFalse(testModel.setStepChoice("HELLO"));
         testModel.setStepChoice("MOVE");
         testModel.findPossibleDestinations();
 
@@ -264,5 +270,90 @@ class ModelTest {
         testModel.effectiveMove(new Coordinates(2,2), new Coordinates(3,3));
         assertTrue(testModel.endGame());
 
+    }
+
+
+    @Test
+    public void apolloVSLimus() {
+
+        Assertions.assertThrows(RuntimeException.class, () -> testModel.setNextPlayer());
+
+        System.out.println("SETUP_NUMOFPLAYERS");
+        assertEquals(testModel.getCurrState().toString(),"SETUP_NUMOFPLAYERS");
+
+        assertFalse(testModel.setNumberOfPlayers(100));
+        assertTrue(testModel.setNumberOfPlayers(2));
+        testModel.setNextState();
+
+        System.out.println("SETUP_PLAYERS");
+        assertEquals(testModel.getCurrState().toString(),"SETUP_PLAYERS");
+
+        assertTrue(testModel.addPlayer("sampleNick1", "2000.02.08"));
+        assertTrue(testModel.addPlayer("sampleNick2", "1999.02.08"));
+        testModel.setNextPlayer();
+        testModel.setNextState();
+
+        System.out.println("SETUP_CARDS");
+        assertEquals(testModel.getCurrState().toString(),"SETUP_CARDS");
+
+        testModel.setChallenger("sampleNick1");
+        assertEquals(testModel.getChallenger(), "sampleNick1");
+        Set<String> matchGodCards = new HashSet<>();
+        matchGodCards.add("Apollo");
+        assertFalse(testModel.setMatchCards(matchGodCards));
+        matchGodCards.add("Hello");
+        assertFalse(testModel.setMatchCards(matchGodCards));
+        matchGodCards.remove("Hello");
+        matchGodCards.add("Limus");
+        assertTrue(testModel.setMatchCards(matchGodCards));
+
+        assertEquals(testModel.getCurrPlayer(), "sampleNick1");
+        assertTrue(testModel.assignCard("Apollo"));
+        testModel.setNextPlayer();
+        assertTrue(testModel.assignCard("Limus"));
+        testModel.setNextPlayer();
+        assertFalse(testModel.setStartPlayer("sampleNick1","Minnie"));
+        assertTrue(testModel.setStartPlayer("sampleNick1","sampleNick1"));
+        testModel.setStartPlayerNickname("sampleNick1");
+        assertEquals(testModel.getStartPlayerNickname(), "sampleNick1");
+        testModel.setNextState();
+
+        System.out.println("SETUP_COLOR");
+        assertEquals(testModel.getCurrState().toString(),"SETUP_COLOR");
+
+        assertTrue(testModel.assignColor("LIGHT_BLUE"));
+        testModel.setNextPlayer();
+        assertTrue(testModel.assignColor("MAGENTA"));
+        testModel.setNextPlayer();
+        testModel.setNextState();
+
+        System.out.println("SETUP_BUILDERS");
+        assertEquals(testModel.getCurrState().toString(),"SETUP_BUILDERS");
+
+        assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(1,1), new Coordinates(2,2)));
+        testModel.setNextPlayer();
+        assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(0,0), new Coordinates(0,3)));
+        testModel.setNextPlayer();
+        testModel.setNextState();
+
+        System.out.println("GAME");
+        assertEquals(testModel.getCurrState().toString(),"GAME");
+
+        testModel.startTurn();
+        assertEquals(testModel.getCurrPlayer(), "sampleNick1");
+        //player1
+        assertEquals("MOVE", testModel.getCurrStep());
+        testModel.findPossibleDestinations();
+        assertTrue(testModel.possibleDstBuilder1.contains(new Coordinates(0,0)));
+        testModel.effectiveMove(new Coordinates(1,1), new Coordinates(0,0));
+        assertEquals("BUILD", testModel.getCurrStep());
+        testModel.findPossibleDestinations();
+        assertFalse(testModel.effectiveBuild(new Coordinates(1,1), new Coordinates(0,1), false));
+        //Limus effect
+        assertFalse(testModel.effectiveBuild(new Coordinates(0,0), new Coordinates(0,1), false));
+
+        assertFalse(testModel.hasNotLostDuringBuild());
+        testModel.deletePlayer("sampleNick1");
+        assertTrue(testModel.endGame());
     }
 }

@@ -17,9 +17,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     private ConnectionObserver connectionObserver;
 
-    public static final String red = Color.ANSI_RED.escape();
-
     private ViewState state;
+    private Model.State modelState;
 
     protected static final Map<String,String> chosenColorsForPlayer = new HashMap<>();
 
@@ -30,22 +29,17 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     protected Set<Coordinates> possibleDstBuilder1forDome;
     protected Set<Coordinates> possibleDstBuilder2forDome;
 
-    private Set<String> matchGodCards = new HashSet<>();
     private Map<String, String> chosenGodCardsForPlayer = new HashMap<>();
-
-    private ArrayList<Coordinates> chosenBuilderPositions = new ArrayList<>();
 
     protected GameMap gameMap;
     private String nickname;
     private String date;
 
     private int numberOfPlayers;
-    private int chosenBuilderNum = 0;
 
-    public void setChosenBuilderNum(int number) {
-        this.chosenBuilderNum = number;
+    public View () {
+        setState(ViewState.CONNECTION);
     }
-    public int getChosenBuilderNum() {return this.chosenBuilderNum;}
 
     public abstract void run();
 
@@ -60,21 +54,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     protected void setNumberOfPlayers(int numberOfPlayers) {this.numberOfPlayers = numberOfPlayers; }
     protected int getNumberOfPlayers() { return this.numberOfPlayers;}
-
-    protected void addMatchGodCard(String godCard) throws Exception{
-        if(!matchGodCards.contains(godCard))
-            matchGodCards.add(godCard);
-        else
-            throw new Exception("GodCard already chosen!");
-    }
-    protected Set<String> getMatchGodCards() { return Set.copyOf(matchGodCards);}
-
-    protected void addBuilderPosition(Coordinates coord) {
-        chosenBuilderPositions.add(coord);
-    }
-    protected ArrayList<Coordinates> getChosenBuilderPositions() {
-        return chosenBuilderPositions;
-    }
 
     public static String getColor(String nickname) {
         return chosenColorsForPlayer.get(nickname);
@@ -95,13 +74,13 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         this.numberOfPlayers = numOfPlayers;
 
         setState(ViewState.MATCHGODS);
-
     }
 
     public void askGodCard (Map<String, String> godDescriptions, Set<String> chosenCards) {
         setState(ViewState.PLAYERGOD);
 
     }
+
     public void chooseStartPlayer (Set<String> players) {
         setState(ViewState.STARTPLAYER);
     }
@@ -183,7 +162,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public void onColorAssigned(String nickname, String color, boolean result) {
         if(result)
             chosenColorsForPlayer.put(nickname, color);
-
     }
 
     @Override
@@ -230,7 +208,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     @Override
     public void onPlayerTurn(String nickname) {
 
-        chosenBuilderNum = 0;
+        gameMap.setChosenBuilderNum(0);
     }
 
     @Override
@@ -241,27 +219,28 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
             System.out.println(red + "\nERROR:"+ Color.RESET + " could not set starting player.");*/
     }
 
+    /**
+     * Notifies an update in Model state
+     * @param currState current model state
+     */
     @Override
     public void onStateUpdate(Model.State currState) {
-
+        modelState = currState;
     }
 
     /**
      * called when network handler socket is disconnected from server.
      * It changes the View state back to CONNECTION and reinitialize in-game data.
-     * It however does not reset the Map so you will have to create a new GameMap object.
-     *
+     * It however does not reset the Map so you will have to create a new GameMap object or clean it.
      */
     @Override
     public void onDisconnection() {
+
         setState(ViewState.CONNECTION);
 
         //resetting all game data
-        matchGodCards = new HashSet<>();
         chosenGodCardsForPlayer = new HashMap<>();
         currentTurnBuilderPos = null;
-        chosenBuilderNum = 0;
-        chosenBuilderPositions = new ArrayList<>();
-
+        //gameMap.setChosenBuilderNum(0);
     }
 }

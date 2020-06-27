@@ -9,7 +9,7 @@ public abstract class GameMap {
 
     private static final int DOME = -1;
     private Map<Coordinates, Integer> heights = new HashMap<>();
-    protected Map<String,String> chosenColorsForPlayer = new HashMap<>();
+    //protected Map<String,String> chosenColorsForPlayer = new HashMap<>();
     protected Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
 
     public static final int firstBuilderIndex = 0;
@@ -30,11 +30,11 @@ public abstract class GameMap {
         this.possibleDstBuilder2 = possibleDstBuilder2;
     }
 
-    public void setChosenBuilderNumber(int chosenBuilderNumber) {
+    public void setChosenBuilderNum(int chosenBuilderNumber) {
         this.chosenBuilderNumber = chosenBuilderNumber;
     }
 
-    public int getChosenBuilderNumber() {
+    public int getChosenBuilderNum() {
         return chosenBuilderNumber;
     }
 

@@ -22,6 +22,7 @@ public class Model extends ModelObservableWithSelect {
 
     private static final int maxNumberOfPlayers = 3;
     private static final int minNumberOfPlayers = 2;
+    private static final int firstBuilderIndex = 0;
     private final ArrayList<Player> players = new ArrayList<>();
     private int numPlayers;
     private final IslandBoard gameMap;
@@ -104,6 +105,7 @@ public class Model extends ModelObservableWithSelect {
 
     public void startTurn () {
         currPlayer.startTurn();
+        chosenBuilder = null;
         currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
     }
 
@@ -446,7 +448,8 @@ public class Model extends ModelObservableWithSelect {
         if(players.size() == 1) {
             end = true;
             notifyEndGame(players.get(0).getNickname());
-        } else {
+        }
+        else {
             for(Player p : players)
                 if(p.getGodCard().winCondition()) {
                     notifyEndGame(p.getNickname());
@@ -500,11 +503,17 @@ public class Model extends ModelObservableWithSelect {
      * This method is called after every move, to control whether the currPlayer has lost (he can't move anywhere)
      */
     public boolean hasNotLostDuringMove() {
-        if (possibleDstBuilder1 == null || possibleDstBuilder2 == null)
-            throw new IllegalArgumentException("Possible destinations arrays can't be null ");
 
-        if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty()) return false;
-        return true;
+        if (chosenBuilder == null)
+            return !possibleDstBuilder1.isEmpty() || !possibleDstBuilder2.isEmpty();
+
+        else {
+
+            if (chosenBuilder.equals(currPlayer.getBuilders().get(firstBuilderIndex)))
+                return !possibleDstBuilder1.isEmpty();
+            else
+                return !possibleDstBuilder2.isEmpty();
+        }
     }
 
     /**
@@ -512,9 +521,17 @@ public class Model extends ModelObservableWithSelect {
      */
     public boolean hasNotLostDuringBuild() {
 
-        if (possibleDstBuilder1.isEmpty() && possibleDstBuilder2.isEmpty() &&
-                possibleDstBuilder1forDome.isEmpty() && possibleDstBuilder2forDome.isEmpty()) return false;
-        return true;
+        if (chosenBuilder == null)
+            return !possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty() ||
+                    !possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty();
+
+        else {
+
+            if (chosenBuilder.equals(currPlayer.getBuilders().get(firstBuilderIndex)))
+                return !possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty();
+            else
+                return !possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty();
+        }
     }
 
 
@@ -618,9 +635,9 @@ public class Model extends ModelObservableWithSelect {
             changed = true;
         }
 
-        else {
+        else
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
-        }
+
         notifyChosenStep(currPlayer.getNickname(), step, changed);
 
         return changed;

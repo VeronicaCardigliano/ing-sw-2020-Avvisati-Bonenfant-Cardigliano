@@ -26,6 +26,9 @@ public class Builder {
         this.color = color;
     }
 
+    /**
+     * Overload used just for test purpose
+     */
     public Builder(Player player) throws IllegalArgumentException {
         this(player, BuilderColor.WHITE);
     }

@@ -105,6 +105,9 @@ public class GodCard {
 
     public ArrayList<String> getCurrStateList(){ return currStateList; }
 
+    public Player getPlayer() {
+        return player;
+    }
 
     private void setNextState(String previousStep) {
         step++;
@@ -192,10 +195,6 @@ public class GodCard {
         }
     }
 
-
-    public Player getPlayer() {
-        return player;
-    }
 
     /**
      * @param gameMap every GodCard will be interacting with.

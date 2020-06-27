@@ -18,4 +18,10 @@ public class BuilderTest {
         assertThrows(IllegalArgumentException.class, () -> new Builder(player, Builder.BuilderColor.WHITE).setCell(null));
     }
 
+    @Test
+    public void correctColorAssigned() {
+        Builder.BuilderColor testColor = Builder.BuilderColor.MAGENTA;
+        Builder testBuilder = new Builder (player, testColor);
+        assertEquals(testBuilder.getColor(), testColor);
+    }
 }
