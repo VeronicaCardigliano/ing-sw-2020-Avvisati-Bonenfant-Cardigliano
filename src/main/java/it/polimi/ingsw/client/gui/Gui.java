@@ -36,7 +36,7 @@ public class Gui extends View {
     public static final int mapDimension = 5;
     public static final int sceneWidth = 960, sceneHeight = 540;
     public static final double marginLength = 20;
-    private static final int minSceneWidth = 800;
+    private static final int minSceneWidth = 900;
     private static final int maxSceneWidth = 2500;
 
     public static final double mapRatioFromSides = 280.0/sceneWidth;
@@ -44,7 +44,7 @@ public class Gui extends View {
     public static final double mapRatioFromBottom = 70.0/sceneHeight;
     public static final double ratioCellHeight = 78.0/sceneHeight;
 
-    public final static int fontSize = 14;
+    public final static int fontSize = 15;
     public final static double selectionOpacity = 0.7;
     public static final int godsForPlayer = 1;
     private static final Color SEA = Color.rgb(51,184,253);
@@ -102,7 +102,9 @@ public class Gui extends View {
         this.home = new AnchorPane();
 
         TextField IPInsertion = new TextField ("IP");
+        IPInsertion.setFont(new Font("Arial", fontSize));
         TextField portInsertion = new TextField("Port");
+        portInsertion.setFont(new Font("Arial", fontSize));
 
         homeScene = new HomeScene (home, sceneWidth, sceneHeight, IPInsertion, portInsertion);
 
@@ -150,13 +152,6 @@ public class Gui extends View {
         dialogRegion.setSpacing(marginLength);
         dialogRegion.setAlignment(Pos.CENTER);
         bottomAnchorPane.prefHeightProperty().bind(primaryScene.heightProperty().multiply(mapRatioFromBottom));
-
-        this.bottomMessagesVBox = new VBox();
-        bottomMessagesVBox.setSpacing(marginLength/10);
-        bottomAnchorPane.getChildren().add(bottomMessagesVBox);
-        AnchorPane.setLeftAnchor(bottomMessagesVBox, marginLength);
-        AnchorPane.setTopAnchor(bottomMessagesVBox, marginLength/4);
-        bottomMessagesVBox.setAlignment(Pos.CENTER);
 
         root.setLeft(playersRegion); //list of players + gods
         root.setRight(dialogRegion); //dialog with user
@@ -365,9 +360,6 @@ public class Gui extends View {
 
         setState(ViewState.NUMPLAYERS);
         Set<String> possibleNumPlayers = new HashSet<>();
-
-        if (home.getChildren().contains(connectionErrorText))
-            Platform.runLater(()->home.getChildren().remove(connectionErrorText));
 
         for (int i = minNumberOfPlayers; i <= maxNumberOfPlayers; i++)
             possibleNumPlayers.add(String.valueOf(i));
@@ -587,6 +579,8 @@ public class Gui extends View {
             stepChoice.getItems().add(step);
         // set a default value
         stepChoice.setValue(possibleSteps.iterator().next());
+        stepChoice.setStyle("-fx-background-color: coral; -fx-border-color: tomato; -fx-mark-color: tomato; -fx-border-radius: 20; -fx-background-radius: 20;");
+
 
         Platform.runLater(() -> dialogRegion.getChildren().addAll(chooseStep, stepChoice));
 
@@ -954,6 +948,7 @@ public class Gui extends View {
      */
     @Override
     public void onEndGameUpdate(String winnerNickname) {
+        super.onEndGameUpdate(winnerNickname);
 
         if (!getNickname().equals(winnerNickname)) {
 
@@ -1006,13 +1001,19 @@ public class Gui extends View {
 
     private void resetAll () {
         //resets all
+        if (home.getChildren().contains(connectionErrorText))
+            Platform.runLater(()->home.getChildren().remove(connectionErrorText));
         Platform.runLater(() -> primaryStage.setScene(homeScene));
         Platform.runLater(() -> playersRegion.getChildren().clear());
         playersRegion.setBorder(null);
         playersRegion.setBackground(null);
 
+        tile = new TilePane();
+        gameMap = new GuiMap(tile, primaryScene);
+        root.setCenter(tile);
+
         Platform.runLater(() -> bottomAnchorPane.getChildren().clear());
-        gameMap.resetMap();
+        //gameMap.resetMap();
         Platform.runLater(() -> dialogRegion.getChildren().clear());
     }
 
@@ -1049,7 +1050,7 @@ public class Gui extends View {
                 printMessage("Invalid insertion of godCard.", true);
         }
         else if (result) {
-            printMessage(nickname + " chose " + card + "godCard", false);
+            printMessage(nickname + " chose " + card + " godCard", false);
         }
     }
 
@@ -1160,7 +1161,7 @@ public class Gui extends View {
                 printMessage("ERROR: could not set starting player.", false);
         }
         if (result)
-            printMessage("The starting player is" + nickname, false);
+            printMessage("The starting player is " + nickname, false);
     }
 
     /**
@@ -1201,6 +1202,13 @@ public class Gui extends View {
         }
 
         else if (currState.equals(Model.State.SETUP_PLAYERS)) {
+
+            this.bottomMessagesVBox = new VBox();
+            bottomMessagesVBox.setSpacing(marginLength/10);
+            bottomAnchorPane.getChildren().add(bottomMessagesVBox);
+            AnchorPane.setLeftAnchor(bottomMessagesVBox, marginLength);
+            AnchorPane.setTopAnchor(bottomMessagesVBox, marginLength/4);
+            bottomMessagesVBox.setAlignment(Pos.CENTER);
 
             Platform.runLater(() ->primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double)Gui.sceneWidth/Gui.sceneHeight)));
             Platform.runLater(() ->primaryStage.minHeightProperty().bind(root.widthProperty().divide((double)Gui.sceneWidth/Gui.sceneHeight)));
@@ -1251,11 +1259,14 @@ public class Gui extends View {
     @Override
     public void onDisconnection() {
         super.onDisconnection();
+
         if (!getState().equals(View.ViewState.END)) {
+
             Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> resetAll(), submitButtonPressed);
 
             playAgainBtn.setTextFill(Color.WHITESMOKE);
         }
+        setState(ViewState.CONNECTION);
         gameMap.setChosenBuilderNum(0);
     }
 
@@ -1314,7 +1325,7 @@ public class Gui extends View {
 
     @Override
     public void onOpponentDisconnection(String nickname) {
-        printMessage(warning + nickname + " disconnected " + warning, false);
+        printMessage(warning + " " + nickname + " disconnected " + warning, false);
     }
 }
 

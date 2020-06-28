@@ -18,7 +18,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     private ConnectionObserver connectionObserver;
 
     private ViewState state;
-    private Model.State modelState;
 
     protected static final Map<String,String> chosenColorsForPlayer = new HashMap<>();
 
@@ -219,11 +218,9 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     /**
      * Notifies an update in Model state
-     * @param currState current model state
      */
     @Override
     public void onStateUpdate(Model.State currState) {
-        modelState = currState;
     }
 
     /**
@@ -234,8 +231,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     @Override
     public void onDisconnection() {
 
-        setState(ViewState.CONNECTION);
-
+        setNickname(null);
+        setDate(null);
         //resetting all game data
         chosenGodCardsForPlayer = new HashMap<>();
         currentTurnBuilderPos = null;

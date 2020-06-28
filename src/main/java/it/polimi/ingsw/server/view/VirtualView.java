@@ -97,7 +97,7 @@ public class VirtualView extends ViewObservable implements Runnable {
         }
 
         try {
-            notifyConnection(this);
+            notifyConnection();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -107,7 +107,8 @@ public class VirtualView extends ViewObservable implements Runnable {
         //first ping sent
         scheduler.schedule(() -> out.println(Messages.ping()), pingDelay, TimeUnit.SECONDS);
 
-        String message = null;
+        String message;
+
         connected = true;
 
         while(connected) {
@@ -147,7 +148,7 @@ public class VirtualView extends ViewObservable implements Runnable {
 
     }
 
-    public synchronized void send(String message){
+    public void send(String message){
         if(!socket.isClosed()) {
             if (!message.equals(Messages.ping()))
                 System.out.println("Sending to " + socket.getRemoteSocketAddress() + " : " + message);
@@ -301,7 +302,7 @@ public class VirtualView extends ViewObservable implements Runnable {
     /**
      * Connection notification to connectionObserver (Controller)
      */
-    public void notifyConnection(VirtualView view) throws IOException{
+    public void notifyConnection() throws IOException{
         connectionObserver.onConnection(this);
     }
 

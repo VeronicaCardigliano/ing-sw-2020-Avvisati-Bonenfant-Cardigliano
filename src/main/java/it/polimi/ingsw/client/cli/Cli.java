@@ -854,6 +854,8 @@ public class Cli extends View{
     public void onDisconnection() {
         super.onDisconnection();
 
+        setState(ViewState.CONNECTION);
+
         gameMap.setChosenBuilderNum(0);
         gameMap = new CliGameMap();
 

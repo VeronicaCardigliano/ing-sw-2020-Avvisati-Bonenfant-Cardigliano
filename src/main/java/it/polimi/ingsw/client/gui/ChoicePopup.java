@@ -73,9 +73,6 @@ public class ChoicePopup extends Stage {
         choiceBox.setValue(choices.iterator().next());
         choiceBox.setStyle("-fx-background-color: steelblue; -fx-border-color: midnightblue; -fx-mark-color: midnightblue; -fx-border-radius: 20; -fx-background-radius: 20;");
 
-        choiceBox.getStyleClass().add(".cb.context-menu");
-        choiceBox.getStyleClass().add(".choice-box.menu-item:focused");
-
         Text requests = new Text (requestLabel);
         requests.setFill(Color.WHITE);
 

@@ -14,8 +14,6 @@ public class CliGameMap extends GameMap {
     private final String reset = Color.RESET;
 
 
-
-
     private static final String dottedCircle = "\u25CC", filledCircle = "\u25CF", hammerAndPick = "\u2692",
             boxDrawingsVerticalLine = "\u2502", boxDrawingsVerticalAndRight = "\u2502", boxDrawingsVerticalAndLeft = "\u2524",
             boxDrawingsDownAndHorizontal = "\u252C", boxDrawingsUpAndHorizontal = "\u2534", boxDrawingsHorizontal = "\u2500",
