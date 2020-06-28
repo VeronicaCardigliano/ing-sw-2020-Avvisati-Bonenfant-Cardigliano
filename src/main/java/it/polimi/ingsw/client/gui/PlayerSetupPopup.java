@@ -8,10 +8,14 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
+/**
+ * Creates a new window with two Text and TextField objects for the insertion of nickname and date and a submit button
+ */
 public class PlayerSetupPopup extends Stage {
 
     private AnchorPane anchorPane;
@@ -25,9 +29,13 @@ public class PlayerSetupPopup extends Stage {
         this.setTitle("New player");
         this.setResizable(false);
         this.anchorPane = new AnchorPane();
+        anchorPane.setStyle("-fx-background-color: lightslategrey");
 
-        Label nicknameRequest = new Label ("Insert nickname: ");
-        Label birthdayRequest = new Label ("Insert birthday in the format aaaa.mm.gg: ");
+        Text nicknameRequest = new Text ("Insert nickname: ");
+        Text birthdayRequest = new Text ("Insert birthday in the format aaaa.mm.gg: ");
+        nicknameRequest.setFill(Color.WHITE);
+        birthdayRequest.setFill(Color.WHITE);
+
         this.submit = new Button("Submit");
 
         submit.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
@@ -69,10 +77,10 @@ public class PlayerSetupPopup extends Stage {
         AnchorPane.setTopAnchor(nickInsertion,Gui.marginLength*2);
 
         AnchorPane.setLeftAnchor(birthdayRequest,Gui.marginLength);
-        AnchorPane.setTopAnchor(birthdayRequest,Gui.marginLength*4);
+        AnchorPane.setTopAnchor(birthdayRequest,Gui.marginLength*4.5);
 
         AnchorPane.setLeftAnchor(birthdayInsertion,Gui.marginLength);
-        AnchorPane.setTopAnchor(birthdayInsertion,Gui.marginLength*5);
+        AnchorPane.setTopAnchor(birthdayInsertion,Gui.marginLength*5.5);
 
         anchorPane.setPrefSize((float) Gui.sceneWidth/2.5, (float) Gui.sceneHeight/2.5);
 

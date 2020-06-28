@@ -8,6 +8,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -29,6 +30,7 @@ public class ChoicePopup extends Stage {
         this.setResizable(false);
 
         anchorPane = new AnchorPane();
+        anchorPane.setStyle("-fx-background-color: lightslategrey");
 
         submit = new Button("Submit");
 
@@ -69,8 +71,13 @@ public class ChoicePopup extends Stage {
 
         //sets the default value of the choiceBox to the first element of the set
         choiceBox.setValue(choices.iterator().next());
+        choiceBox.setStyle("-fx-background-color: steelblue; -fx-border-color: midnightblue; -fx-mark-color: midnightblue; -fx-border-radius: 20; -fx-background-radius: 20;");
 
-        Label requests = new Label (requestLabel);
+        choiceBox.getStyleClass().add(".cb.context-menu");
+        choiceBox.getStyleClass().add(".choice-box.menu-item:focused");
+
+        Text requests = new Text (requestLabel);
+        requests.setFill(Color.WHITE);
 
         AnchorPane.setLeftAnchor(requests,Gui.marginLength);
         AnchorPane.setTopAnchor(requests,Gui.marginLength);

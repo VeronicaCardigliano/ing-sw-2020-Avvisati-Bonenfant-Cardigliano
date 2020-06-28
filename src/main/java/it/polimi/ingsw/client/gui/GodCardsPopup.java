@@ -50,6 +50,7 @@ public class GodCardsPopup extends Stage {
         tilePane.setHgap(Gui.marginLength/2);
         tilePane.setVgap(Gui.marginLength/2);
 
+        vbox.setStyle("-fx-background-color: lightslategrey");
         vbox.setBackground(new Background(new BackgroundFill(Color.LIGHTSLATEGREY, null, null)));
 
         //if the popup appears to choose the matchGods, it has to tell the player that he's the challenger

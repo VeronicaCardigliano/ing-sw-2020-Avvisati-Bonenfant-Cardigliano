@@ -82,6 +82,7 @@ public class Gui extends View {
     private GodCardsPopup godCardsPopup;
     private Map<String, Text> playersNameTags = new HashMap<>();
     private boolean challenger;
+    private static final String warning = "\u26A0";
 
     /**
      * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
@@ -115,7 +116,7 @@ public class Gui extends View {
             }
         });
 
-        setupErrorText.setFill(Color.RED);
+        setupErrorText.setFill(Color.FIREBRICK);
         setupErrorText.setFont(new Font("Arial", fontSize));
         AnchorPane.setBottomAnchor(setupErrorText, Gui.marginLength);
         AnchorPane.setLeftAnchor(setupErrorText, Gui.marginLength);
@@ -123,6 +124,7 @@ public class Gui extends View {
 
         this.root = new BorderPane();
         this.primaryScene = new Scene (root, sceneWidth, sceneHeight);
+        //homeScene.getStylesheets().add(getClass().getResource("/stylesheet.css").toExternalForm());
 
         tile = new TilePane();
         gameMap = new GuiMap(tile, primaryScene);
@@ -168,6 +170,7 @@ public class Gui extends View {
 
         primaryStage.minWidthProperty().bind(home.heightProperty().multiply((double)sceneWidth/sceneHeight));
         primaryStage.minHeightProperty().bind(home.widthProperty().divide((double)sceneWidth/sceneHeight));
+        //primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/address_book_32.png")));
 
         primaryStage.widthProperty().addListener((o, oldValue, newValue)->{
             if(newValue.intValue() < minSceneWidth) {
@@ -282,7 +285,8 @@ public class Gui extends View {
             case "CONNECTION":
                 if (!home.getChildren().contains(connectionErrorText)) {
                     connectionErrorText.setText(message);
-                    connectionErrorText.setFill(Color.RED);
+                    connectionErrorText.setStyle("-fx-font-weight: bold; -fx-stroke: red");
+                    connectionErrorText.setFont(new Font("Arial", fontSize));
                     Platform.runLater(()->home.getChildren().add(connectionErrorText));
                     AnchorPane.setBottomAnchor(connectionErrorText, marginLength);
                     AnchorPane.setLeftAnchor(connectionErrorText, (double) sceneWidth/10);
@@ -313,7 +317,6 @@ public class Gui extends View {
             case "PLAYERGOD":
                 if (onPopup) {
                     setupErrorText.setText(message);
-                    setupErrorText.setFill(Color.DARKRED);
                     AnchorPane.setBottomAnchor(setupErrorText, Gui.marginLength/2);
                     AnchorPane.setLeftAnchor(setupErrorText, Gui.marginLength/2);
                     if (!godCardsPopup.isPresentOnBottom(setupErrorText))
@@ -393,6 +396,8 @@ public class Gui extends View {
 
         TextField nickInsertion = new TextField ("nickname");
         TextField birthdayInsertion = new TextField("birthday");
+        nickInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue;");
+        birthdayInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue;");
 
         Platform.runLater(() -> {
             playerSetupPopup = new PlayerSetupPopup(primaryStage, nickInsertion, birthdayInsertion);
@@ -994,22 +999,21 @@ public class Gui extends View {
 
         Platform.runLater(()-> dialogRegion.getChildren().add(text));
 
-        Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> {
-
-            notifyDisconnection();
-
-            //resets all
-            Platform.runLater(() -> primaryStage.setScene(homeScene));
-            Platform.runLater(() -> playersRegion.getChildren().clear());
-            playersRegion.setBorder(null);
-            playersRegion.setBackground(null);
-
-            Platform.runLater(() -> bottomAnchorPane.getChildren().clear());
-            gameMap.resetMap();
-            Platform.runLater(() -> dialogRegion.getChildren().clear());
-        }, submitButtonPressed);
+        Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> resetAll(), submitButtonPressed);
 
         playAgainBtn.setTextFill(Color.WHITESMOKE);
+    }
+
+    private void resetAll () {
+        //resets all
+        Platform.runLater(() -> primaryStage.setScene(homeScene));
+        Platform.runLater(() -> playersRegion.getChildren().clear());
+        playersRegion.setBorder(null);
+        playersRegion.setBackground(null);
+
+        Platform.runLater(() -> bottomAnchorPane.getChildren().clear());
+        gameMap.resetMap();
+        Platform.runLater(() -> dialogRegion.getChildren().clear());
     }
 
     @Override
@@ -1246,6 +1250,12 @@ public class Gui extends View {
 
     @Override
     public void onDisconnection() {
+        super.onDisconnection();
+        if (!getState().equals(View.ViewState.END)) {
+            Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> resetAll(), submitButtonPressed);
+
+            playAgainBtn.setTextFill(Color.WHITESMOKE);
+        }
         gameMap.setChosenBuilderNum(0);
     }
 
@@ -1303,8 +1313,8 @@ public class Gui extends View {
     }
 
     @Override
-    public void onDisconnectionObserver(String nickname) {
-
+    public void onOpponentDisconnection(String nickname) {
+        printMessage(warning + nickname + " disconnected " + warning, false);
     }
 }
 

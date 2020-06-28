@@ -12,7 +12,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         SocketObserver, OpponentDisconnectionObserver {
 
     public enum ViewState {
-        CONNECTION, WAITING, NUMPLAYERS, NICKDATE, MATCHGODS, PLAYERGOD, STARTPLAYER, BUILDERCOLOR, BUILDERPLACEMENT, STEP, MOVE, BUILD
+        CONNECTION, WAITING, NUMPLAYERS, NICKDATE, MATCHGODS, PLAYERGOD, STARTPLAYER, BUILDERCOLOR, BUILDERPLACEMENT, STEP, MOVE, BUILD, END
     }
 
     private ConnectionObserver connectionObserver;
@@ -166,7 +166,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onEndGameUpdate(String winnerNickname) {
-        ;//logger.log("Player " + winnerNickname + " wins!!\n");
+        setState(ViewState.END);
     }
 
     @Override

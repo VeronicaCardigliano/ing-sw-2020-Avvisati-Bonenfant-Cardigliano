@@ -869,7 +869,7 @@ public class Cli extends View{
     }
 
     @Override
-    public void onDisconnectionObserver(String nickname) {
+    public void onOpponentDisconnection(String nickname) {
         printer.setInfoMessage(nickname + " disconnected");
         printer.print();
     }
