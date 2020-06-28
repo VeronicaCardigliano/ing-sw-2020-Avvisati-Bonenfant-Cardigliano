@@ -643,8 +643,6 @@ public class Cli extends View{
         gameMap.removePlayer(nickname);
         printer.setInfoMessage(nickname + " has lost!");
         printer.print();
-
-
     }
 
     @Override

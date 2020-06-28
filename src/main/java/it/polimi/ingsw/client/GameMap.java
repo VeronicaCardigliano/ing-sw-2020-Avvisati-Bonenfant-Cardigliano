@@ -5,6 +5,9 @@ import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
 import java.util.*;
 
+/**
+ * Abstract class of the game map, extended by CliGameMap and GuiMap, that uses these common methods and attributes
+ */
 public abstract class GameMap {
 
     private static final int DOME = -1;

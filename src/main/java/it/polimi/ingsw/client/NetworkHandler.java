@@ -163,8 +163,6 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
                 //richieste Controller
 
-
-
                 case Messages.ASK_NUMBER_OF_PLAYERS:
                     executorS.execute(() -> view.askNumberOfPlayers());
                     //view.askNumberOfPlayers();
@@ -352,8 +350,6 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     @Override
     public void onDisconnection() {
         send(Messages.disconnect());
-
-
     }
 
     @Override
@@ -366,7 +362,6 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     public void onConnection(String ip, int port) {
         setIp(ip);
         setPort(port);
-
         onConnection();
     }
 

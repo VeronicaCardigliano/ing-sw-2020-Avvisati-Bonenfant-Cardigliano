@@ -268,8 +268,9 @@ public class Gui extends View {
 
 
     /**
-     * Private method used to print maxMessagesShown messages in the bottom left of the scene.
-     * @param message error or information messages received from server
+     * Used to print a generic message in function of the currState value. Prints on home if the state is CONNECTION,
+     * on a popup if there's a popup opened, or on the primary scene through the specific method
+     * @param message error or information messages
      */
     private void printMessage(String message, boolean onPopup) {
 
@@ -290,7 +291,7 @@ public class Gui extends View {
                     Platform.runLater(()->connectionErrorText.setText(message));
                 break;
             case "NUMPLAYERS":
-                printOnPrimaryStage(message);
+                printOnPrimaryScene(message);
 
             case "NICKDATE":
                 if (onPopup) {
@@ -300,7 +301,7 @@ public class Gui extends View {
                     setupErrorText.setText(message);
                 }
                 else
-                    printOnPrimaryStage(message);
+                    printOnPrimaryScene(message);
                  break;
             case "STARTPLAYER":
             case "BUILDERCOLOR":
@@ -318,18 +319,22 @@ public class Gui extends View {
                         godCardsPopup.addErrorMessage(setupErrorText);
                 }
                 else
-                    printOnPrimaryStage(message);
+                    printOnPrimaryScene(message);
                 break;
             case "BUILDERPLACEMENT":
             case "STEP":
             case "MOVE":
             case "BUILD":
-                printOnPrimaryStage(message);
+                printOnPrimaryScene(message);
                 break;
         }
     }
 
-    private void printOnPrimaryStage (String message) {
+    /**
+     * Private method used to add a message on the primary scene (in bottomMessagesVBox)
+     * @param message the message to print
+     */
+    private void printOnPrimaryScene(String message) {
 
         Text messageText = new Text(message);
         messageText.setFont(new Font("Arial", fontSize));
@@ -388,8 +393,10 @@ public class Gui extends View {
 
         TextField nickInsertion = new TextField ("nickname");
         TextField birthdayInsertion = new TextField("birthday");
+        nickInsertion.setFont(new Font("Arial", fontSize));
         nickInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue;");
         birthdayInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue;");
+        birthdayInsertion.setFont(new Font("Arial", fontSize));
 
         Platform.runLater(() -> {
             playerSetupPopup = new PlayerSetupPopup(primaryStage, nickInsertion, birthdayInsertion);
@@ -579,7 +586,7 @@ public class Gui extends View {
             stepChoice.getItems().add(step);
         // set a default value
         stepChoice.setValue(possibleSteps.iterator().next());
-        stepChoice.setStyle("-fx-background-color: coral; -fx-border-color: tomato; -fx-mark-color: tomato; -fx-border-radius: 20; -fx-background-radius: 20;");
+        stepChoice.setStyle("-fx-background-color: tomato; -fx-border-color: brown; -fx-mark-color: brown; -fx-border-radius: 20; -fx-background-radius: 20;");
 
 
         Platform.runLater(() -> dialogRegion.getChildren().addAll(chooseStep, stepChoice));
@@ -790,6 +797,12 @@ public class Gui extends View {
         }
     }
 
+    /**
+     * If the builder has not been chosen yet, if the player can build a dome somewhere, asks for building a dome or not,
+     * otherwise shows the possible destinations and to select a builder.
+     * If the builder has been chosen, if it can build a dome somewhere, asks for building a dome or not, otherwise
+     * calls "buildToDst" to show the possible destinations for that builder and make them clickable
+     */
     @Override
     public void build() {
 
@@ -813,14 +826,23 @@ public class Gui extends View {
                 askForDome();
 
             else {
-                gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
-                        possibleDstBuilder2forDome, buildDome, null);
+                //gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
+                //        possibleDstBuilder2forDome, buildDome, null);
                 printMessage("Select where you want to build", false);
                 buildToDst();
             }
         }
     }
 
+    /**
+     * If the build is successful, resets the possible destinations for the player who did it and creates
+     * the new building for the other ones. Otherwise, prints a message of error.
+     * @param nickname current player who's building
+     * @param src builder position in coordinates
+     * @param dst where the player has choose to build
+     * @param dome true if the player wanted to build/has built a dome
+     * @param result true if the build was successful
+     */
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
 
@@ -835,6 +857,15 @@ public class Gui extends View {
             printMessage("Could not build", false);
     }
 
+    /**
+     * If the move is successful, resets the possible destinations for the player who did it, updates the
+     * currentTurnBuilderPos to the dest of the move, updates the occupied cells and does the effective move
+     * through GuiMap method moveBuilder
+     * @param nickname of the current player
+     * @param src coordinates of the previous position of the builder
+     * @param dst coordinates of the destination of the move step
+     * @param result true if the movement is successful
+     */
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
 
@@ -847,11 +878,7 @@ public class Gui extends View {
             //does the effective move of the builder in map
             gameMap.moveBuilder(gameMap.coordinatesToIndex(src), gameMap.coordinatesToIndex(dst));
 
-            //updates the occupied cells, if the src is the first builder, updates the first builder pos, otherwise the second builder one
-            if (Coordinates.equals(gameMap.getOccupiedCells().get(nickname).get(GameMap.firstBuilderIndex), src))
-                gameMap.setOccupiedCells(nickname, dst, gameMap.getOccupiedCells().get(nickname).get(GameMap.secondBuilderIndex));
-            else
-                gameMap.setOccupiedCells(nickname, gameMap.getOccupiedCells().get(nickname).get(GameMap.firstBuilderIndex), dst);
+            gameMap.updateOccupiedCells(nickname, src, dst);
         }
         else
             printMessage("Could not move.", false);
@@ -999,6 +1026,9 @@ public class Gui extends View {
         playAgainBtn.setTextFill(Color.WHITESMOKE);
     }
 
+    /**
+     * Private method used to reset all the
+     */
     private void resetAll () {
         //resets all
         if (home.getChildren().contains(connectionErrorText))
@@ -1013,10 +1043,12 @@ public class Gui extends View {
         root.setCenter(tile);
 
         Platform.runLater(() -> bottomAnchorPane.getChildren().clear());
-        //gameMap.resetMap();
         Platform.runLater(() -> dialogRegion.getChildren().clear());
     }
 
+    /**
+     * Prints a generic message of error passed by server
+     */
     @Override
     public void onWrongInsertionUpdate(String error) {
         printMessage(error, false);
@@ -1106,6 +1138,7 @@ public class Gui extends View {
 
         super.onLossUpdate(nickname);
 
+        gameMap.removePlayer(nickname);
         if (!getNickname().equals(nickname)) {
             printMessage(nickname + " lost!", false);
             gameMap.removeBuilders(nickname);
@@ -1230,7 +1263,8 @@ public class Gui extends View {
     }
 
     /**
-     * Predefined alert to confirm the leaving of the match, returns true if the user clicks on YES button
+     * Predefined alert popup to confirm the leaving of the match, returns true if the user clicks on YES button,
+     * false if it clicks on CANCEL and so the closure is canceled
      */
     protected static boolean confirmQuit () {
 
@@ -1248,7 +1282,7 @@ public class Gui extends View {
     }
 
     /**
-     * Creates a label of error and shows it in the bottom-left of the home scene
+     * Prints a message of connection error
      * @param message error message received from server
      */
     @Override
@@ -1256,6 +1290,10 @@ public class Gui extends View {
         printMessage(message, false);
     }
 
+    /**
+     * Notifies the player that they've been disconnected and creates a play again button, so that each user can choose
+     * to play again or to quit the game.
+     */
     @Override
     public void onDisconnection() {
         super.onDisconnection();
@@ -1263,7 +1301,6 @@ public class Gui extends View {
         if (!getState().equals(View.ViewState.END)) {
 
             Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> resetAll(), submitButtonPressed);
-
             playAgainBtn.setTextFill(Color.WHITESMOKE);
         }
         setState(ViewState.CONNECTION);
@@ -1271,7 +1308,7 @@ public class Gui extends View {
     }
 
     /**
-     * This method is used to set the players region (left side of the root borderPane) with players' names and nametags
+     * This method is used to set the players region (left side of the root borderPane) with player names and nametags
      * images and their chosen godCards
      */
     private void setPlayersRegion () {
@@ -1323,6 +1360,10 @@ public class Gui extends View {
         }
     }
 
+    /**
+     * Notifies the players that someone has disconnected
+     * @param nickname of the player who disconnected, if it has already a nickname, null otherwise.
+     */
     @Override
     public void onOpponentDisconnection(String nickname) {
         printMessage(warning + " " + nickname + " disconnected " + warning, false);
