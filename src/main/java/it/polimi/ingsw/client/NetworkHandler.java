@@ -384,6 +384,6 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     }
 
     public void notifyOpponentDisconnection(String nickname) {
-        opponentDisconnectionObserver.onDisconnectionObserver(nickname);
+        opponentDisconnectionObserver.onOpponentDisconnection(nickname);
     }
 }
