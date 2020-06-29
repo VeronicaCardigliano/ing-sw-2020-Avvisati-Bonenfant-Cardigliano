@@ -6,12 +6,10 @@ import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
 
 /**
- * @author thomas
- *
  * Immutable class representing an event on the board.
  * It can be either a MOVE or BUILD type of event.
- * Events are used by IslandBoard to check if a move is possible according to other GodCards' rules
- * or to check if a Player has won.
+ * Events are used by IslandBoard to check if a move is possible according to other god card's rules
+ * or to check if a player has won.
  */
 public class Event {
     public enum EventType {
@@ -46,10 +44,6 @@ public class Event {
     public int getDstBlockHeight() {
         return dstCell.getHeight();
     }
-
-    /*public boolean builtDome() {
-        return type == EventType.BUILD_DOME;
-    } */
 
     public Cell getSrcCell() { return srcCell; }
 

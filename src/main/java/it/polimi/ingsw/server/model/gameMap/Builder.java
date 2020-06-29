@@ -3,7 +3,6 @@ package it.polimi.ingsw.server.model.gameMap;
 import it.polimi.ingsw.server.model.Player;
 
 /**
- * @author veronica
  * The builder is one of the two player's pawn that can be positioned on the map
  * and moved in each turn. It can also build in an adjacent cell.
  */

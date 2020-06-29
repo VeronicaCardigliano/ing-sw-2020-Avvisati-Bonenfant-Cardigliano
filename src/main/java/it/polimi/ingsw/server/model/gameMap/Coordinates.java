@@ -1,5 +1,9 @@
 package it.polimi.ingsw.server.model.gameMap;
 
+/**
+ * An alternative to reference a cell
+ */
+
 public class Coordinates {
     private final int i;
     private final int j;

@@ -1,8 +1,6 @@
 package it.polimi.ingsw.server.model.gameMap;
 
 /**
- * @author giulio
- *
  * Mutable Cell class. Each cell has an height and can have an Occupant or a Dome. It's not possible to
  * build an additional block if height = IslandBoard.maxHeight or a dome has been set.
  */
@@ -47,6 +45,7 @@ public class Cell extends Coordinates{
         return added;
     }
 
+
     public boolean addDome() {
         boolean added = false;
 
@@ -58,14 +57,12 @@ public class Cell extends Coordinates{
         return added;
     }
 
-    /**
-     * Method that sets the Cell occupant.
-     *
-     * @param occupant builder willing to occupy the Cell. Cannot be null
-     * @return true if occupant has been correctly set.
-     *
-     */
 
+    /**
+     * Method that puts a builder into a cell.
+     * @param occupant Builder willing to occupy the Cell. Cannot be null
+     * @return True if occupant has been correctly set.
+     */
     public boolean setOccupant(Builder occupant) {
         boolean set = false;
 
@@ -74,20 +71,16 @@ public class Cell extends Coordinates{
             occupant.setCell(this);
             set = true;
         }
-
         return set;
     }
 
 
     public boolean removeOccupant() {
         boolean removed = false;
-
         if(occupant != null) {
             occupant = null;
             removed = true;
         }
-
         return removed;
     }
-
 }

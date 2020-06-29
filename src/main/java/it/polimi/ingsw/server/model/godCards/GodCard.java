@@ -132,9 +132,8 @@ public class GodCard {
                         tmp = true;
                     } else if (!currState.equals(list.get(step))) {
                         currState = "REQUIRED";
-                        //This should prevent from saving clones, TODO verify
-                        if (!currStateList.contains(list.get(step))) /*step () i*/
-                            currStateList.add(list.get(step)); /*step () i*/
+                        if (!currStateList.contains(list.get(step)))
+                            currStateList.add(list.get(step));
                     }
 
                 } else {
@@ -148,9 +147,7 @@ public class GodCard {
                 i--;
             }
         }
-
         filterNextState();
-
     }
 
 
@@ -305,7 +302,7 @@ public class GodCard {
                 (dst.getHeight() == IslandBoard.maxHeight && buildDome);
 
         return src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) &&
-                IslandBoard.distanceOne(src, dst) &&
+                IslandBoard.distanceOne (src, dst) &&
                 !dst.isDomePresent() && !dst.isOccupied() && buildHeightCondition &&
                 gameMap.check(new Event(type, src, dst));
     }

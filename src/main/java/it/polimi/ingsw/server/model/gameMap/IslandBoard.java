@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * author @giulio
- *
  * IslandBoard class contains all the cells of the board and the list of the exposed constraints in the game
  */
 
@@ -30,8 +28,6 @@ public class IslandBoard {
                 matrix[i][j] = new Cell(i,j);
             }
         }
-
-        //create empty set of constraint OpponentTurnGodCard
         constraintsList = new HashSet<>();
     }
 
@@ -44,33 +40,17 @@ public class IslandBoard {
         return getCell(coord.getI(), coord.getJ());
     }
 
-    /*
-    /**
-     *
-     * @return Clone of the matrix board, only for testing purpose
-    public Cell[][] getMatrix(){return matrix.clone();}
-    */
 
     /**
-     * @author giulio
-     * @param i_src source i
-     * @param j_src source j
-     * @param i_dst destination i
-     * @param j_dst destination j
-     * @return Returns the height difference of Cell(dst) - Cell(src)
+     * @return Returns the height difference between SRC and DST cells
      */
     public int heightDifference(int i_src, int j_src, int i_dst, int j_dst){
         return (getCell(i_dst,j_dst).getHeight() - getCell(i_src,j_src).getHeight());
     }
 
+
     /**
-     *
-     * Static method that returns the height difference between 2 cells.
-     * parameters must not be null.
-     * @param src Cell
-     * @param dst Cell
-     * @return dst height - src height
-     * @author thomas
+     * @return Returns the height difference between SRC and DST cells
      */
     public static int heightDifference(Cell src, Cell dst) {
         return dst.getHeight() - src.getHeight();
@@ -78,8 +58,7 @@ public class IslandBoard {
 
 
     /**
-     * @author giulio
-     * @return true if the Distance between two cells is 1
+     * @return true if the distance between SRC and DST cell is one
      */
     public static boolean distanceOne(int i_src, int j_src, int i_dst, int j_dst){
         int modI = Math.abs(i_src - i_dst);
@@ -89,13 +68,10 @@ public class IslandBoard {
     }
 
     /**
-     * @author thomas
-     *
      * parameters must not be null
-     *
      * @param src Cell from which the builder will move
      * @param dst Cell to which the builder will move
-     * @return true if distance between 2 cells is 1 (boolean)
+     * @return true if distance between SRC and DST cell is one
      */
     public static boolean distanceOne(Cell src, Cell dst) {
         int modI = Math.abs(src.getI() - dst.getI());
@@ -106,7 +82,7 @@ public class IslandBoard {
 
     /**
      * Add a new Constraint for next players.
-     * @param card with contraint
+     * @param card with constraint
      */
     public void addConstraint(OpponentTurnGodCard card) {
         constraintToActivate = card;
@@ -122,13 +98,11 @@ public class IslandBoard {
 
     public boolean check(Event event) {
         boolean allowed = true;
-
         for(OpponentTurnGodCard constraintCard : constraintsList)
             if(!constraintCard.checkFutureEvent(event)) {
                 allowed = false;
                 break;
             }
-
         return allowed;
     }
 
@@ -138,5 +112,4 @@ public class IslandBoard {
             constraintToActivate = null;
         }
     }
-
 }

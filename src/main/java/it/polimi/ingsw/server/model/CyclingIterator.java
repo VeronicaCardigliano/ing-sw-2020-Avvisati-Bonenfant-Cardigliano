@@ -3,6 +3,9 @@ package it.polimi.ingsw.server.model;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+/**
+ * Iterator use to manage turns into the game
+ */
 public class CyclingIterator<T> implements Iterator<T> {
     private ArrayList<T> data;
     private int index;

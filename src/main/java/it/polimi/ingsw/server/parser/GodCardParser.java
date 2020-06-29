@@ -8,9 +8,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -115,7 +112,7 @@ public class GodCardParser {
                 case "TURN":
                     flagParameters.put("blockMovingUpIfBuilt", godObject.opt("blockMovingUpIfBuilt") != null &&
                             godObject.getBoolean("blockMovingUpIfBuilt"));
-                    cardCreated = new YourTurnGodCard(player, name, description, states, flagParameters, intParameters);
+                    cardCreated = new YourTurnGodCard(player, name, description, states, flagParameters);
                     break;
 
                 case "WIN":

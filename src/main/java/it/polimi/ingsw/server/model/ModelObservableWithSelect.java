@@ -2,6 +2,10 @@ package it.polimi.ingsw.server.model;
 
 import it.polimi.ingsw.server.view.ViewSelectObserver;
 
+/**
+ * @see ModelObservable
+ * Contains an observer used to select a specific view to which send the message
+ */
 public abstract class ModelObservableWithSelect extends ModelObservable{
     ViewSelectObserver viewSelectObserver;
 

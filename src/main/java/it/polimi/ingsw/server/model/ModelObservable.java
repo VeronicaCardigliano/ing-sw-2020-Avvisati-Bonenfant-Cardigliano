@@ -6,7 +6,7 @@ import it.polimi.ingsw.server.view.*;
 import java.util.Set;
 
 /**
- * has a list of observers and each of them is updated calling the notify method
+ * Contains a list of observers and each of them is updated calling the notify method
  */
 public abstract class ModelObservable {
     private StateObserver stateObserver;

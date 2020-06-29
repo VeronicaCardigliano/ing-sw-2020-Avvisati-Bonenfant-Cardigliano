@@ -8,8 +8,7 @@ import java.util.List;
 
 
 /**
- * @author veronica
- * Player is one of the players of the game with a list of two builders and an unique nickname
+ * Player is one of the players of the game with a list of two builders and a unique nickname
  */
 
 public class Player {
@@ -22,7 +21,6 @@ public class Player {
      * @param nickname : unique identifier of each player of the game
      * @throws IllegalArgumentException if nickname null
      */
-
     public Player(String nickname) throws IllegalArgumentException {
         this (nickname, 0);
     }
@@ -32,17 +30,26 @@ public class Player {
             throw new IllegalArgumentException ("Nickname can't be null");
         this.nickname = nickname;
         this.birthday = birthday;
-
     }
 
+    /**
+     * Shortcut for move in godCard
+     */
     public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
         return godCard.move(i_src, j_src, i_dst, j_dst);
     }
 
+    /**
+     * Shortcut for build in godCard
+     */
     public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
         return godCard.build(i_src, j_src, i_dst, j_dst, buildDome);
     }
 
+    /**
+     * Set the builders for the current player
+     * @throws IllegalArgumentException in case nickname is NULL or builder1 and builder2 are equals
+     */
     public void setBuilders (Builder builder1, Builder builder2) {
         if (builder1 == null || builder2 == null)
             throw new IllegalArgumentException ("Nickname can't be null");
@@ -74,10 +81,16 @@ public class Player {
         return birthday;
     }
 
+    /**
+     * Shortcut for godCard startTurn
+     */
     public void startTurn() {
         godCard.startTurn();
     }
 
+    /**
+     * Shortcut for godCard forceState
+     */
     public void forceStep(String step) {
         godCard.forceState(step);
     }

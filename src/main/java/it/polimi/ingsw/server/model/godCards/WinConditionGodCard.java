@@ -7,12 +7,9 @@ import it.polimi.ingsw.server.model.Player;
 import java.util.ArrayList;
 import java.util.Map;
 
-/*
- * GODS WITH WINCONDITION PROPERTY:
- * Pan
- * Chronos (advanced)
- *
- * */
+/**
+ * God card with different conditions to win
+ */
 
 
 public class WinConditionGodCard extends GodCard {
@@ -20,13 +17,6 @@ public class WinConditionGodCard extends GodCard {
     private final int minimumDownStepsToWin;
     private final int completeTowersToWin;
 
-
-    /**
-     * GodCard constructor. Parses JSON
-     *
-     * @param player     whose card is
-     *
-     */
     public WinConditionGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
                                Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
         super(player, name, description, states);

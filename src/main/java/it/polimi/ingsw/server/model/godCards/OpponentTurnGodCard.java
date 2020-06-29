@@ -9,9 +9,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- * @author thomas
- *
- * GodCard with powers that are applied during enemies turns.
+ * God card with powers that are applied during enemies turns.
  */
 public class OpponentTurnGodCard extends GodCard {
 
@@ -23,15 +21,12 @@ public class OpponentTurnGodCard extends GodCard {
 
     /**
      * GodCard constructor. Parses JSON
-     *
      * @param player     whose card is
-     *
      */
     public OpponentTurnGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
                                Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
         super(player, name, description, states);
 
-        //this.event.
         this.activeOnMoveUp = flagParameters.get("activeOnMoveUp");
         this.blockMoveUp = flagParameters.get("blockMoveUp");
         this.limusPower = flagParameters.get("limusPower");
@@ -42,17 +37,16 @@ public class OpponentTurnGodCard extends GodCard {
     @Override
     public void startTurn() {
         super.startTurn();
-
-        //when the turn starts previous constraint from this card has to be removed
         if(!alwaysActive)
             gameMap.removeConstraint(this);
     }
 
+    /**
+     * Check if constraint should be added
+     */
     public void check() {
-        //Athena activation
         if(activeOnMoveUp && event.getType() == Event.EventType.MOVE && event.heightDifference() > 0)
             gameMap.addConstraint(this);
-
     }
 
 
@@ -67,32 +61,26 @@ public class OpponentTurnGodCard extends GodCard {
     @Override
     public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
         boolean result =  super.move(i_src, j_src, i_dst, j_dst);
-
         check();
-
         return result;
     }
 
     @Override
     public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
         boolean result = super.build(i_src, j_src, i_dst, j_dst, buildDome);
-
         check();
-
         return result;
     }
 
+    //TODO javadoc
     public boolean checkFutureEvent(Event futureEvent) {
         boolean allowed = true;
 
-        //move events
         if(futureEvent.getType() == Event.EventType.MOVE) {
-            //athena blocks move
             if(blockMoveUp && futureEvent.heightDifference() > 0)
                 allowed = false;
         }
 
-        //build event
         if(futureEvent.getType() == Event.EventType.BUILD ||futureEvent.getType() == Event.EventType.BUILD_DOME) {
 
             if (limusPower && !futureEvent.getSrcCell().getBuilder().getPlayer().equals(player)){
