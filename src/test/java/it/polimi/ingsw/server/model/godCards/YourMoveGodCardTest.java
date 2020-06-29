@@ -132,11 +132,6 @@ public class  YourMoveGodCardTest {
         assertTrue(god.currStateList.contains("BUILD"));
         assertTrue(god.currState.equals("REQUIRED"));
 
-        assertFalse(god.askMove(0,2,1,2));
-        assertFalse(god.move(0,2,1,2));
-
-
-
         assertTrue(god.askBuild(0,2,0,3, false));
         assertTrue(god.build(0,2,0,3,false));
 

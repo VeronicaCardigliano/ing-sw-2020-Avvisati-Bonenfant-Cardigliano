@@ -34,13 +34,9 @@ class GodCardTest {
     static Builder builder6;
 
     /**
-     * create a map with 2 builders from one player
+     * create a map with 2 players
      */
     @BeforeAll
-    /*
-        create 2 builders for player 1.
-
-     */
     public static void setup() {
         System.out.println("\nGODCARD TESTS");
 
@@ -74,7 +70,6 @@ class GodCardTest {
         //Prometheus is used to check the choice before REQUIRED state (startTurn)
         opponentGodCard2 = parser.createCard(opponent2, "Prometheus");
         opponent2.setGodCard(opponentGodCard2);
-
     }
 
     /*
@@ -95,6 +90,25 @@ class GodCardTest {
         cell2.setOccupant(builder2);
     }
 
+
+    @Test
+    public void godEquals(){
+        //Cards of different types
+        assertFalse(opponentGodCard.equals(opponentGodCard2));
+
+        //Cards with same type
+        GodCardParser parser = new GodCardParser(Model.jsonPath);
+        opponentGodCard2 = parser.createCard(opponent2, "Atlas");
+        assertFalse(opponentGodCard.equals(opponentGodCard2));
+    }
+
+    @Test
+    public void getGodData(){
+        ArrayList list = new ArrayList<String>();
+        list.add("MOVE");
+        assertEquals(opponentGodCard.getName(), "Demeter");
+        assertEquals(opponentGodCard.getDescription(),"Your Worker may build one additional time, but not on the same space");
+    }
 
     @Test
     public void cantSetGameMapNull() {
