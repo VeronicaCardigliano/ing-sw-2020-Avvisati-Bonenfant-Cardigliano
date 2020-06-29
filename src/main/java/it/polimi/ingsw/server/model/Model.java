@@ -192,7 +192,6 @@ public class Model extends ModelObservableWithSelect {
 
     /**
      * @param num Number of players that will play in the game
-     * @return If
      */
     public boolean setNumberOfPlayers(int num){
         if (minNumberOfPlayers <= num && num <= maxNumberOfPlayers)
@@ -204,8 +203,8 @@ public class Model extends ModelObservableWithSelect {
 
     /**
      * This method ensures that the players are added in order of birthday, from the youngest to the oldest
-     * @param nickname: unique identifier of a new player
-     * @param birthday: String that represents a birthday (yyyy.mm.dd)
+     * @param nickname Unique identifier of a new player
+     * @param birthday String that represents a birthday (yyyy.mm.dd)
      */
     public boolean addPlayer (String nickname, String birthday) {
         boolean canAdd = true;
@@ -248,29 +247,30 @@ public class Model extends ModelObservableWithSelect {
             });
         }
 
-        //notifyViewSelection(nickname);
         notifyPlayerAdded(nickname, canAdd);
 
         return canAdd;
     }
 
+    /**
+     * Check if a given date is valid. Leap year control is enabled
+     * @param date Date as string in format YYYY.MM.DD
+     */
     protected static boolean checkDate(String date) {
         boolean dateOk = false;
         List<String> components = Arrays.asList(date.split("\\."));
 
-        int thisYear = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
-        int thisMonth = Integer.parseInt(new SimpleDateFormat("MM").format(new Date()));
-        int thisDay = Integer.parseInt(new SimpleDateFormat("dd").format(new Date()));
-
         int inputYear, inputMonth, inputDay;
 
-        //MUST VERIFY THAT DATE CONTAINS ONLY DOTS AND NUMBERS
         if (date.matches("\\d{4}\\.\\d{2}\\.\\d{2}")){
             inputYear = Integer.parseInt(components.get(0));
             inputMonth = Integer.parseInt(components.get(1));
             inputDay = Integer.parseInt(components.get(2));
 
-            //questo controllo assume ogni anno come bisestile ed include quindi anche il 29 Gennaio.
+            boolean isLeap = false;
+            if (inputYear % 100 == 0 && inputYear % 4 == 0 && inputYear % 400 == 0)
+                isLeap = true;
+
             if(inputYear > 0 && inputMonth >= 1 && inputMonth <= 12) {
                 switch (inputMonth) {
                     case 4:
@@ -280,7 +280,10 @@ public class Model extends ModelObservableWithSelect {
                         dateOk = inputDay >= 1 && inputDay <= 30;
                         break;
                     case 2:
-                        dateOk = inputDay >= 1 && inputDay <= 29;
+                        if (isLeap)
+                            dateOk = inputDay >= 1 && inputDay <= 29;
+                        else
+                            dateOk = inputDay >= 1 && inputDay <= 28;
                         break;
                     default:
                         dateOk = inputDay >= 1 && inputDay <= 31;
@@ -293,6 +296,9 @@ public class Model extends ModelObservableWithSelect {
     }
 
 
+    /**
+     * @param matchGodCards Set of god cards the challenger has chose
+     */
     public boolean setMatchCards(Set<String> matchGodCards) {
         boolean set = true;
 
@@ -309,10 +315,11 @@ public class Model extends ModelObservableWithSelect {
         return set;
     }
 
-    /** This method is used by game() to assign a godCard to a player
-     * @param chosenGodCard the name of the GodCard the current player has chosen
-     * It gives an error whether the player choose a different name from the ones printed (available)*/
 
+    /** This method used to assign a god card to a player
+     * @param chosenGodCard Name of the GodCard the current player has chosen
+     * @return False if the god card doesn't exist or isn't in the list of the available ones
+     */
     public boolean assignCard (String chosenGodCard) {
         boolean existing = false;
         boolean assigned = true;
@@ -348,6 +355,13 @@ public class Model extends ModelObservableWithSelect {
         return assigned;
     }
 
+
+    /**
+     * Sets start player
+     * @param challenger
+     * @param startPlayer Nickname of the player chosen to start the game
+     * @return
+     */
     public boolean setStartPlayer(String challenger, String startPlayer) {
         boolean result = true;
         Set<String> nicknames = getPlayersNickname();
@@ -365,9 +379,10 @@ public class Model extends ModelObservableWithSelect {
         return result;
     }
 
-    /** This method is used by game() to create 2 builders for current player and assign the chosen color to them
-     * @param chosenColor the name of the chosen color
-     * It gives an error whether the player choose a different name from the ones printed */
+    /** Assign a color to the current player and to all his builders. Gives an error whether the player choose a
+     * different color from the ones available
+     * @param chosenColor Name of the chosen color
+     */
     public boolean assignColor (String chosenColor) {
 
         boolean existing = false;
@@ -400,6 +415,13 @@ public class Model extends ModelObservableWithSelect {
         return !assigned && existing ;
     }
 
+
+    /**
+     * Place builders of the current player on the game map
+     * @param builder1Coord Coordinates where place first builder
+     * @param builder2Coord Coordinates where place second builder
+     * @return
+     */
     public boolean setCurrPlayerBuilders(Coordinates builder1Coord, Coordinates builder2Coord) {
         boolean set = false;
 
@@ -418,9 +440,10 @@ public class Model extends ModelObservableWithSelect {
         return set;
     }
 
+
     /**
      * Called after every step to verify if the currPlayer won or if a player won remaining the only one who hasn't lost
-     * @return true if someone wins, false otherwise
+     * @return True if someone wins
      */
     public boolean endGame() {
         boolean end = false;
@@ -442,7 +465,7 @@ public class Model extends ModelObservableWithSelect {
 
 
     /**
-     * This method is called to find the possible destinations for both the builders of the currPlayer
+     * Find the possible destinations for both the builders of the current player
      * @param builderIndex index of the Builder x of the currentPlayer
      * @return the possible destination cells for a MOVE
      */
