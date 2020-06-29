@@ -4,8 +4,6 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -32,59 +30,31 @@ public class ChoicePopup extends Stage {
         anchorPane = new AnchorPane();
         anchorPane.setStyle("-fx-background-color: lightslategrey");
 
-        submit = new Button("Submit");
-
-        submit.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        submit.setPrefWidth((float) Gui.sceneWidth/14);
-        submit.setTextFill(Color.WHITESMOKE);
-
-        submit.setOnMouseEntered(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            DropShadow shadow = new DropShadow();
-            enteredButton.setEffect(shadow);
-        });
-
-        submit.setOnMouseExited(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            enteredButton.setEffect(null);
-        });
-
-        submit.setOnMousePressed(mouseEvent -> {
-
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButtonPressed)), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        });
-
-        submit.setOnMouseReleased(mouseEvent -> {
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        });
-
         for (String s: choices)
             choiceBox.getItems().add(s);
 
         //sets the default value of the choiceBox to the first element of the set
         choiceBox.setValue(choices.iterator().next());
-        choiceBox.setStyle("-fx-background-color: steelblue; -fx-border-color: midnightblue; -fx-mark-color: midnightblue; -fx-border-radius: 20; -fx-background-radius: 20;");
+        choiceBox.setStyle("-fx-background-color: steelblue; -fx-border-color: midnightblue; -fx-mark-color: midnightblue;" +
+                " -fx-border-radius: 20; -fx-background-radius: 20;");
 
         Text requests = new Text (requestLabel);
         requests.setFill(Color.WHITE);
 
         AnchorPane.setLeftAnchor(requests,Gui.marginLength);
         AnchorPane.setTopAnchor(requests,Gui.marginLength);
+
         AnchorPane.setLeftAnchor(choiceBox,Gui.marginLength);
         AnchorPane.setTopAnchor(choiceBox,Gui.marginLength * 2.5);
-        anchorPane.setPrefSize((double)Gui.sceneWidth/3, (double)Gui.sceneHeight/3.5);
 
+        anchorPane.setPrefSize((double)Gui.sceneWidth/3, (double)Gui.sceneHeight/3.5);
+        anchorPane.getChildren().addAll(requests,choiceBox);
+
+        this.submit = new GuiButton("Submit", Gui.submitButton, anchorPane, null, Gui.submitButtonPressed);
+        submit.setPrefWidth((float) Gui.sceneWidth/14);
+        submit.setTextFill(Color.WHITESMOKE);
         AnchorPane.setRightAnchor(submit, Gui.marginLength);
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
-        anchorPane.getChildren().addAll(requests,choiceBox,submit);
 
         this.setOnCloseRequest(windowEvent -> {
             if (Gui.confirmQuit()) {
@@ -101,32 +71,25 @@ public class ChoicePopup extends Stage {
     }
 
     /**
-     * @return the submit button used to send the choice to the server
+     * @return the submit button used to set the handler of an event from outside of the class
      */
     protected Button getSubmit() {
         return submit;
     }
 
+    /**
+     * @param node node to be added to the main pane of the stage
+     */
     protected void addChildren(Node node) {
         Platform.runLater(() -> anchorPane.getChildren().add(node));
     }
 
+    /**
+     * @param node node of which I wonder if present in the main pane of the stage
+     * @return true if the node is present, false otherwise
+     */
     protected boolean isChildPresent (Node node) {
         return anchorPane.getChildren().contains(node);
     }
-
-    /*
-    protected void printError (String error) {
-
-        if (errorMessage.getText().equals("")) {
-            Platform.runLater(() -> anchorPane.getChildren().add(errorMessage));
-            errorMessage.setFill(Color.DARKRED);
-            errorMessage.setFont(new Font("Arial", Gui.fontSize));
-            AnchorPane.setBottomAnchor(errorMessage, Gui.marginLength);
-            AnchorPane.setLeftAnchor(errorMessage, Gui.marginLength);
-        }
-
-        errorMessage.setText(error);
-    }*/
 
 }

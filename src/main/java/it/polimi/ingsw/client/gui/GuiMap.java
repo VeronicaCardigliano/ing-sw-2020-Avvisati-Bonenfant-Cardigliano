@@ -102,7 +102,7 @@ public class GuiMap extends GameMap {
      * @param cellStackCoord stackPane of the cell
      * @return the position of the current index in the cell StackPane
      */
-    protected int getCurrentBuilderIndexInStack(Coordinates cellStackCoord) {
+    protected int getCurBuilderIndexInStack(Coordinates cellStackCoord) {
         int result = 0;
         if (getHeight(cellStackCoord) != 0)
             result = builderIndexInStack;
@@ -152,7 +152,7 @@ public class GuiMap extends GameMap {
 
         StackPane oldBuilderCell = (StackPane) tile.getChildren().get(coordinatesToIndex(builderCell));
 
-        int currBuilderIndexStack = getCurrentBuilderIndexInStack(builderCell);
+        int currBuilderIndexStack = getCurBuilderIndexInStack(builderCell);
         ImageView builder = (ImageView) oldBuilderCell.getChildren().get(currBuilderIndexStack);
         builder.setOpacity(1);
     }
@@ -228,7 +228,7 @@ public class GuiMap extends GameMap {
     protected void moveBuilder (int src, int dst) {
 
         int builderIndex;
-        builderIndex= getCurrentBuilderIndexInStack(indexToCoord(src));
+        builderIndex= getCurBuilderIndexInStack(indexToCoord(src));
         StackPane sourceCell = (StackPane) tile.getChildren().get(src);
         ImageView builderToMove = (ImageView) sourceCell.getChildren().get(builderIndex);
         Platform.runLater(() -> sourceCell.getChildren().remove(builderToMove));
@@ -382,11 +382,11 @@ public class GuiMap extends GameMap {
         builder2Coord = getOccupiedCells().get(nickname).get(1);
 
         StackPane cellBuilder1 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder1Coord));
-        builder1 = (ImageView) cellBuilder1.getChildren().get(getCurrentBuilderIndexInStack(builder1Coord));
+        builder1 = (ImageView) cellBuilder1.getChildren().get(getCurBuilderIndexInStack(builder1Coord));
         Platform.runLater(() -> cellBuilder1.getChildren().remove(builder1));
 
         StackPane cellBuilder2 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder2Coord));
-        builder2 = (ImageView) cellBuilder2.getChildren().get(getCurrentBuilderIndexInStack(builder1Coord));
+        builder2 = (ImageView) cellBuilder2.getChildren().get(getCurBuilderIndexInStack(builder1Coord));
         Platform.runLater(() -> cellBuilder2.getChildren().remove(builder2));
         occupiedCells.remove(nickname);
     }

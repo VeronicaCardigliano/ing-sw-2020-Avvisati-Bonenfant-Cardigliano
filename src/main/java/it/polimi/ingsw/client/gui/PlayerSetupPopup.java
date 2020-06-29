@@ -4,8 +4,6 @@ import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -22,7 +20,14 @@ public class PlayerSetupPopup extends Stage {
     private AnchorPane anchorPane;
     private Button submit;
 
-    //initOwner sets the Stage in which the popup'll appear
+    /**
+     * Scene made by an anchorPane which contains texts and textFields and a button with its eventHandlers
+     * Closing this stage, an alert stage is opened to confirm the quit of the game, and if confirmed both popup and
+     * primaryStage are closed
+     * @param ownerStage the Stage on which the popup'll appear
+     * @param nickInsertion textField to insert the player name
+     * @param birthdayInsertion textField to insert the birthday of the player
+     */
     public PlayerSetupPopup(Stage ownerStage, TextField nickInsertion, TextField birthdayInsertion) {
 
         this.initOwner(ownerStage);
@@ -34,44 +39,12 @@ public class PlayerSetupPopup extends Stage {
 
         Text nicknameRequest = new Text ("Insert nickname: ");
         Text birthdayRequest = new Text ("Insert birthday in the format yyyy.mm.dd: ");
+
         nicknameRequest.setFill(Color.WHITE);
         nicknameRequest.setFont(new Font("Arial", Gui.fontSize));
+
         birthdayRequest.setFill(Color.WHITE);
         birthdayRequest.setFont(new Font("Arial", Gui.fontSize));
-
-        this.submit = new Button("Submit");
-
-        submit.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        submit.setPrefWidth((float) Gui.sceneWidth/14);
-        submit.setTextFill(Color.WHITESMOKE);
-
-        submit.setOnMouseEntered(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            DropShadow shadow = new DropShadow();
-            enteredButton.setEffect(shadow);
-        });
-
-        submit.setOnMouseExited(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            enteredButton.setEffect(null);
-        });
-
-        submit.setOnMousePressed(mouseEvent -> {
-
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButtonPressed)), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        });
-
-        submit.setOnMouseReleased(mouseEvent -> {
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        });
 
         AnchorPane.setLeftAnchor(nicknameRequest,Gui.marginLength);
         AnchorPane.setTopAnchor(nicknameRequest,Gui.marginLength);
@@ -87,9 +60,14 @@ public class PlayerSetupPopup extends Stage {
 
         anchorPane.setPrefSize((float) Gui.sceneWidth/2.5, (float) Gui.sceneHeight/2.5);
 
+        anchorPane.getChildren().addAll(nicknameRequest, birthdayRequest, nickInsertion, birthdayInsertion);
+
+        this.submit = new GuiButton("Submit", Gui.submitButton, anchorPane, null, Gui.submitButtonPressed);
+
+        submit.setPrefWidth((float) Gui.sceneWidth/14);
+        submit.setTextFill(Color.WHITESMOKE);
         AnchorPane.setRightAnchor(submit, Gui.marginLength);
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
-        anchorPane.getChildren().addAll(nicknameRequest, birthdayRequest, nickInsertion, birthdayInsertion, submit);
 
         this.setOnCloseRequest(windowEvent -> {
             if (Gui.confirmQuit()) {
@@ -105,14 +83,24 @@ public class PlayerSetupPopup extends Stage {
         this.show();
     }
 
+    /**
+     * @return the submit button used to set the handler of an event from outside of the class
+     */
     protected Button getSubmit() {
         return submit;
     }
 
+    /**
+     * @param node node to be added to the main pane of the stage
+     */
     protected void addChildren(Node node) {
         Platform.runLater(() -> anchorPane.getChildren().add(node));
     }
 
+    /**
+     * @param node node of which I wonder if present in the main pane of the stage
+     * @return true if the node is present, false otherwise
+     */
     protected boolean isChildPresent(Node node) {
         return anchorPane.getChildren().contains(node);
     }

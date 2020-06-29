@@ -6,7 +6,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -19,9 +18,8 @@ import javafx.stage.WindowEvent;
 import java.util.*;
 
 /**
- * This class is a Popup which shows the cards contained in godCardsDescriptions keyValues(), used both for
+ * This class is a Stage which shows the cards contained in godCardsDescriptions keyValues(), used for
  * setup purpose, to choose match/player cards, and during the match to show matchGodCards powers.
- * The base is a VBox with a tilePane with the cards, buttons and another VBox with the label (with different alignments)
  */
 public class GodCardsPopup extends Stage {
 
@@ -29,11 +27,20 @@ public class GodCardsPopup extends Stage {
     private Set<String> chosenGodCards;
     private Button submit;
     private TilePane tilePane;
-    private AnchorPane bottomPane = new AnchorPane();
+    private AnchorPane bottomPane;
 
     private int maxSelectionsNum;
     private int selectionsNum;
 
+    /**
+     * The scene is composed by a VBox with:
+     * different labels depending on maxSelection and so on the state of the match
+     * a tilePane with the cards
+     * a bottom anchor pane with a space to show errors and eventually a submit button
+     * @param ownerStage the Stage on which the popup'll appear
+     * @param maxSelections maximum number of cards that can be selected
+     * @param godCardsDescriptions map of cards and descriptions that have to be showed
+     */
     public GodCardsPopup (Stage ownerStage, int maxSelections, Map<String, String> godCardsDescriptions) {
 
         initOwner(ownerStage);
@@ -43,8 +50,8 @@ public class GodCardsPopup extends Stage {
         this.chosenGodCards = new HashSet<>();
         this.selectionsNum = 0;
         VBox vbox = new VBox();
-        VBox labelBox = new VBox();
         Label label = new Label();
+        bottomPane = new AnchorPane();
         submit = new Button("Submit");
 
         tilePane = new TilePane();
@@ -69,52 +76,17 @@ public class GodCardsPopup extends Stage {
 
         label.setTextFill(Color.WHITE);
         label.setFont(new Font("Arial", Gui.fontSize));
-        labelBox.getChildren().add(label);
-        labelBox.getChildren().add(tooltipsNotice);
-        labelBox.setAlignment(Pos.CENTER);
-        vbox.getChildren().add(labelBox);
+
+        vbox.getChildren().addAll(label, tooltipsNotice);
         vbox.getChildren().add(tilePane);
 
-        //if selectionsNum is 0, it means the match is in GAME state and i just want to see MatchCards and descriptions
+        //if selectionsNum is 0, it means the match is in GAME state and I just want to see MatchCards and descriptions
         if (maxSelections != 0) {
 
-            Tooltip notReady= new Tooltip("Not all cards have been chosen yet");
-            submit.setBackground(new Background(new BackgroundImage(new Image("file:src/main/resources/btn_submit.png"), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
+            this.submit = new GuiButton("Submit", Gui.submitButton, bottomPane, null, Gui.submitButtonPressed);
             submit.setPrefWidth((float) Gui.sceneWidth/14);
             submit.setTextFill(Color.WHITESMOKE);
 
-            submit.setOnMouseEntered(mouseEvent -> {
-                Button enteredButton = (Button) mouseEvent.getSource();
-                DropShadow shadow = new DropShadow();
-                enteredButton.setEffect(shadow);
-                if (selectionsNum < maxSelectionsNum)
-                    Tooltip.install(enteredButton, notReady);
-                else
-                    Tooltip.uninstall(enteredButton, notReady);
-            });
-
-            submit.setOnMouseExited(mouseEvent -> {
-                Button enteredButton = (Button) mouseEvent.getSource();
-                enteredButton.setEffect(null);
-            });
-
-            submit.setOnMousePressed(mouseEvent -> {
-                Button pressedButton = (Button) mouseEvent.getSource();
-                pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButtonPressed)), BackgroundRepeat.NO_REPEAT,
-                        BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-            });
-
-            submit.setOnMouseReleased(mouseEvent -> {
-                Button pressedButton = (Button) mouseEvent.getSource();
-                pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(Gui.submitButton)), BackgroundRepeat.NO_REPEAT,
-                        BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-            });
-
-            bottomPane.getChildren().add(submit);
             AnchorPane.setRightAnchor(submit, Gui.marginLength/2);
             AnchorPane.setBottomAnchor(submit, Gui.marginLength/2);
             vbox.getChildren().add(bottomPane);
@@ -145,26 +117,51 @@ public class GodCardsPopup extends Stage {
         this.show();
     }
 
+    /**
+     * Returns the number of selections, useful to know when the choice is completed
+     * @return the number of cards selected from the user
+     */
     protected int getSelectionsNum() {
         return selectionsNum;
     }
 
+    /**
+     * @return set of chosenGodCards, selected from the user
+     */
     protected Set<String> getChosenGodCards() {
         return chosenGodCards;
     }
 
+    /**
+     * Adds a Text which'll show error messages if still not present
+     * @param node text node
+     */
     protected void addErrorMessage(Text node) {
         Platform.runLater(() -> bottomPane.getChildren().add(node));
     }
 
+    /**
+     * @param node node to search for
+     * @return true if the node is present in the bottomPane of the stage
+     */
     protected boolean isPresentOnBottom (Node node) {
         return bottomPane.getChildren().contains(node);
     }
 
+    /**
+     * @return the submit button used to set the handler of an event from outside of the class
+     */
     protected Button getSubmit() {
         return submit;
     }
 
+    /**
+     * This private method creates the imageViews and adds them to the tilePane, setting also the eventHandler
+     * for MouseClicked event depending on the number of cards already selected (a card can be so selected, deselected or ignored)
+     * The descriptions are shown as tooltips installed on the imageViews.
+     *
+     * @param godCardsDescriptions map of godCards names and descriptions to be shown
+     */
     private void initializeImages(Map<String, String> godCardsDescriptions) {
         //takes the keyset (names) of all the gods to show in the popup, based on the game phase and chosen ones
         for (String s: godCardsDescriptions.keySet()) {

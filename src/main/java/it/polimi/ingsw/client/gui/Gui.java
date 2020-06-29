@@ -8,7 +8,6 @@ import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -17,7 +16,6 @@ import javafx.scene.control.*;
 import javafx.scene.effect.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -28,7 +26,10 @@ import javafx.util.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+/**
+ * @author veronica
+ * Graphical User Interface which extends the abstract class View, to share methods and attributes with Cli
+ */
 public class Gui extends View {
 
     public static final int minNumberOfPlayers = 2;
@@ -49,8 +50,9 @@ public class Gui extends View {
     public static final int godsForPlayer = 1;
     private static final Color SEA = Color.rgb(51,184,253);
     private final static int maxMessagesShown = 3;
-    private final static int maxNicknameLenght = 10;
+    private final static int maxNicknameLength = 10;
 
+    private static final String warning = "\u26A0";
     private static final String buttonCoralSrc = "/btn_coral.png";
     private static final String buttonCoralPressedSrc = "/btn_coral_pressed.png";
     protected static final String submitButton = "/btn_submit.png";
@@ -59,6 +61,7 @@ public class Gui extends View {
     private static final String versusSrc = "/versus.png";
     private static final String backgroundSrc = "/SantoriniBoard.png";
     private static final String titleSrc = "/title.png";
+    private static final String iconSrc = "/icon.png";
 
     private Map<String, String> matchGodCards = new HashMap<>();
     private Stage primaryStage;
@@ -72,9 +75,9 @@ public class Gui extends View {
     private TilePane tile;
     private VBox dialogRegion;
     private GuiMap gameMap;
-    private boolean buildDome;
     private Insets playersRegionInsets;
     private int numMessages;
+    private boolean buildDome;
     private Text connectionErrorText = new Text();
     private Text setupErrorText = new Text();
     private PlayerSetupPopup playerSetupPopup;
@@ -82,7 +85,6 @@ public class Gui extends View {
     private GodCardsPopup godCardsPopup;
     private Map<String, Text> playersNameTags = new HashMap<>();
     private boolean challenger;
-    private static final String warning = "\u26A0";
 
     /**
      * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
@@ -102,9 +104,11 @@ public class Gui extends View {
         this.home = new AnchorPane();
 
         TextField IPInsertion = new TextField ("IP");
-        IPInsertion.setFont(new Font("Arial", fontSize));
+        IPInsertion.setFont(new Font("Arial", fontSize/1.2));
+        IPInsertion.setStyle("-fx-text-inner-color: antiquewhite;");
         TextField portInsertion = new TextField("Port");
-        portInsertion.setFont(new Font("Arial", fontSize));
+        portInsertion.setFont(new Font("Arial", fontSize/1.2));
+        portInsertion.setStyle("-fx-text-inner-color: antiquewhite;");
 
         homeScene = new HomeScene (home, sceneWidth, sceneHeight, IPInsertion, portInsertion);
 
@@ -165,7 +169,6 @@ public class Gui extends View {
 
         primaryStage.minWidthProperty().bind(home.heightProperty().multiply((double)sceneWidth/sceneHeight));
         primaryStage.minHeightProperty().bind(home.widthProperty().divide((double)sceneWidth/sceneHeight));
-        //primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/address_book_32.png")));
 
         primaryStage.widthProperty().addListener((o, oldValue, newValue)->{
             if(newValue.intValue() < minSceneWidth) {
@@ -175,6 +178,7 @@ public class Gui extends View {
             }
         });
 
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream(iconSrc)));
         primaryStage.setScene(homeScene);
 
         //TODO: verify max Width
@@ -214,56 +218,6 @@ public class Gui extends View {
         titlePane.setAlignment(Pos.CENTER);
         titlePane.getChildren().add(title);
         return titlePane;
-    }
-
-    /**
-     * This method creates a button given the following parameters:
-     * @param btnName name shown on the button
-     * @param backgroundSrc background image of the button
-     * @param parent the pane in which the button has to be positioned
-     * @param handler what to do when the button is pressed
-     * @param pressedBtnSrc background image of the pressed button
-     * @return the new button object
-     */
-    private Button createButton(String btnName, String backgroundSrc, Pane parent, EventHandler<MouseEvent> handler, String pressedBtnSrc) {
-
-        Button button = new Button(btnName);
-        button.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(backgroundSrc)), BackgroundRepeat.NO_REPEAT,
-                BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        button.setOnMouseEntered(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            DropShadow shadow = new DropShadow();
-            enteredButton.setEffect(shadow);
-        });
-
-        button.setOnMouseExited(mouseEvent -> {
-            Button enteredButton = (Button) mouseEvent.getSource();
-            enteredButton.setEffect(null);
-        });
-
-        button.setOnMousePressed(mouseEvent -> {
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(pressedBtnSrc)), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        });
-
-        button.setOnMouseReleased(mouseEvent -> {
-            Button pressedButton = (Button) mouseEvent.getSource();
-            pressedButton.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(backgroundSrc)), BackgroundRepeat.NO_REPEAT,
-                    BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
-
-        });
-
-        //button.setPrefWidth(stage.getWidth()/12);
-        button.prefWidthProperty().bind(primaryScene.widthProperty().divide(11));
-        button.prefHeightProperty().bind(primaryScene.heightProperty().divide(15));
-
-        Platform.runLater(() -> parent.getChildren().add(button));
-        button.setOnMouseClicked(handler);
-
-        return button;
     }
 
 
@@ -404,8 +358,8 @@ public class Gui extends View {
             playerSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
                 String nickname = nickInsertion.getText();
                 String birthday = birthdayInsertion.getText();
-                if (nickname.length() > maxNicknameLenght) {
-                    printMessage("Too long nickname. Max lenght: " + maxNicknameLenght, true);
+                if (nickname.length() > maxNicknameLength) {
+                    printMessage("Too long nickname. Max lenght: " + maxNicknameLength, true);
                 }
                 else if (nickname.isEmpty() || birthday.isEmpty()) {
 
@@ -591,12 +545,24 @@ public class Gui extends View {
 
         Platform.runLater(() -> dialogRegion.getChildren().addAll(chooseStep, stepChoice));
 
-        Button okBtn = createButton("Ok", submitButton, dialogRegion,  mouseEvent -> {
+        Button okBtn = new GuiButton("Ok", submitButton, dialogRegion,  mouseEvent -> {
             notifyStepChoice(getNickname(), stepChoice.getValue());
             Platform.runLater(() -> dialogRegion.getChildren().clear());
         }, submitButtonPressed);
+        setPrimarySceneButtonBinding(okBtn);
         okBtn.setTextFill(Color.WHITESMOKE);
     }
+
+    /**
+     * Sets the correct binding for a button on the primary scene
+     * @param button button to bind
+     */
+    void setPrimarySceneButtonBinding (Button button) {
+
+        button.prefWidthProperty().bind(primaryScene.widthProperty().divide(11));
+        button.prefHeightProperty().bind(primaryScene.heightProperty().divide(15));
+    }
+
 
     /**
      * Shows the possible destinations for a move for both builders if the builder hasn't been chosen and gives the possibility
@@ -632,7 +598,7 @@ public class Gui extends View {
 
             StackPane tmp = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coord));
 
-            currBuilderIndexStack = gameMap.getCurrentBuilderIndexInStack(coord);
+            currBuilderIndexStack = gameMap.getCurBuilderIndexInStack(coord);
 
             tmp.getChildren().get(currBuilderIndexStack).setOnMouseEntered(mouseEvent -> {
                 ImageView builderToHandle = (ImageView) mouseEvent.getSource();
@@ -661,20 +627,23 @@ public class Gui extends View {
                 clickedBuilder.setOnMouseClicked(null);
                 clickedBuilder.setOnMouseEntered(null);
 
-                currentBuilderIndexInStack = gameMap.getCurrentBuilderIndexInStack(coordOfFirstBuilderCell);
+                currentBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
 
                 if (firstBuilderCell.getChildren().get(currentBuilderIndexInStack).equals(clickedBuilder)) {
 
-                    secondBuilderCell.getChildren().get(gameMap.getCurrentBuilderIndexInStack(coordOfSecondBuilderCell)).setOnMouseClicked(null);
-                    secondBuilderCell.getChildren().get(gameMap.getCurrentBuilderIndexInStack(coordOfSecondBuilderCell)).setOnMouseEntered(null);
+                    int secondBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfSecondBuilderCell);
+
+                    secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseClicked(null);
+                    secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseEntered(null);
                     currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
                     gameMap.setChosenBuilderNum(1);
                 }
 
                 else {
 
-                    firstBuilderCell.getChildren().get(gameMap.getCurrentBuilderIndexInStack(coordOfFirstBuilderCell)).setOnMouseClicked(null);
-                    firstBuilderCell.getChildren().get(gameMap.getCurrentBuilderIndexInStack(coordOfFirstBuilderCell)).setOnMouseEntered(null);
+                    int firstBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
+                    firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseClicked(null);
+                    firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseEntered(null);
                     currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
                     gameMap.setChosenBuilderNum(2);
                 }
@@ -760,20 +729,22 @@ public class Gui extends View {
         Label domeRequest = new Label ("Do you want to build a dome? ");
         Platform.runLater(() -> dialogRegion.getChildren().add(domeRequest));
 
-        Button yesBtn = createButton("YES", submitButton, dialogRegion,
+        Button yesBtn = new GuiButton("YES", submitButton, dialogRegion,
                 mouseEvent ->  {
                     buildDome = true;
                     afterDomeChoice();
                 }, submitButtonPressed);
 
-        Button noBtn = createButton("NO", submitButton, dialogRegion,
+        Button noBtn = new GuiButton ("NO", submitButton, dialogRegion,
                 mouseEvent -> {
                     buildDome = false;
                     afterDomeChoice();
                 }, submitButtonPressed);
 
         yesBtn.setTextFill(Color.WHITESMOKE);
+        setPrimarySceneButtonBinding(yesBtn);
         noBtn.setTextFill(Color.WHITESMOKE);
+        setPrimarySceneButtonBinding(noBtn);
 
         dialogRegion.setAlignment(Pos.CENTER);
     }
@@ -899,7 +870,8 @@ public class Gui extends View {
      * Updates the possible set of coordinates of cells in which the player in the BUILD step can build a new floor
      */
     @Override
-    public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
+    public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
+                                       Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
 
         super.updatePossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2,possibleDstBuilder1forDome, possibleDstBuilder2forDome);
         buildDome = false;
@@ -918,8 +890,17 @@ public class Gui extends View {
         move();
     }
 
+    /**
+     * After a successful placement, the handler for MouseClicked event is reset, for the player who did the placement
+     * is showed a message of successful placement and for the others the gameMap is updated
+     * @param nickname of the player who just placed his builders
+     * @param positionBuilder1 coordinates of the first builder
+     * @param positionBuilder2 coordinates of the second one
+     * @param result true if the placement of the builders is correct
+     */
     @Override
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
+
         if (result) {
             //resets the handler of cell clicked
             for (Node node : tile.getChildren())
@@ -938,15 +919,17 @@ public class Gui extends View {
     }
 
     /**
+     * If result is true, shows a message of step choice to the other players, otherwise shows an error for the player
+     * who did the step choice
      * @param nickname the player who chose the step from a list of possible ones
      * @param step chosen step
      */
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
 
-        if(result && !getNickname().equals(nickname))
-            printMessage(nickname + " chose " + step, false);
-        else if (getNickname().equals(nickname) && !result)
+        if(result)
+            printMessage("Step correctly chosen", false);
+        else
             printMessage("ERROR: wrong step.", false);
     }
 
@@ -980,59 +963,26 @@ public class Gui extends View {
         if (!getNickname().equals(winnerNickname)) {
 
             printMessage("Player " + winnerNickname + " wins!", false);
-            createEndGameMessage("YOU LOSE", Color.BLUE);
+            EndGameMessage endGameMessage = new EndGameMessage("YOU LOSE", Color.BLUE, dialogRegion, MouseEvent -> resetAll());
+            setPrimarySceneButtonBinding(endGameMessage.getPlayAgainBtn());
         }
-        else
-            createEndGameMessage("YOU WIN!", Color.LIGHTSALMON);
+        else {
+            EndGameMessage endGameMessage = new EndGameMessage("YOU WIN!", Color.LIGHTSALMON,
+                    dialogRegion, MouseEvent -> resetAll());
+            setPrimarySceneButtonBinding(endGameMessage.getPlayAgainBtn());
+        }
+
+
     }
 
     /**
-     * Creates and end game message of victory or loss with a button to  eventually play again.
-     * @param message string to print
-     */
-    private void createEndGameMessage(String message, Color color) {
-
-        Text text = new Text(message);
-        //text.prefWidthProperty().bind(playersRegion.prefWidthProperty().subtract(marginLength*2));
-        text.setFont(new Font ("Courier" ,fontSize*3));
-
-        text.setFill(color);
-
-        Blend blend = new Blend();
-        blend.setMode(BlendMode.MULTIPLY);
-
-        DropShadow ds = new DropShadow();
-        ds.setColor(Color.MIDNIGHTBLUE);
-        ds.setOffsetX(5);
-        ds.setOffsetY(5);
-        ds.setRadius(5);
-        ds.setSpread(0.6);
-
-        blend.setBottomInput(ds);
-
-        DropShadow ds1 = new DropShadow();
-        ds1.setColor(Color.WHITESMOKE);
-        ds1.setRadius(20);
-        ds1.setSpread(0.5);
-
-        blend.setTopInput(ds1);
-
-        text.setEffect(blend);
-
-        Platform.runLater(()-> dialogRegion.getChildren().add(text));
-
-        Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> resetAll(), submitButtonPressed);
-
-        playAgainBtn.setTextFill(Color.WHITESMOKE);
-    }
-
-    /**
-     * Private method used to reset all the
+     * Private method used to reset primaryScene and homeScene for a new match. It creates also a new GuiMap
      */
     private void resetAll () {
         //resets all
         if (home.getChildren().contains(connectionErrorText))
             Platform.runLater(()->home.getChildren().remove(connectionErrorText));
+
         Platform.runLater(() -> primaryStage.setScene(homeScene));
         Platform.runLater(() -> playersRegion.getChildren().clear());
         playersRegion.setBorder(null);
@@ -1143,8 +1093,10 @@ public class Gui extends View {
             printMessage(nickname + " lost!", false);
             gameMap.removeBuilders(nickname);
         }
-        else
-            createEndGameMessage("YOU LOSE", Color.BLUE);
+        else {
+            EndGameMessage endGameMessage = new EndGameMessage("YOU LOSE", Color.BLUE, dialogRegion, MouseEvent -> resetAll());
+            setPrimarySceneButtonBinding(endGameMessage.getPlayAgainBtn());
+        }
 
         matchGodCards.remove(nickname);
         setPlayersRegion();
@@ -1218,10 +1170,10 @@ public class Gui extends View {
             HBox bottomBtns = new HBox();
             bottomBtns.setSpacing(marginLength);
 
-            createButton("GodCards",buttonCoralSrc, bottomBtns, mouseEvent ->
+            new GuiButton("GodCards",buttonCoralSrc, bottomBtns, mouseEvent ->
                     new GodCardsPopup(primaryStage, 0, matchGodCards), buttonCoralPressedSrc);
 
-            createButton("QUIT",buttonCoralSrc, bottomBtns, mouseEvent -> {
+            new GuiButton("QUIT",buttonCoralSrc, bottomBtns, mouseEvent -> {
 
                 notifyDisconnection();
                 primaryStage.close();
@@ -1300,8 +1252,9 @@ public class Gui extends View {
 
         if (!getState().equals(View.ViewState.END)) {
 
-            Button playAgainBtn = createButton("Play Again", submitButton, dialogRegion,  mouseEvent -> resetAll(), submitButtonPressed);
+            Button playAgainBtn = new GuiButton("Play Again", submitButton, dialogRegion,  mouseEvent -> resetAll(), submitButtonPressed);
             playAgainBtn.setTextFill(Color.WHITESMOKE);
+            setPrimarySceneButtonBinding(playAgainBtn);
         }
         setState(ViewState.CONNECTION);
         gameMap.setChosenBuilderNum(0);
