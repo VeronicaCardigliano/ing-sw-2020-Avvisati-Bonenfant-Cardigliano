@@ -12,14 +12,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author veronica
  * Model class that specifies the single match, containing the list of players, the gameMap,
- * the Set of chosen Cards and Colors and the jsonPath
+ * the Set of chosen Cards and Colors and the jsonPath.
+ * PossibleDst Arrays contains the list of Cells in which the player can move or build
  */
 
 public class Model extends ModelObservableWithSelect {
     public final static String jsonPath = "/cards.json";
-
     private static final int maxNumberOfPlayers = 3;
     private static final int minNumberOfPlayers = 2;
     private static final int firstBuilderIndex = 0;
@@ -27,25 +26,18 @@ public class Model extends ModelObservableWithSelect {
     private int numPlayers;
     private final IslandBoard gameMap;
     private final CyclingIterator<Player> turnManager = new CyclingIterator<>(players);
-
-    //in this class currState refers to the match state, instead currStep refers to the single movement during GAME state
     public enum State { SETUP_NUMOFPLAYERS, SETUP_PLAYERS, SETUP_COLOR, SETUP_CARDS, SETUP_BUILDERS, GAME, ENDGAME }
     private State currState;
     private String currStep;
     private final GodCardParser cardsParser;
-
     private String startPlayerNickname;
     private String challenger;
-
     private Player currPlayer;
     private Builder chosenBuilder;
     Set<String> matchGodCards;
     Set<String> chosenCards = new HashSet<>();
     Set<String> chosenColors = new HashSet<>();
 
-    /**
-     * PossibleDst Arrays contains the list of Cells in which the player can move or build
-     */
     protected Set<Coordinates> possibleDstBuilder1 = new HashSet<>();
     protected Set<Coordinates> possibleDstBuilder2 = new HashSet<>();
     protected Set<Coordinates> possibleDstBuilder1forDome = new HashSet<>();
@@ -56,18 +48,16 @@ public class Model extends ModelObservableWithSelect {
      * The constructor initialises the GameMap and assigns it to the GodCard as a static attribute, common to each card.
      * It also sets the currState to SETUP_PLAYERS, which is the first one, and loads the json file
      */
-
     public Model () {
-
         this.gameMap = new IslandBoard();
         this.cardsParser = new GodCardParser(jsonPath);
         this.currState = State.SETUP_NUMOFPLAYERS;
     }
 
+
     /**
      * This method is called by Controller in the end of every state to go in the next one
      */
-
     public void setNextState() {
         switch (currState) {
             case SETUP_NUMOFPLAYERS:
@@ -102,6 +92,7 @@ public class Model extends ModelObservableWithSelect {
     }
 
     public String getCurrStep () {return currStep;}
+
 
     public void startTurn () {
         currPlayer.startTurn();
@@ -152,11 +143,6 @@ public class Model extends ModelObservableWithSelect {
         notifyPlayerTurn(currPlayer.getNickname());
     }
 
-    /*
-    public Set<String> getNicknames() {
-        return this.players.stream().map(Player::getNickname).collect(Collectors.toSet());
-    }
-    */
 
     /**
      * @return returns a copy of the list of players so that external methods can't modify the ArrayList
@@ -164,7 +150,6 @@ public class Model extends ModelObservableWithSelect {
     public ArrayList<Player> getPlayers(){
         return new ArrayList<>(players);
     }
-
 
     public Set<String> getPlayersNickname() {
         return players.stream().map(Player::getNickname).collect(Collectors.toSet());
@@ -179,22 +164,18 @@ public class Model extends ModelObservableWithSelect {
     }
 
     /**
-     * deletes a player if he loses the match (if the number of players is three, the match will go on)
-     * @param playerName who has lost the match
+     * Deletes a player if he loses the match (if the number of players is three, the match will go on)
+     * @param playerName Who has lost the match or cannot move anymore
      * @exception IllegalArgumentException is thrown if the player isn't in the list of players of the match
      */
     public void deletePlayer (String playerName) throws IllegalArgumentException {
 
         boolean found = false;
-
         for (Player p : players)
-
             if (p.getNickname().equals(playerName)){
-
                 for (Builder x : p.getBuilders()) {
                     x.getCell().removeOccupant();
                 }
-
                 found = true;
                 break;
             }
@@ -209,16 +190,15 @@ public class Model extends ModelObservableWithSelect {
         return numPlayers;
     }
 
+    /**
+     * @param num Number of players that will play in the game
+     * @return If
+     */
     public boolean setNumberOfPlayers(int num){
+        if (minNumberOfPlayers <= num && num <= maxNumberOfPlayers)
+            return true;
 
-        for (int i = minNumberOfPlayers; i <= maxNumberOfPlayers; i++) {
-            if (num == i) {
-                numPlayers = num;
-                return true;
-            }
-        }
-
-        notifyWrongNumber(); //notifies the first view in viewManager
+        notifyWrongNumber();
         return false;
     }
 
@@ -388,7 +368,6 @@ public class Model extends ModelObservableWithSelect {
     /** This method is used by game() to create 2 builders for current player and assign the chosen color to them
      * @param chosenColor the name of the chosen color
      * It gives an error whether the player choose a different name from the ones printed */
-
     public boolean assignColor (String chosenColor) {
 
         boolean existing = false;

@@ -5,9 +5,13 @@ import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.network.Messages;
 import it.polimi.ingsw.server.view.ViewManager;
 import it.polimi.ingsw.server.view.VirtualView;
-
 import java.util.Set;
 
+/**
+ * Controller of a MVC pattern. This controller communicates with the model and the view manager to manipulate data
+ * and in some case call some functions of the view manager.
+ * This controller manages only one model and one view manager
+ */
 
 public class Controller extends AbstractController implements ConnectionObserver{
 
@@ -46,13 +50,11 @@ public class Controller extends AbstractController implements ConnectionObserver
      */
     @Override
     public synchronized void onNumberInsertion(int num) {
-
         if (model.getCurrState() == Model.State.SETUP_NUMOFPLAYERS && (model.getNumberOfPlayers() != 2 ||
                 model.getNumberOfPlayers() != 3)) {
             if (model.setNumberOfPlayers(num)) {
                 model.setNextState();
             }
-
         }
     }
 
@@ -65,11 +67,9 @@ public class Controller extends AbstractController implements ConnectionObserver
     @Override
     public synchronized void onNicknameAndDateInsertion(String nickname, String birthday) {
         if (model.getCurrState() == Model.State.SETUP_PLAYERS) {
-
             if (model.getPlayers().size() < model.getNumberOfPlayers()){
                 model.addPlayer(nickname, birthday);
             }
-
             if (model.getPlayers().size() == model.getNumberOfPlayers()) {
                 model.setNextState();
                 //setNextPlayer used to initialize first player
@@ -77,7 +77,6 @@ public class Controller extends AbstractController implements ConnectionObserver
                 model.setChallenger(model.getCurrPlayer());
                 viewManager.chooseMatchGodCards(model.getChallenger(), model.getNumberOfPlayers(),
                         model.getGodDescriptions());
-
             }
         }
     }
@@ -112,10 +111,8 @@ public class Controller extends AbstractController implements ConnectionObserver
     public synchronized void onGodCardChoice(String nickname, String godCardName) {
         if (model.getCurrState() == Model.State.SETUP_CARDS && model.getCurrPlayer().equals(nickname) &&
                 model.currPlayerNullGodCard()) {
-
             if (model.assignCard(godCardName)) {
                 model.setNextPlayer();
-
                 if (!model.currPlayerNullGodCard()) {
                     viewManager.chooseStartPlayer(model.getChallenger(), model.getPlayersNickname());
                 }
@@ -152,7 +149,6 @@ public class Controller extends AbstractController implements ConnectionObserver
      */
     public synchronized void onBuilderSetup(String nickname, Coordinates builder1, Coordinates builder2){
         if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().equals(nickname))
-
             if (model.setCurrPlayerBuilders(builder1, builder2)){
                 model.setNextPlayer();
 
@@ -166,12 +162,10 @@ public class Controller extends AbstractController implements ConnectionObserver
                         checkHasLost();
                     }
                 }
-
                 else
                     viewManager.askBuilders(model.getCurrPlayer());
 
             } else viewManager.askBuilders(nickname);
-
     }
 
 
@@ -187,7 +181,6 @@ public class Controller extends AbstractController implements ConnectionObserver
         if (model.getCurrState() == Model.State.GAME && model.getCurrPlayer().equals(nickname) &&
                 model.getCurrStep().equals("BUILD") &&
                 model.effectiveBuild(src, dst, buildDome) && model.hasNotLostDuringBuild()) {
-
             if(!model.endGame())
                 manageNextState(nickname);
             else {
@@ -196,7 +189,6 @@ public class Controller extends AbstractController implements ConnectionObserver
                 setModelObservers();
             }
         }
-
     }
 
 
@@ -300,7 +292,10 @@ public class Controller extends AbstractController implements ConnectionObserver
         }
     }
 
-
+    /**
+     * This update of Controller is called by a specific View's notify when the user wants to disconnect
+     * @param nickname Nickname of the user that wants to disconnect
+     */
     @Override
     public synchronized void onDisconnection(String nickname) {
         viewManager.remove(nickname);
@@ -312,6 +307,12 @@ public class Controller extends AbstractController implements ConnectionObserver
         }
     }
 
+
+    /**
+     * This update of Controller is called by a specific View's notify when the user wants to disconnect before
+     * having set a nickname
+     * @param view View to disconnect
+     */
     @Override
     public synchronized void onEarlyDisconnection(VirtualView view) {
         if(viewManager.contains(view)) {
@@ -322,9 +323,13 @@ public class Controller extends AbstractController implements ConnectionObserver
         }
     }
 
+    /**
+     * This update of Controller is called by a specific View's notify when the user wants to disconnect before
+     * having set a nickname
+     * @param view View to disconnect
+     */
     @Override
     public synchronized void onConnection(VirtualView view) {
-
         switch (model.getCurrState()) {
             case SETUP_NUMOFPLAYERS:
                 if(viewManager.getNumberOfViews() == 0) {
@@ -356,6 +361,11 @@ public class Controller extends AbstractController implements ConnectionObserver
         }
     }
 
+    /**
+     * This update of Controller is called by a specific View's notify when the challenger chose the starting player
+     * @param nickname Nickname of the challenger
+     * @param startPlayer Nickname of the chosen start player
+     */
     @Override
     public synchronized void onSetStartPlayer(String nickname, String startPlayer) {
         if(model.getCurrState().equals(Model.State.SETUP_CARDS) && model.getChallenger().equals(nickname)) {
