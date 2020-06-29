@@ -17,6 +17,9 @@ import javafx.scene.paint.Color;
 
 import java.util.*;
 
+/**
+ * Subclass of the abstract class GameMap
+ */
 public class GuiMap extends GameMap {
 
     private static final int buildingIndexInStack = 0;
@@ -26,13 +29,17 @@ public class GuiMap extends GameMap {
     private Scene scene;
     private TilePane tile;
 
-    GuiMap(TilePane tilePane, Scene s) {
+    /**
+     * This constructor sets the features of the tilePane and adds to it mapDimension x mapDimension StackPanes (Cells)
+     * @param tilePane root pane of the GuiClass
+     * @param primaryScene scene in which the map is inserted
+     */
+    GuiMap(TilePane tilePane, Scene primaryScene) {
 
         super();
         this.tile = tilePane;
-        this.scene = s;
+        this.scene = primaryScene;
 
-        //Hgap and Vgap fixed, so set to the minimum
         tile.setHgap(cellGap);
         tile.setVgap(cellGap);
         tile.setPrefColumns(Gui.mapDimension);
@@ -41,6 +48,11 @@ public class GuiMap extends GameMap {
             tile.getChildren().add(newCell());
     }
 
+    /**
+     * Used to get the height in a specific coordinate
+     * @param coord coordinate of the cell of which height is demanded
+     * @return int value of height
+     */
     public int getHeight(Coordinates coord) {
         return getHeights().get(coord);
     }
@@ -63,7 +75,7 @@ public class GuiMap extends GameMap {
             positions.add(getOccupiedCells().get(nickname).get(firstBuilderIndex));
             positions.add(builder2);
         }
-        else{
+        else {
             positions.add(builder1);
             positions.add(builder2);
         }
@@ -72,7 +84,7 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * Creates each of the cells of the map (represented by the tilePane)
+     * Creates a new cell of the map (represented by the tilePane)
      * @return the cell element (represented by a StackPane)
      */
     private StackPane newCell() {
@@ -377,22 +389,6 @@ public class GuiMap extends GameMap {
         builder2 = (ImageView) cellBuilder2.getChildren().get(getCurrentBuilderIndexInStack(builder1Coord));
         Platform.runLater(() -> cellBuilder2.getChildren().remove(builder2));
         occupiedCells.remove(nickname);
-    }
-
-    /**
-     * Resets the map for a new match
-     */
-    protected void resetMap () {
-
-        for (int i = 0; i < tile.getChildren().size(); i++) {
-
-            StackPane cell = (StackPane) tile.getChildren().get(i);
-            cell.getChildren().clear();
-            cell.setOnMouseClicked(null);
-            cell.setOnMouseEntered(null);
-            cell.setStyle ("-fx-background-color: TRANSPARENT");
-
-        }
     }
 
     /**

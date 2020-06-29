@@ -8,6 +8,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -32,9 +33,11 @@ public class PlayerSetupPopup extends Stage {
         anchorPane.setStyle("-fx-background-color: lightslategrey");
 
         Text nicknameRequest = new Text ("Insert nickname: ");
-        Text birthdayRequest = new Text ("Insert birthday in the format aaaa.mm.gg: ");
+        Text birthdayRequest = new Text ("Insert birthday in the format yyyy.mm.dd: ");
         nicknameRequest.setFill(Color.WHITE);
+        nicknameRequest.setFont(new Font("Arial", Gui.fontSize));
         birthdayRequest.setFill(Color.WHITE);
+        birthdayRequest.setFont(new Font("Arial", Gui.fontSize));
 
         this.submit = new Button("Submit");
 

@@ -130,6 +130,10 @@ public class HomeScene extends Scene {
     }
 
 
+    /**
+     * Used to be able to set the handlers of a mouseEvents in Gui
+     * @return play button used to send connection infos and, if correct, to change scene
+     */
     protected ImageView getPlayBtn () {
         return playBtn;
     }
