@@ -7,7 +7,6 @@ import it.polimi.ingsw.server.parser.GodCardParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.json.*;
 
 public class  YourMoveGodCardTest {
     //Test that number of moves works correctly (example 3 move from file)
@@ -103,8 +102,8 @@ public class  YourMoveGodCardTest {
         god.setGameMap(testBoard);
         god.startTurn();
 
-        assertTrue(god.statesCopy.size()==1);
-        assertTrue(god.currStateList.get(0).equals("MOVE"));
+        assertEquals(1, god.statesCopy.size());
+        assertEquals("MOVE", god.currStateList.get(0));
 
 
 
@@ -112,12 +111,12 @@ public class  YourMoveGodCardTest {
         assertTrue(god.askMove(1,1,0,1));
         assertTrue(god.move(1,1,0,1));
         //this happens in YourBuild -> move
-        assertTrue(god.statesCopy.size()==2);
+        assertEquals(2, god.statesCopy.size());
 
-        assertTrue(god.currStateList.size()==2);
+        assertEquals(2, god.currStateList.size());
         assertTrue(god.currStateList.contains("MOVE"));
         assertTrue(god.currStateList.contains("BUILD"));
-        assertTrue(god.currState.equals("REQUIRED"));
+        assertEquals("REQUIRED", god.currState);
 
 
 
@@ -125,12 +124,12 @@ public class  YourMoveGodCardTest {
         assertTrue(god.askMove(0,1,0,2));
         assertTrue(god.move(0,1,0,2));
         //this happens in YourBuild -> move
-        assertTrue(god.statesCopy.size()==2);
+        assertEquals(2, god.statesCopy.size());
 
-        assertTrue(god.currStateList.size()==2);
+        assertEquals(2, god.currStateList.size());
         assertTrue(god.currStateList.contains("MOVE"));
         assertTrue(god.currStateList.contains("BUILD"));
-        assertTrue(god.currState.equals("REQUIRED"));
+        assertEquals("REQUIRED", god.currState);
 
         assertTrue(god.askBuild(0,2,0,3, false));
         assertTrue(god.build(0,2,0,3,false));

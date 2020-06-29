@@ -94,12 +94,12 @@ class GodCardTest {
     @Test
     public void godEquals(){
         //Cards of different types
-        assertFalse(opponentGodCard.equals(opponentGodCard2));
+        assertNotEquals(opponentGodCard, opponentGodCard2);
 
         //Cards with same type
         GodCardParser parser = new GodCardParser(Model.jsonPath);
         opponentGodCard2 = parser.createCard(opponent2, "Atlas");
-        assertFalse(opponentGodCard.equals(opponentGodCard2));
+        assertNotEquals(opponentGodCard, opponentGodCard2);
     }
 
     @Test

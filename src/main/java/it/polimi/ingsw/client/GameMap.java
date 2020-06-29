@@ -2,7 +2,6 @@ package it.polimi.ingsw.client;
 
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
-
 import java.util.*;
 
 /**
@@ -12,7 +11,6 @@ public abstract class GameMap {
 
     private static final int DOME = -1;
     private Map<Coordinates, Integer> heights = new HashMap<>();
-    //protected Map<String,String> chosenColorsForPlayer = new HashMap<>();
     protected Map<String, ArrayList<Coordinates>> occupiedCells = new HashMap<>();
 
     public static final int firstBuilderIndex = 0;

@@ -141,12 +141,11 @@ public class Controller extends AbstractController implements ConnectionObserver
     }
 
 
-    @Override
     /**
-     * This update of Controller is called by a specific View's notify when the user inserts a number
+     * This update of Controller is called by a specific View's notify when the user places his builders
      * @param nickname nickname of the user making the call
-     * @param godNames set of gods the challenger has chosen
      */
+    @Override
     public synchronized void onBuilderSetup(String nickname, Coordinates builder1, Coordinates builder2){
         if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().equals(nickname))
             if (model.setCurrPlayerBuilders(builder1, builder2)){
