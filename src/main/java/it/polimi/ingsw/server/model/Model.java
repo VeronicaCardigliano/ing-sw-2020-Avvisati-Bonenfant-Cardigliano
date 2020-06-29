@@ -495,13 +495,14 @@ public class Model extends ModelObservableWithSelect {
 
                 switch (currStep) {
                     case "MOVE":
-                        if (currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
+                        if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
                         }
                         break;
 
                     case "BUILD":
-                        if (currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)){
+                        if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
+                                currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
                         }
                         break;

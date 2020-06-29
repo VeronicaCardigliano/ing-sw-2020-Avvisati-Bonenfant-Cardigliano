@@ -62,12 +62,13 @@ public class PlayerSetupPopup extends Stage {
 
         anchorPane.getChildren().addAll(nicknameRequest, birthdayRequest, nickInsertion, birthdayInsertion);
 
-        this.submit = new GuiButton("Submit", Gui.submitButton, anchorPane, null, Gui.submitButtonPressed);
+        this.submit = new GuiButton("Submit", Gui.submitButton, null, Gui.submitButtonPressed);
 
         submit.setPrefWidth((float) Gui.sceneWidth/14);
         submit.setTextFill(Color.WHITESMOKE);
         AnchorPane.setRightAnchor(submit, Gui.marginLength);
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
+        Platform.runLater(()-> anchorPane.getChildren().add(submit));
 
         this.setOnCloseRequest(windowEvent -> {
             if (Gui.confirmQuit()) {

@@ -18,7 +18,7 @@ public class GuiButton extends Button {
      * @param handler what to do when the button is pressed
      * @param pressedBtnSrc background image of the pressed button
      */
-    public GuiButton(String btnName, String backgroundSrc, Pane parent, EventHandler<MouseEvent> handler, String pressedBtnSrc) {
+    public GuiButton(String btnName, String backgroundSrc, EventHandler<MouseEvent> handler, String pressedBtnSrc) {
 
         this.setText(btnName);
         this.setBackground(new Background(new BackgroundImage(new Image(getClass().getResourceAsStream(backgroundSrc)), BackgroundRepeat.NO_REPEAT,
@@ -49,7 +49,6 @@ public class GuiButton extends Button {
 
         });
 
-        Platform.runLater(() -> parent.getChildren().add(this));
         this.setOnMouseClicked(handler);
     }
 

@@ -50,9 +50,9 @@ public class GodCardsPopup extends Stage {
         this.chosenGodCards = new HashSet<>();
         this.selectionsNum = 0;
         VBox vbox = new VBox();
+        VBox labelBox = new VBox();
         Label label = new Label();
         bottomPane = new AnchorPane();
-        submit = new Button("Submit");
 
         tilePane = new TilePane();
         tilePane.setHgap(Gui.marginLength/2);
@@ -76,19 +76,22 @@ public class GodCardsPopup extends Stage {
 
         label.setTextFill(Color.WHITE);
         label.setFont(new Font("Arial", Gui.fontSize));
-
-        vbox.getChildren().addAll(label, tooltipsNotice);
+        labelBox.getChildren().add(label);
+        labelBox.getChildren().add(tooltipsNotice);
+        labelBox.setAlignment(Pos.CENTER);
+        vbox.getChildren().add(labelBox);
         vbox.getChildren().add(tilePane);
 
         //if selectionsNum is 0, it means the match is in GAME state and I just want to see MatchCards and descriptions
         if (maxSelections != 0) {
 
-            this.submit = new GuiButton("Submit", Gui.submitButton, bottomPane, null, Gui.submitButtonPressed);
+            this.submit = new GuiButton("Submit", Gui.submitButton, null, Gui.submitButtonPressed);
+
             submit.setPrefWidth((float) Gui.sceneWidth/14);
             submit.setTextFill(Color.WHITESMOKE);
-
             AnchorPane.setRightAnchor(submit, Gui.marginLength/2);
             AnchorPane.setBottomAnchor(submit, Gui.marginLength/2);
+            bottomPane.getChildren().add(submit);
             vbox.getChildren().add(bottomPane);
         }
 
@@ -96,8 +99,6 @@ public class GodCardsPopup extends Stage {
                 null, null, null, null, CornerRadii.EMPTY,
                 BorderStroke.MEDIUM, new Insets(Gui.marginLength/2, Gui.marginLength/2, Gui.marginLength/2, Gui.marginLength/2))));
         vbox.setSpacing(Gui.marginLength/2);
-
-        vbox.setAlignment(Pos.CENTER);
 
         initializeImages(godCardsDescriptions);
 

@@ -50,11 +50,12 @@ public class ChoicePopup extends Stage {
         anchorPane.setPrefSize((double)Gui.sceneWidth/3, (double)Gui.sceneHeight/3.5);
         anchorPane.getChildren().addAll(requests,choiceBox);
 
-        this.submit = new GuiButton("Submit", Gui.submitButton, anchorPane, null, Gui.submitButtonPressed);
+        this.submit = new GuiButton("Submit", Gui.submitButton, null, Gui.submitButtonPressed);
         submit.setPrefWidth((float) Gui.sceneWidth/14);
         submit.setTextFill(Color.WHITESMOKE);
         AnchorPane.setRightAnchor(submit, Gui.marginLength);
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
+        Platform.runLater(()-> anchorPane.getChildren().add(submit));
 
         this.setOnCloseRequest(windowEvent -> {
             if (Gui.confirmQuit()) {

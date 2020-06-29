@@ -545,12 +545,13 @@ public class Gui extends View {
 
         Platform.runLater(() -> dialogRegion.getChildren().addAll(chooseStep, stepChoice));
 
-        Button okBtn = new GuiButton("Ok", submitButton, dialogRegion,  mouseEvent -> {
+        Button okBtn = new GuiButton("Ok", submitButton,  mouseEvent -> {
             notifyStepChoice(getNickname(), stepChoice.getValue());
             Platform.runLater(() -> dialogRegion.getChildren().clear());
         }, submitButtonPressed);
         setPrimarySceneButtonBinding(okBtn);
         okBtn.setTextFill(Color.WHITESMOKE);
+        Platform.runLater(()-> dialogRegion.getChildren().add(okBtn));
     }
 
     /**
@@ -729,14 +730,12 @@ public class Gui extends View {
         Label domeRequest = new Label ("Do you want to build a dome? ");
         Platform.runLater(() -> dialogRegion.getChildren().add(domeRequest));
 
-        Button yesBtn = new GuiButton("YES", submitButton, dialogRegion,
-                mouseEvent ->  {
+        Button yesBtn = new GuiButton("YES", submitButton, mouseEvent ->  {
                     buildDome = true;
                     afterDomeChoice();
                 }, submitButtonPressed);
 
-        Button noBtn = new GuiButton ("NO", submitButton, dialogRegion,
-                mouseEvent -> {
+        Button noBtn = new GuiButton ("NO", submitButton, mouseEvent -> {
                     buildDome = false;
                     afterDomeChoice();
                 }, submitButtonPressed);
@@ -745,7 +744,7 @@ public class Gui extends View {
         setPrimarySceneButtonBinding(yesBtn);
         noBtn.setTextFill(Color.WHITESMOKE);
         setPrimarySceneButtonBinding(noBtn);
-
+        Platform.runLater(()-> dialogRegion.getChildren().addAll(yesBtn, noBtn));
         dialogRegion.setAlignment(Pos.CENTER);
     }
 
@@ -1170,20 +1169,22 @@ public class Gui extends View {
             HBox bottomBtns = new HBox();
             bottomBtns.setSpacing(marginLength);
 
-            new GuiButton("GodCards",buttonCoralSrc, bottomBtns, mouseEvent ->
+            Button godCardsBtn = new GuiButton("GodCards",buttonCoralSrc, mouseEvent ->
                     new GodCardsPopup(primaryStage, 0, matchGodCards), buttonCoralPressedSrc);
 
-            new GuiButton("QUIT",buttonCoralSrc, bottomBtns, mouseEvent -> {
-
+            Button quitBtn = new GuiButton("QUIT",buttonCoralSrc,  mouseEvent -> {
                 notifyDisconnection();
                 primaryStage.close();
                 Platform.exit();
                 System.exit(0);
             }, buttonCoralPressedSrc);
 
+            setPrimarySceneButtonBinding(godCardsBtn);
+            setPrimarySceneButtonBinding(quitBtn);
             Platform.runLater(() -> bottomAnchorPane.getChildren().add(bottomBtns));
             AnchorPane.setBottomAnchor(bottomBtns, Gui.marginLength);
             AnchorPane.setRightAnchor(bottomBtns, Gui.marginLength);
+            Platform.runLater(()-> bottomBtns.getChildren().addAll(godCardsBtn, quitBtn));
         }
 
         else if (currState.equals(Model.State.SETUP_PLAYERS)) {
@@ -1252,9 +1253,10 @@ public class Gui extends View {
 
         if (!getState().equals(View.ViewState.END)) {
 
-            Button playAgainBtn = new GuiButton("Play Again", submitButton, dialogRegion,  mouseEvent -> resetAll(), submitButtonPressed);
+            Button playAgainBtn = new GuiButton("Play Again", submitButton, mouseEvent -> resetAll(), submitButtonPressed);
             playAgainBtn.setTextFill(Color.WHITESMOKE);
             setPrimarySceneButtonBinding(playAgainBtn);
+            Platform.runLater(()-> dialogRegion.getChildren().add(playAgainBtn));
         }
         setState(ViewState.CONNECTION);
         gameMap.setChosenBuilderNum(0);

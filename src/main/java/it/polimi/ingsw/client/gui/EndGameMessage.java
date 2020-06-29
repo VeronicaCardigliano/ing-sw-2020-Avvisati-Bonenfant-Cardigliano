@@ -48,8 +48,9 @@ public class EndGameMessage {
 
         Platform.runLater(()-> ownerPane.getChildren().add(text));
 
-        playAgainBtn = new GuiButton("Play Again", Gui.submitButton, ownerPane, handler, Gui.submitButtonPressed);
+        playAgainBtn = new GuiButton("Play Again", Gui.submitButton, handler, Gui.submitButtonPressed);
         playAgainBtn.setTextFill(Color.WHITESMOKE);
+        Platform.runLater(()-> ownerPane.getChildren().add(playAgainBtn));
     }
 
     /**
