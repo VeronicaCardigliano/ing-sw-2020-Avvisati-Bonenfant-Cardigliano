@@ -48,7 +48,7 @@ class ModelTest {
         assertFalse(Model.checkDate("test"));
         assertFalse(Model.checkDate("1.1.1"));
         assertTrue(Model.checkDate("1980.02.10"));
-        assertTrue(Model.checkDate("3000.01.01"));
+        assertFalse(Model.checkDate("3000.01.01"));
         assertFalse(Model.checkDate("1980.02.30"));
 
         assertFalse(testModel.addPlayer("thomas", "3000.01.01"));

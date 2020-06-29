@@ -31,7 +31,6 @@ public class Player {
         if (nickname == null)
             throw new IllegalArgumentException ("Nickname can't be null");
         this.nickname = nickname;
-
         this.birthday = birthday;
 
     }

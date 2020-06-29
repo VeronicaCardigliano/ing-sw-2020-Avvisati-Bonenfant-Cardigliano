@@ -194,8 +194,10 @@ public class Model extends ModelObservableWithSelect {
      * @param num Number of players that will play in the game
      */
     public boolean setNumberOfPlayers(int num){
-        if (minNumberOfPlayers <= num && num <= maxNumberOfPlayers)
+        if (minNumberOfPlayers <= num && num <= maxNumberOfPlayers){
+            this.numPlayers = num;
             return true;
+        }
 
         notifyWrongNumber();
         return false;
@@ -228,11 +230,6 @@ public class Model extends ModelObservableWithSelect {
 
         try {
             epoch = df.parse(birthday).getTime();
-
-            if(epoch > System.currentTimeMillis()) {
-                canAdd = false;
-            }
-
         } catch (ParseException e) {
             canAdd = false;
         }
@@ -261,11 +258,26 @@ public class Model extends ModelObservableWithSelect {
         List<String> components = Arrays.asList(date.split("\\."));
 
         int inputYear, inputMonth, inputDay;
+        int thisYear = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
+        int thisMonth = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
+        int thisDay = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
+
 
         if (date.matches("\\d{4}\\.\\d{2}\\.\\d{2}")){
             inputYear = Integer.parseInt(components.get(0));
             inputMonth = Integer.parseInt(components.get(1));
             inputDay = Integer.parseInt(components.get(2));
+
+            if (inputYear > thisYear)
+                return false;
+            else if (inputYear == thisYear){
+                if (inputMonth > thisMonth)
+                    return false;
+                else if (inputMonth == thisMonth){
+                    if (inputDay > thisDay)
+                        return false;
+                }
+            }
 
             boolean isLeap = false;
             if (inputYear % 100 == 0 && inputYear % 4 == 0 && inputYear % 400 == 0)
@@ -291,7 +303,6 @@ public class Model extends ModelObservableWithSelect {
                 }
             }
         }
-
         return dateOk;
     }
 
@@ -358,9 +369,8 @@ public class Model extends ModelObservableWithSelect {
 
     /**
      * Sets start player
-     * @param challenger
      * @param startPlayer Nickname of the player chosen to start the game
-     * @return
+     * @return True if the start player is assigned
      */
     public boolean setStartPlayer(String challenger, String startPlayer) {
         boolean result = true;
@@ -378,6 +388,7 @@ public class Model extends ModelObservableWithSelect {
 
         return result;
     }
+
 
     /** Assign a color to the current player and to all his builders. Gives an error whether the player choose a
      * different color from the ones available
@@ -420,7 +431,7 @@ public class Model extends ModelObservableWithSelect {
      * Place builders of the current player on the game map
      * @param builder1Coord Coordinates where place first builder
      * @param builder2Coord Coordinates where place second builder
-     * @return
+     * @return True if builders are placed
      */
     public boolean setCurrPlayerBuilders(Coordinates builder1Coord, Coordinates builder2Coord) {
         boolean set = false;
@@ -484,14 +495,13 @@ public class Model extends ModelObservableWithSelect {
 
                 switch (currStep) {
                     case "MOVE":
-                        if (IslandBoard.distanceOne(i_src, j_src, x, y) && currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
+                        if (currPlayer.getGodCard().askMove(i_src, j_src, x, y)) {
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
                         }
                         break;
 
                     case "BUILD":
-                        if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
-                                currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)) {
+                        if (currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)){
                             possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
                         }
                         break;
@@ -502,7 +512,7 @@ public class Model extends ModelObservableWithSelect {
     }
 
     /**
-     * This method is called after every move, to control whether the currPlayer has lost (he can't move anywhere)
+     * This method is called after every move to control if the current player has lost
      */
     public boolean hasNotLostDuringMove() {
 
@@ -519,7 +529,7 @@ public class Model extends ModelObservableWithSelect {
     }
 
     /**
-     * This method is called after every build, to control whether the currPlayer has lost (he can't build anywhere)
+     * This method is called after every build to control if the current player has lost
      */
     public boolean hasNotLostDuringBuild() {
 
@@ -537,66 +547,67 @@ public class Model extends ModelObservableWithSelect {
     }
 
 
+    /**
+     * Main function called to perform a build. This function not only tries to build but it also notifies the view
+     * depending on the result
+     * @param src Source should contain a builder of the current player
+     * @return True if move is done
+     */
     public boolean effectiveBuild (Coordinates src, Coordinates dst, boolean buildDome) {
         boolean result = false;
         boolean correctBuilder = true;
         notifyViewSelection(currPlayer.getNickname());
-
-        //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
             notifyWrongInsertion("ERROR: you have to continue the turn with the same builder ");
             correctBuilder = false;
         }
-
         if (correctBuilder)
             result = currPlayer.build(src.getI(), src.getJ(), dst.getI(),dst.getJ(), buildDome);
-
         if(result)
             currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
         notifyBuilderBuild(currPlayer.getNickname(), src, dst, buildDome, result);
-
         return result;
     }
 
-    public boolean effectiveMove (Coordinates src, Coordinates dst) {
 
+    /**
+     * Main function called to perform a move
+     * @param src Source should contain a builder of the current player. This function not only tries to move but
+     * it also notifies the view depending on the result
+     * @return True if move is done
+     */
+    public boolean effectiveMove (Coordinates src, Coordinates dst) {
         boolean result = false;
         boolean correctBuilder = true;
         notifyViewSelection(currPlayer.getNickname());
-
-        //save the builder if this is the first game step of currPlayer
         if (currPlayer.getGodCard().getStepNumber() == 0)
             chosenBuilder = gameMap.getCell(src).getBuilder();
         else if (!Coordinates.equals(chosenBuilder.getCell(), src)) {
             notifyWrongInsertion("ERROR: you have to continue the turn with the same player ");
             correctBuilder = false;
         }
-
         if (correctBuilder) {
             Cell dstCell = gameMap.getCell(dst);
             Builder possibleEnemyToPush = dstCell.isOccupied() ? dstCell.getBuilder() : null;
-
             result = currPlayer.move(src.getI(), src.getJ(), dst.getI(),dst.getJ());
-
             if(result && possibleEnemyToPush != null) {
                 notifyBuilderPushed(possibleEnemyToPush.getPlayer().getNickname(), dst, possibleEnemyToPush.getCell());
             }
-
             if(result)
                 currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
         }
-
         notifyBuilderMovement(currPlayer.getNickname(),src, dst, result);
-
-
         return result;
     }
 
+
+    /**
+     * For each builder of the current player gets the list of all possible move and build
+     */
     public void findPossibleDestinations () {
         currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
-        //boolean result = false;
 
         notifyViewSelection(currPlayer.getNickname());
 
@@ -631,17 +642,13 @@ public class Model extends ModelObservableWithSelect {
     public boolean setStepChoice (String step) {
         boolean changed = false;
         notifyViewSelection(currPlayer.getNickname());
-
         if (step.equals("MOVE") || step.equals("BUILD")) {
             currPlayer.forceStep(step);
             changed = true;
         }
-
         else
             notifyWrongInsertion("ERROR: The step entered is not a valid value ");
-
         notifyChosenStep(currPlayer.getNickname(), step, changed);
-
         return changed;
     }
 
