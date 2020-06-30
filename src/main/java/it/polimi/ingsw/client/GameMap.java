@@ -15,6 +15,7 @@ public abstract class GameMap {
 
     public static final int firstBuilderIndex = 0;
     public static final int secondBuilderIndex = 1;
+    public static final int buildersNum = 2;
 
     private Set<Coordinates> possibleDstBuilder1 = new HashSet<>();
     private Set<Coordinates> possibleDstBuilder2 = new HashSet<>();

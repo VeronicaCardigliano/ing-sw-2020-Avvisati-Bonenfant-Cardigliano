@@ -85,6 +85,7 @@ public class Gui extends View {
     private PlayerSetupPopup playerSetupPopup;
     private ChoicePopup choiceSetupPopup;
     private Map<String, Text> playersNameTags = new HashMap<>();
+    private Set<Coordinates> chosenCells = new HashSet<>();
     private boolean challenger;
 
     /**
@@ -498,7 +499,6 @@ public class Gui extends View {
     public void placeBuilders () {
 
         super.placeBuilders();
-
         printMessage("Click cells to place your builders", false);
 
         for (int i = 0; i < tile.getChildren().size(); i++) {
@@ -507,7 +507,7 @@ public class Gui extends View {
 
                 if (getState().toString().equals("BUILDERPLACEMENT")) {
 
-                    List<Integer> occupiedCellsIndexes = new ArrayList<>();
+                    boolean free = true;
                     //searches for the index of the cell on which the user clicked
                     int index = 0;
                     StackPane eventSource = (StackPane) mouseEvent.getSource();
@@ -518,28 +518,19 @@ public class Gui extends View {
                             break;
                     }
 
-                    //sets the occupiedCellsIndexes List, with indexes instead of Coordinates
                     for (String player : gameMap.getOccupiedCells().keySet()) {
-
-                        occupiedCellsIndexes.add(gameMap.coordinatesToIndex(gameMap.getOccupiedCells().get(player).get(GameMap.firstBuilderIndex)));
-                        //if also the second builder have been already set
-                        if (gameMap.getOccupiedCells().get(player).size() > 1)
-                            occupiedCellsIndexes.add(gameMap.coordinatesToIndex(gameMap.getOccupiedCells().get(player).get(GameMap.secondBuilderIndex)));
+                        if (gameMap.getOccupiedCells().get(player).contains(gameMap.indexToCoord(index)))
+                            free = false;
                     }
 
-                    if (!occupiedCellsIndexes.contains(index)) {
+                    //add returns false if the cell has already been chosen
+                    if (free && chosenCells.add(gameMap.indexToCoord(index))) {
 
-                        gameMap.createBuilder(getChosenColorsForPlayer().get(getNickname()), index);
+                        gameMap.createBuilder(getChosenColorsForPlayer().get(getNickname()), gameMap.indexToCoord(index));
 
-                        //if the key "currPlayer" is already present, it means that the first builder position is been added
-                        if (!gameMap.getOccupiedCells().containsKey(getNickname()))
-                            gameMap.setOccupiedCells(getNickname(), gameMap.indexToCoord(index), null);
-
-                        else {
-                            gameMap.setOccupiedCells(getNickname(), null, gameMap.indexToCoord(index));
-                            //if it's the second builder of getNickname() player, notify is called and, after the update, the state changes
-                            notifySetupBuilders(getNickname(), gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex),
-                                    gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex));
+                        if (chosenCells.size() == GameMap.buildersNum) {
+                            Iterator<Coordinates> chosenCell = chosenCells.iterator();
+                            notifySetupBuilders(getNickname(), chosenCell.next(), chosenCell.next());
                         }
                     }
                 }
@@ -611,7 +602,8 @@ public class Gui extends View {
 
     /**
      * This method makes the user choose the turn builder and than calls moveOnBuilderChosen or buildToDst to complete the first step
-     * of the turn.
+     * of the turn. After the choice, both the clicked builder and the other one are reset (can't be selected anymore)
+     * and the current turn builder position is set, with the chosen builder number.
      */
     private void chooseTurnBuilder() {
 
@@ -639,10 +631,11 @@ public class Gui extends View {
 
                 tmp.getChildren().get(currBuilderIndexStack).setOnMouseClicked(mouseEvent -> {
 
-                    int currentBuilderIndexInStack;
                     //takes the builder and sets its opacity to show that it's been selected
                     ImageView clickedBuilder = (ImageView) mouseEvent.getSource();
                     clickedBuilder.setOpacity(Gui.selectionOpacity);
+                    clickedBuilder.setOnMouseEntered(null);
+                    clickedBuilder.setOnMouseClicked(null);
 
                     //controls if the chosen builder is the first one or the second one of current player's builders
                     Coordinates coordOfFirstBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
@@ -650,11 +643,9 @@ public class Gui extends View {
                     Coordinates coordOfSecondBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
                     StackPane secondBuilderCell = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coordOfSecondBuilderCell));
 
-                    clickedBuilder.setOnMouseClicked(null);
-                    clickedBuilder.setOnMouseEntered(null);
+                    int currentBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
 
-                    currentBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
-
+                    //if the clicked builder is the first one, I reset the not clicked one (second one)
                     if (firstBuilderCell.getChildren().get(currentBuilderIndexInStack).equals(clickedBuilder)) {
 
                         int secondBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfSecondBuilderCell);
@@ -712,13 +703,12 @@ public class Gui extends View {
 
             notifyMove(getNickname(), currentTurnBuilderPos, gameMap.indexToCoord(dstIndex));
             currentTurnBuilderPos = gameMap.indexToCoord(dstIndex);
-            gameMap.resetPossibleDestinations();
         });
     }
 
     /**
      * On turn builder chosen, shows the possible destinations to build and adds an eventHandler on them to notify the
-     * build destination choice. It creates also the new building calling the gameMap method "createBuilding"
+     * build destination choice.
      */
     private void buildToDst() {
 
@@ -738,11 +728,7 @@ public class Gui extends View {
                         else
                             break;
                     }
-
-                    gameMap.createBuilding(index, buildDome, getNickname());
-
                     notifyBuild(getNickname(), currentTurnBuilderPos, gameMap.indexToCoord(index), buildDome);
-                    gameMap.resetPossibleDestinations();
                 }
             });
     }
@@ -821,8 +807,6 @@ public class Gui extends View {
                 askForDome();
 
             else {
-                //gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
-                //        possibleDstBuilder2forDome, buildDome, null);
                 printMessage("Select where you want to build", false);
                 buildToDst();
             }
@@ -842,11 +826,11 @@ public class Gui extends View {
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
 
         super.onBuilderBuild(nickname,src, dst, dome, result);
+
         if(result) {
             if (getNickname().equals(nickname))
                 gameMap.resetPossibleDestinations();
-            else
-                gameMap.createBuilding(gameMap.coordinatesToIndex(dst), dome, nickname);
+            gameMap.createBuilding(gameMap.coordinatesToIndex(dst), dome, nickname);
         }
 
         else
@@ -873,7 +857,6 @@ public class Gui extends View {
 
             //does the effective move of the builder in map
             gameMap.moveBuilder(gameMap.coordinatesToIndex(src), gameMap.coordinatesToIndex(dst));
-
             gameMap.updateOccupiedCells(nickname, src, dst);
         }
         else
@@ -935,13 +918,19 @@ public class Gui extends View {
             if (getNickname().equals(nickname))
                 printMessage("Builders positioned correctly.", false);
             else {
-                gameMap.setOccupiedCells(nickname, positionBuilder1, positionBuilder2);
-                gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), gameMap.coordinatesToIndex(positionBuilder1));
-                gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), gameMap.coordinatesToIndex(positionBuilder2));
+                gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), positionBuilder1);
+                gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), positionBuilder2);
             }
+
+            gameMap.setOccupiedCells(nickname, positionBuilder1, positionBuilder2);
+
         }
-        else
+        else if (getNickname().equals(nickname)) {
             printMessage("ERROR in builders placement", false);
+            gameMap.removeBuilders(positionBuilder1, positionBuilder2);
+            chosenCells.clear();
+        }
+
     }
 
     /**
@@ -1119,7 +1108,8 @@ public class Gui extends View {
         gameMap.removePlayer(nickname);
         if (!getNickname().equals(nickname)) {
             printMessage(nickname + " lost!", false);
-            gameMap.removeBuilders(nickname);
+            gameMap.removeBuilders(gameMap.getOccupiedCells().get(nickname).get(GameMap.firstBuilderIndex),
+                    gameMap.getOccupiedCells().get(nickname).get(GameMap.secondBuilderIndex));
         }
         else {
             EndGameMessage endGameMessage = new EndGameMessage("YOU LOSE", Color.BLUE, dialogRegion, MouseEvent -> resetAll());

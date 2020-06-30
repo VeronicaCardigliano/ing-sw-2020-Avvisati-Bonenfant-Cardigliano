@@ -116,7 +116,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
     public void notifyDisconnection() {connectionObserver.onDisconnection();}
 
-    //build and move functions overriden by a specific UI
+    //build and move functions overridden by each specific UI
     abstract public void build();
     abstract public void move();
 
@@ -169,11 +169,11 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
 
     /**
-     * Updates the positions at which builders can build
-     * @param possibleDstBuilder1 positions at which builder 1 can build a normal building
-     * @param possibleDstBuilder2 positions at which builder 2 can build a normal building
-     * @param possibleDstBuilder1forDome positions at which builder 1 can build a dome
-     * @param possibleDstBuilder2forDome positions at which builder 2 can build a dome
+     * Updates the positions where builders can build
+     * @param possibleDstBuilder1 positions where builder 1 can build a normal building
+     * @param possibleDstBuilder2 positions where builder 2 can build a normal building
+     * @param possibleDstBuilder1forDome positions where builder 1 can build a dome
+     * @param possibleDstBuilder2forDome positions where builder 2 can build a dome
      */
     @Override
     public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
@@ -201,8 +201,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
 
     /**
-     * Updates GameMap object with a new builder if the result is true
-     * @param nickname nickname of the player who placed his builder
+     * Updates GameMap object with new builders if the result is true
+     * @param nickname nickname of the player who placed his builders
      * @param positionBuilder1 position of the first builder placed
      * @param positionBuilder2 position of the second builder placed
      * @param result true if the server accepted it
@@ -214,7 +214,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         else
 
             setState(ViewState.BUILDERPLACEMENT);
-
     }
 
     /**
@@ -324,6 +323,11 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         gameMap.setChosenBuilderNum(0);
     }
 
+    /**
+     * Handles server notification about start player chosen
+     * @param nickname of the starting player
+     * @param result true if correctly set
+     */
     @Override
     public void onStartPlayerSet(String nickname, boolean result) {
         if(!result)

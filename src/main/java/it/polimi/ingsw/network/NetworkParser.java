@@ -4,10 +4,8 @@ package it.polimi.ingsw.network;
 
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class NetworkParser {

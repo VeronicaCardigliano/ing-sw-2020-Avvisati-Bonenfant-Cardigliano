@@ -113,11 +113,11 @@ public class GuiMap extends GameMap {
     /**
      * This method creates a new builder and positions it in the right cell
      * @param color color of the builder owner
-     * @param cellIndex where the new builder has to be put
+     * @param cellCoord where the new builder has to be put
      */
-    protected void createBuilder(String color, int cellIndex) {
+    protected void createBuilder(String color, Coordinates cellCoord) {
 
-        StackPane dstCell = (StackPane) tile.getChildren().get(cellIndex);
+        StackPane dstCell = (StackPane) tile.getChildren().get(coordinatesToIndex(cellCoord));
 
         ImageView builder = null;
         switch (color) {
@@ -353,15 +353,12 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * Removes the builders of a player who has lost from the cell, taking their coordinates from occupiedCells
-     * @param nickname of the losing player
+     * Removes the builders from builder1Coord and builder2Coord if a player loses or if buildersPlacement
+     * was not successful
      */
-    protected void removeBuilders (String nickname) {
+    protected void removeBuilders (Coordinates builder1Coord, Coordinates builder2Coord) {
 
-        Coordinates builder1Coord, builder2Coord;
         ImageView builder1, builder2;
-        builder1Coord = getOccupiedCells().get(nickname).get(0);
-        builder2Coord = getOccupiedCells().get(nickname).get(1);
 
         StackPane cellBuilder1 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder1Coord));
         builder1 = (ImageView) cellBuilder1.getChildren().get(getCurBuilderIndexInStack(builder1Coord));
@@ -370,7 +367,6 @@ public class GuiMap extends GameMap {
         StackPane cellBuilder2 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder2Coord));
         builder2 = (ImageView) cellBuilder2.getChildren().get(getCurBuilderIndexInStack(builder1Coord));
         Platform.runLater(() -> cellBuilder2.getChildren().remove(builder2));
-        occupiedCells.remove(nickname);
     }
 
     /**

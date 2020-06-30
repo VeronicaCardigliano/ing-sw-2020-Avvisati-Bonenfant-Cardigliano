@@ -308,7 +308,7 @@ public class Model extends ModelObservableWithSelect {
 
 
     /**
-     * @param matchGodCards Set of god cards the challenger has chose
+     * @param matchGodCards Set of god cards the challenger has chosen
      */
     public boolean setMatchCards(Set<String> matchGodCards) {
         boolean set = true;
@@ -327,7 +327,7 @@ public class Model extends ModelObservableWithSelect {
     }
 
 
-    /** This method used to assign a god card to a player
+    /** This method is used to assign a god card to a player
      * @param chosenGodCard Name of the GodCard the current player has chosen
      * @return False if the god card doesn't exist or isn't in the list of the available ones
      */
@@ -390,7 +390,7 @@ public class Model extends ModelObservableWithSelect {
     }
 
 
-    /** Assign a color to the current player and to all his builders. Gives an error whether the player choose a
+    /** Assigns a color to the current player and to all his builders. Gives an error whether the player choose a
      * different color from the ones available
      * @param chosenColor Name of the chosen color
      */
@@ -428,7 +428,7 @@ public class Model extends ModelObservableWithSelect {
 
 
     /**
-     * Place builders of the current player on the game map
+     * Places builders of the current player on the game map
      * @param builder1Coord Coordinates where place first builder
      * @param builder2Coord Coordinates where place second builder
      * @return True if builders are placed
@@ -476,7 +476,7 @@ public class Model extends ModelObservableWithSelect {
 
 
     /**
-     * Find the possible destinations for both the builders of the current player
+     * Finds the possible destinations for both the builders of the current player
      * @param builderIndex index of the Builder x of the currentPlayer
      * @return the possible destination cells for a MOVE
      */
@@ -509,7 +509,6 @@ public class Model extends ModelObservableWithSelect {
                 }
             }
         return possibleDstBuilder;
-
     }
 
     /**
