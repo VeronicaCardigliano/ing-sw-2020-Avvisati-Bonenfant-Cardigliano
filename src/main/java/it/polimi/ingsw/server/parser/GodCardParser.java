@@ -121,7 +121,7 @@ public class GodCardParser {
                     intParameters.put("completeTowersToWin", godObject.opt("completeTowersToWin") != null ?
                             godObject.getInt("completeTowersToWin") : IslandBoard.dimension * IslandBoard.dimension + 1);
 
-                    cardCreated = new WinConditionGodCard(player, name, description, states, flagParameters, intParameters);
+                    cardCreated = new WinConditionGodCard(player, name, description, states, intParameters);
                     break;
 
                 default:

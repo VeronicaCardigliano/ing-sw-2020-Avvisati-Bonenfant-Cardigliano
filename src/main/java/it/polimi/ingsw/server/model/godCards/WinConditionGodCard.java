@@ -18,7 +18,7 @@ public class WinConditionGodCard extends GodCard {
     private final int completeTowersToWin;
 
     public WinConditionGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
-                               Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
+                               Map<String, Integer> intParameters) {
         super(player, name, description, states);
 
         this.minimumDownStepsToWin = intParameters.get("minimumDownStepsToWin");

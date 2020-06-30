@@ -1,6 +1,7 @@
 package it.polimi.ingsw.server.model.godCards;
 
 import it.polimi.ingsw.server.model.Player;
+import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -37,6 +38,6 @@ public class YourTurnGodCard extends GodCard {
     public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
         boolean prometheusCondition = blockMovingUpIfBuilt &&
                 (!(gameMap.heightDifference(i_src, j_src, i_dst, j_dst) > 0) || !built);
-        return super.askMove(i_src, j_src, i_dst, j_dst) && prometheusCondition;
+        return super.askMove(i_src, j_src, i_dst, j_dst) && prometheusCondition && IslandBoard.distanceOne(i_src, j_src, i_dst, j_dst);
     }
 }

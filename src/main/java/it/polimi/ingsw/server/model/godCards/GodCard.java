@@ -274,7 +274,7 @@ public class GodCard {
         dst = gameMap.getCell(i_dst, j_dst);
 
         return src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) &&
-                //IslandBoard.distanceOne(src, dst) &&
+                IslandBoard.distanceOne(src, dst) &&
                 IslandBoard.heightDifference(src, dst) <= maxHeightDifference &&
                 !dst.isDomePresent() && !dst.isOccupied() && gameMap.check(new Event(Event.EventType.MOVE, src, dst)) &&
                 dst != src;

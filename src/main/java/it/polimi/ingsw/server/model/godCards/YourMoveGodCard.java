@@ -104,6 +104,6 @@ public class YourMoveGodCard extends GodCard {
                 gameMap.check(new Event(Event.EventType.MOVE, src, dst)) &&
                 (dst.isOccupied() &&
                 askPush(i_src, j_src, i_dst, j_dst)))) &&
-                extraConditions;
+                extraConditions && IslandBoard.distanceOne(i_src, j_src, i_dst, j_dst);
     }
 }
