@@ -441,7 +441,7 @@ public class Model extends ModelObservableWithSelect {
         Cell cell1 = gameMap.getCell(builder1Coord);
         Cell cell2 = gameMap.getCell(builder2Coord);
 
-        if (!cell1.isOccupied() && !cell2.isOccupied() &&
+        if (cell1 != cell2 && !cell1.isOccupied() && !cell2.isOccupied() &&
                 cell1.setOccupant(currPlayer.getBuilders().get(0)) && cell2.setOccupant(currPlayer.getBuilders().get(1))) {
             set = true;
 

@@ -120,6 +120,27 @@ class ModelTest {
     }
 
     @Test
+    public void placeBuildersTest() {
+        testModel.setNumberOfPlayers(2);
+        testModel.addPlayer("Carlo", "1998.04.20");
+        testModel.addPlayer("Luigi", "1999.02.01");
+
+        testModel.setNextPlayer();
+        testModel.assignColor("MAGENTA");
+        testModel.setNextPlayer();
+        testModel.assignColor("WHITE");
+        testModel.setNextPlayer();
+
+        assertFalse(testModel.setCurrPlayerBuilders(new Coordinates(1,1), new Coordinates(1,1)));
+        assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(1,1), new Coordinates(1,2)));
+
+        testModel.setNextPlayer();
+        assertFalse(testModel.setCurrPlayerBuilders(new Coordinates(1,1), new Coordinates(2,2)));
+        assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(2,1), new Coordinates(2,2)));
+
+    }
+
+    @Test
     public void athenaVSPrometheus() {
 
         System.out.println("SETUP_NUMOFPLAYERS");
