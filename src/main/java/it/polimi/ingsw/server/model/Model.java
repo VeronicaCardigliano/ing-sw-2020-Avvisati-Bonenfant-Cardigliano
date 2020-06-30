@@ -259,8 +259,8 @@ public class Model extends ModelObservableWithSelect {
 
         int inputYear, inputMonth, inputDay;
         int thisYear = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
-        int thisMonth = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
-        int thisDay = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
+        int thisMonth = Integer.parseInt(new SimpleDateFormat("MM").format(new Date()));
+        int thisDay = Integer.parseInt(new SimpleDateFormat("dd").format(new Date()));
 
 
         if (date.matches("\\d{4}\\.\\d{2}\\.\\d{2}")){
