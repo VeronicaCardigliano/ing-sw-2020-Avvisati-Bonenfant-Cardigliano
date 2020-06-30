@@ -61,7 +61,7 @@ public class YourBuildGodCard extends GodCard {
                 canBuildDomeEverywhere && (dst.getHeight() < IslandBoard.maxHeight || buildDome)) ||
                 (src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) && !dst.isDomePresent() &&
                  buildHeightCondition && blockUnderItself && !buildDome && src.getHeight() < IslandBoard.maxHeight &&
-                        src.equals(dst))) && extraConditions && IslandBoard.distanceOne(i_src, j_src, i_dst, j_dst);
+                        src.equals(dst))) && extraConditions;
     }
 
 
