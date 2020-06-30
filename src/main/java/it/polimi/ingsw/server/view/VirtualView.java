@@ -33,6 +33,11 @@ public class VirtualView extends ViewObservable implements Runnable {
     private ConnectionObserver connectionObserver;
     private ScheduledExecutorService scheduler;
 
+    /**
+     * Constructor that sets all its observers
+     * @param socket connected to Client
+     * @param controller that observes view events
+     */
     public VirtualView(Socket socket, AbstractController controller) {
         setBuilderBuildObserver(controller);
         setBuilderMoveObserver(controller);
@@ -44,10 +49,7 @@ public class VirtualView extends ViewObservable implements Runnable {
         setGodCardChoiceObserver(controller);
         setStartPlayerObserver(controller);
 
-
         this.socket = socket;
-
-
     }
 
     public void setConnectionObserver(ConnectionObserver obs) {
@@ -73,6 +75,9 @@ public class VirtualView extends ViewObservable implements Runnable {
         return registered;
     }
 
+    /**
+     * Main VirtualView function with socket read loop
+     */
     @Override
     public void run() {
         try {
@@ -96,11 +101,10 @@ public class VirtualView extends ViewObservable implements Runnable {
             return;
         }
 
-        try {
-            notifyConnection();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        notifyConnection();
+
+
 
         scheduler = Executors.newSingleThreadScheduledExecutor();
 
@@ -162,150 +166,139 @@ public class VirtualView extends ViewObservable implements Runnable {
      */
     private void handleMessage(String message) {
 
-        try{
-            NetworkParser parser = new NetworkParser(message);
+        NetworkParser parser = new NetworkParser(message);
 
-            Coordinates src, dst;
-            Coordinates builder1, builder2;
-            String date, color;
-            int numberOfPlayers;
+        Coordinates src, dst;
+        Coordinates builder1, builder2;
+        String date, color;
+        int numberOfPlayers;
 
-            switch (parser.getRequest()) {
+        switch (parser.getRequest()) {
 
-                case Messages.ADD_PLAYER:
-                    //drops redundant add player command
-                    if(this.nickname == null) {
-                        try {
-                            date = parser.getDate();
-                            setNickname(parser.getName());
-                            notifyNewPlayer(this.nickname, date);
-                        } catch (JSONException e) {
-                            send(Messages.errorMessage("Parsing error: " + e.getMessage()));
-                            //send(Messages.parseErrorPlayer());
-                        }
-                    } else {
-                        send(Messages.errorMessage("nickname already set"));
-                    }
-                    break;
-
-
-                case Messages.SET_NUMBER_OF_PLAYERS:
+            case Messages.ADD_PLAYER:
+                if (this.nickname == null) {
                     try {
-                        numberOfPlayers = parser.getNumberOfPlayers();
-                        notifyNumberOfPlayers(numberOfPlayers);
-                    }
-                    catch (JSONException e) {
-                        send(Messages.errorMessage(e.getMessage()));
-                        //send(Messages.parseErrorNumber());
-                    }
-                    break;
-
-
-                case Messages.COLOR_UPDATE:
-                    try {
-                        color = parser.getColor();
-                        notifyColorChoice(nickname, color);
-                    } catch (JSONException e){
-                        send(Messages.errorMessage(e.getMessage()));
-                        //send(Messages.parseErrorColor());
-                    }
-                    break;
-
-
-                case Messages.SET_GOD_CARD:
-                    try {
-                        notifyGodCardChoice(nickname, parser.getGodCardName());
-                    } catch (JSONException e){
-                        send(Messages.errorMessage(e.getMessage()));
-                        //send(Messages.parseErrorGod());
-                    }
-                    break;
-
-                case Messages.SET_MATCH_GOD_CARDS:
-                    try {
-                        notifyMatchGodCardsChoice(nickname, parser.getSetFromArray(Messages.GOD_DESCRIPTIONS));
+                        date = parser.getDate();
+                        setNickname(parser.getName());
+                        notifyNewPlayer(this.nickname, date);
                     } catch (JSONException e) {
-                        send(Messages.errorMessage(e.getMessage()));
+                        send(Messages.errorMessage("Parsing error: " + e.getMessage()));
+                        //send(Messages.parseErrorPlayer());
                     }
-                    break;
-
-                case Messages.BUILDERS_PLACEMENT:
-                    try {
-                        builder1 = parser.getCoordArray().get(0);
-                        builder2 = parser.getCoordArray().get(1);
-                        notifySetupBuilders(nickname, builder1, builder2);
-                    } catch (JSONException e){
-                        send(Messages.errorMessage(e.getMessage()));
-                        //send(Messages.parseErrorBuilders());
-                    }
-                    break;
+                } else {    //drops redundant add player command
+                    send(Messages.errorMessage("nickname already set"));
+                }
+                break;
 
 
-                case Messages.SET_STEP_CHOICE:
-                    try{
-                        String stepChoice = parser.getStepChoice();
-                        notifyStepChoice(nickname, stepChoice);
-                    } catch (JSONException e){
-                        send(Messages.errorMessage(e.getMessage()));
-                        //send(Messages.parseErrorStepChoice());
-                    }
-                    break;
+            case Messages.SET_NUMBER_OF_PLAYERS:
+                try {
+                    numberOfPlayers = parser.getNumberOfPlayers();
+                    notifyNumberOfPlayers(numberOfPlayers);
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+                break;
 
 
-                case Messages.SET_START_PLAYER:
-                    try {
-                        notifySetStartPlayer(nickname, parser.getAttribute(Messages.NAME));
-                    } catch (JSONException e) {
-                        send(Messages.errorMessage(e.getMessage()));
-                    }
-                    break;
+            case Messages.COLOR_UPDATE:
+                try {
+                    color = parser.getColor();
+                    notifyColorChoice(nickname, color);
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+                break;
 
-                case Messages.MOVE:
-                    try {
-                        src = parser.getSrcCoordinates();
-                        dst = parser.getDstCoordinates();
-                        notifyMove(nickname, src, dst);
-                    } catch ( JSONException e){
-                        send(Messages.errorMessage(e.getMessage()));
-                        //send(Messages.parseErrorMove());
-                    }
 
-                    break;
+            case Messages.SET_GOD_CARD:
+                try {
+                    notifyGodCardChoice(nickname, parser.getGodCardName());
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+                break;
 
-                case Messages.BUILD:
-                    try{
-                        src = parser.getSrcCoordinates();
-                        dst = parser.getDstCoordinates();
-                        notifyBuild(nickname, src, dst, parser.getBuildDome());
-                    } catch (JSONException e) {
-                        send(Messages.errorMessage(e.getMessage()));
-                        //send(Messages.parseErrorBuild());
-                    }
-                    break;
+            case Messages.SET_MATCH_GOD_CARDS:
+                try {
+                    notifyMatchGodCardsChoice(nickname, parser.getSetFromArray(Messages.GOD_DESCRIPTIONS));
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+                break;
 
-                case Messages.DISCONNECT:
-                    connected = false;
-                    //send(Messages.disconnect());
-                    break;
+            case Messages.BUILDERS_PLACEMENT:
+                try {
+                    builder1 = parser.getCoordArray().get(0);
+                    builder2 = parser.getCoordArray().get(1);
+                    notifySetupBuilders(nickname, builder1, builder2);
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+                break;
 
-                case Messages.PONG:
-                    scheduler.schedule(() -> send(Messages.ping()), pingDelay, TimeUnit.SECONDS);
-                    break;
 
-            }
-            //todo tenere solo questo mega try/catch oppure quelli annidati?
-        } catch (JSONException e) {
-            send(Messages.errorMessage(e.getMessage()));
+            case Messages.SET_STEP_CHOICE:
+                try {
+                    String stepChoice = parser.getStepChoice();
+                    notifyStepChoice(nickname, stepChoice);
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+                break;
+
+
+            case Messages.SET_START_PLAYER:
+                try {
+                    notifySetStartPlayer(nickname, parser.getAttribute(Messages.NAME));
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+                break;
+
+            case Messages.MOVE:
+                try {
+                    src = parser.getSrcCoordinates();
+                    dst = parser.getDstCoordinates();
+                    notifyMove(nickname, src, dst);
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+
+                break;
+
+            case Messages.BUILD:
+                try {
+                    src = parser.getSrcCoordinates();
+                    dst = parser.getDstCoordinates();
+                    notifyBuild(nickname, src, dst, parser.getBuildDome());
+                } catch (JSONException e) {
+                    send(Messages.errorMessage(e.getMessage()));
+                }
+                break;
+
+            case Messages.DISCONNECT:
+                connected = false;
+                break;
+
+            case Messages.PONG:
+                scheduler.schedule(() -> send(Messages.ping()), pingDelay, TimeUnit.SECONDS); //schedules a new keep-alive message
+                break;
+
         }
     }
 
     /**
      * Connection notification to connectionObserver (Controller)
      */
-    public void notifyConnection() throws IOException{
+    public void notifyConnection() {
         connectionObserver.onConnection(this);
     }
 
+    /**
+     * Disconnection notification to connectionObserver (Controller)
+     * @param player player who disconnected
+     */
     protected void notifyDisconnection(String player) {
         if(connectionObserver != null)
             connectionObserver.onDisconnection(player);
@@ -313,6 +306,10 @@ public class VirtualView extends ViewObservable implements Runnable {
             System.out.println("disconnection observer is not set");
     }
 
+    /**
+     * Disconnection notification of a non registered View
+     * @param view view whose socket disoconnected
+     */
     protected void notifyEarlyDisconnection(VirtualView view) {
         if(connectionObserver != null)
             connectionObserver.onEarlyDisconnection(view);

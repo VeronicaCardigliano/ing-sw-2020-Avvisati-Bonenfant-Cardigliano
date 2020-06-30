@@ -18,7 +18,7 @@ public class MultiThreadServer {
         this.port = port;
     }
 
-    public void startServer(ViewManager viewManager, Controller controller) {
+    public void startServer(Controller controller) {
         ExecutorService executor = Executors.newFixedThreadPool(maxNumberOfThreads);
         ServerSocket serverSocket;
 
@@ -47,6 +47,7 @@ public class MultiThreadServer {
 
             } catch (IOException e) {
                 System.err.println(e.getMessage());
+                break;
             }
         }
     }

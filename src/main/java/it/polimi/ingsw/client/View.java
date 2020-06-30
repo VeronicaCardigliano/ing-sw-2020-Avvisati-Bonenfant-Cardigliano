@@ -6,6 +6,10 @@ import it.polimi.ingsw.server.view.*;
 
 import java.util.*;
 
+/**
+ * Abstract Class implemented by UI.
+ *
+ */
 public abstract class View extends ViewObservable implements BuilderPossibleMoveObserver, BuilderPossibleBuildObserver,
         ColorAssignmentObserver, ErrorsObserver, BuildersPlacedObserver, PlayerLoseObserver, EndGameObserver,
         BuilderBuiltObserver, BuilderMovementObserver, GodChoiceObserver, PlayerAddedObserver, PlayerTurnObserver, StateObserver, ChosenStepObserver, StartPlayerSetObserver,
@@ -15,18 +19,18 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         CONNECTION, WAITING, NUMPLAYERS, NICKDATE, MATCHGODS, PLAYERGOD, STARTPLAYER, BUILDERCOLOR, BUILDERPLACEMENT, STEP, MOVE, BUILD, END
     }
 
-    private ConnectionObserver connectionObserver;
+    private ConnectionObserver connectionObserver; //will connect to server when View sends a notifyConnection
 
     private ViewState state;
 
     protected static final Map<String,String> chosenColorsForPlayer = new HashMap<>();
 
-    protected Coordinates currentTurnBuilderPos;
+    protected Coordinates currentTurnBuilderPos; //position of the chosen builder during turn
 
-    protected Set<Coordinates> possibleDstBuilder1 = new HashSet<>();
-    protected Set<Coordinates> possibleDstBuilder2 = new HashSet<>();
-    protected Set<Coordinates> possibleDstBuilder1forDome = new HashSet<>();
-    protected Set<Coordinates> possibleDstBuilder2forDome = new HashSet<>();
+    protected Set<Coordinates> possibleDstBuilder1 = new HashSet<>();       //positions at which builder 1 can move or build
+    protected Set<Coordinates> possibleDstBuilder2 = new HashSet<>();       //positions at which builder 2 can move or build
+    protected Set<Coordinates> possibleDstBuilder1forDome = new HashSet<>();//positions at which builder 1 can build a dome
+    protected Set<Coordinates> possibleDstBuilder2forDome = new HashSet<>();//positions at which builder 2 can build a dome
 
     private Map<String, String> chosenGodCardsForPlayer = new HashMap<>();
     //private Map<String,String> matchGodCards = new HashMap<>();
@@ -41,6 +45,9 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         setState(ViewState.CONNECTION);
     }
 
+    /**
+     * Main User Interface Function.
+     */
     public abstract void run();
 
     protected void setNickname(String nickname) {this.nickname = nickname;}
@@ -62,6 +69,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public Map<String, String> getChosenGodCardsForPlayer() { return chosenGodCardsForPlayer; }
     public static Map<String, String> getChosenColorsForPlayer() {return chosenColorsForPlayer;}
 
+
+    //-------------------------------------INPUT REQUESTS--------------------------------------------------------------
 
     public void askNumberOfPlayers () {
         setState(ViewState.NUMPLAYERS);
@@ -96,6 +105,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         setState(ViewState.STEP);
     }
 
+    //-----------------------------------------------------------------------------------------------------------------
 
     public void setConnectionObserver(ConnectionObserver observer) {
         this.connectionObserver = observer;
@@ -106,15 +116,36 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
     public void notifyDisconnection() {connectionObserver.onDisconnection();}
 
+    //build and move functions overriden by a specific UI
     abstract public void build();
     abstract public void move();
 
+
+
+    //----------------------------------------EVENT HANDLERS------------------------------------------------------------
+
+
+    /**
+     * Updates GameMap object after a Build event if the result is true
+     * @param nickname player who played
+     * @param src position of the builder who built
+     * @param dst where the builder built
+     * @param dome true if the builder built a Dome
+     * @param result true if the server accepted it
+     */
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
         possibleDstBuilder1forDome.clear();
         possibleDstBuilder2forDome.clear();
     }
 
+    /**
+     * Updates GameMap object after a Move event if the result is true
+     * @param nickname player who played
+     * @param src position of the builder that moved
+     * @param dst where the builder moved
+     * @param result true if the server accepted it
+     */
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
         if(result) {
@@ -126,11 +157,24 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     }
 
+    /**
+     * Updates GameMap object after a Push event
+     * @param nickname nickname of the player whose builder was pushed
+     * @param src position of the builder pushed
+     * @param dst where the builder was pushed
+     */
     @Override
     public void onBuilderPushed(String nickname, Coordinates src, Coordinates dst) {
         gameMap.updateOccupiedCells(nickname, src, dst);
     }
 
+    /**
+     * Updates the positions at which builders can build
+     * @param possibleDstBuilder1 positions at which builder 1 can build a normal building
+     * @param possibleDstBuilder2 positions at which builder 2 can build a normal building
+     * @param possibleDstBuilder1forDome positions at which builder 1 can build a dome
+     * @param possibleDstBuilder2forDome positions at which builder 2 can build a dome
+     */
     @Override
     public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
         this.possibleDstBuilder1 = possibleDstBuilder1;
@@ -140,45 +184,94 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         setState(ViewState.BUILD);
     }
 
+    /**
+     * Updates the positions at which builders can move
+     * @param possibleDstBuilder1 positions at which builder 1 can move
+     * @param possibleDstBuilder2 positions at which builder 2 can move
+     */
     @Override
     public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
         this.possibleDstBuilder1 = possibleDstBuilder1;
         this.possibleDstBuilder2 = possibleDstBuilder2;
+        this.possibleDstBuilder1forDome = new HashSet<>();
+        this.possibleDstBuilder2forDome = new HashSet<>();
+
         setState(ViewState.MOVE);
         //logger.askForAction(getState());
     }
 
+    /**
+     * Updates GameMap object with a new builder if the result is true
+     * @param nickname nickname of the player who placed his builder
+     * @param positionBuilder1 position of the first builder placed
+     * @param positionBuilder2 position of the second builder placed
+     * @param result true if the server accepted it
+     */
     @Override
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         if(result)
             gameMap.setOccupiedCells(nickname, positionBuilder1, positionBuilder2);
+        else
+
+            setState(ViewState.BUILDERPLACEMENT);
 
     }
 
+    /**
+     * Handles server response to a Step choice request
+     * @param nickname nickname of the player who chose the step
+     * @param step step chosen
+     * @param result true if the server accepted the request
+     */
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
     }
 
+    /**
+     * Handles server response to a color assignment request
+     * @param nickname nickname of the player who chose his color
+     * @param color color chosen
+     * @param result true if the server accepted the request
+     */
     @Override
     public void onColorAssigned(String nickname, String color, boolean result) {
         if(result)
             chosenColorsForPlayer.put(nickname, color);
+        else
+            setState(ViewState.BUILDERCOLOR);
     }
 
+    /**
+     * Handles game over notification from server
+     * @param winnerNickname nickname of the player who won
+     */
     @Override
     public void onEndGameUpdate(String winnerNickname) {
         setState(ViewState.END);
     }
 
+    /**
+     * Handles generic error from server
+     * @param error String representing the error
+     */
     @Override
     public void onWrongInsertionUpdate(String error) {
     }
 
+    /**
+     * Handles error during the setting of the number of players for the game
+     */
     @Override
     public void onWrongNumberInsertion() {
         setNumberOfPlayers(0);
     }
 
+    /**
+     * Handles server response to a card choice event
+     * @param nickname nickname of the player who chose the card
+     * @param card card chosen
+     * @param result true if the server accepted the request
+     */
     @Override
     public void onGodCardAssigned(String nickname, String card, boolean result) {
         if(result) {
@@ -186,11 +279,21 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         }
     }
 
+    /**
+     * Handles server response to the game cards choice
+     * @param godCardsToUse cards chosen
+     * @param result true if the server accepted the choice
+     */
     @Override
     public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
 
     }
 
+    /**
+     * Handles server response to a nickname and birthDate registration
+     * @param nickname nickname of the player
+     * @param result true if the server accepted the registration
+     */
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
         if(!result) {
@@ -201,12 +304,20 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     }
 
+    /**
+     * Handles server notification about a player loss
+     * @param nickname nickname of the player who just lost
+     */
     @Override
     public void onLossUpdate(String nickname) {
 
         chosenGodCardsForPlayer.remove(nickname);
     }
 
+    /**
+     * Handles server notification about who is now playing
+     * @param nickname nickname of the player whose turn is
+     */
     @Override
     public void onPlayerTurn(String nickname) {
 
@@ -241,4 +352,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         currentTurnBuilderPos = null;
         //gameMap.setChosenBuilderNum(0);
     }
+
+    //-----------------------------------------------------------------------------------------------------------------
 }

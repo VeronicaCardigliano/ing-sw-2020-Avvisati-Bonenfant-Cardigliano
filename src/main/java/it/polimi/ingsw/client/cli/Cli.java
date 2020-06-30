@@ -4,6 +4,7 @@ package it.polimi.ingsw.client.cli;
 import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
+import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,15 +18,17 @@ import static it.polimi.ingsw.client.cli.Color.returnColor;
 public class Cli extends View{
 
     private final Printer printer = new Printer(System.out);
-    private boolean quit = false;
 
     private ArrayList<Coordinates> chosenBuilderPositions = new ArrayList<>();
-    private ArrayList<String> inputOptions;
+    private ArrayList<String> inputOptions; //array containing strings to choose from.
+
+    //some UNICODE characters
     public static final String red = Color.ANSI_RED.escape();
     private static final String crownSymbol = "\u2654";
-    private Set<String> matchGodCards = new HashSet<>();
 
-    private Map<String, String> allGodCards;
+
+    private Set<String> matchGodCards = new HashSet<>();
+    private Map<String, String> allGodCards; //all godCards descriptions sent from server.
 
     private Scanner in;
 
@@ -37,6 +40,7 @@ public class Cli extends View{
         printer.print();
     }
 
+
     private void addBuilderPosition(Coordinates coord) {
         chosenBuilderPositions.add(coord);
     }
@@ -45,32 +49,42 @@ public class Cli extends View{
         return chosenBuilderPositions;
     }
 
-    private int parseInteger(String input) {
-        int result = 0;
+    /**
+     * Initially parses an Integer from String input.
+     * If it fails it calls getInteger().
+     * @param input String from which to parse Integer.
+     * @return integer parsed.
+     */
+    private int getInteger(String input) {
+        int result;
         try {
             result = Integer.parseInt(input);
         } catch (NumberFormatException e) {
             printer.setInfoMessage("You have to type a number.");
             printer.print();
-            result = parseInteger();
+            result = getInteger();
         }
 
         return result;
     }
 
-    private int parseInteger() {
+    /**
+     * Keep asking for input until it parses an Integer from it
+     * @return integer parsed
+     */
+    private int getInteger() {
         boolean ok = false;
         int result = 0;
 
         while(!ok) {
             try {
                 result = in.nextInt();
-                in.nextLine();
+                in.nextLine(); //reads new line character from buffer
                 ok = true;
             } catch (InputMismatchException e) {
                 printer.setInfoMessage("You have to type a number.");
                 printer.print();
-                in.nextLine();
+                in.nextLine(); //reads new line character from buffer
             }
         }
 
@@ -78,7 +92,6 @@ public class Cli extends View{
     }
 
     private void addMatchGodCard(String godCard) throws Exception{
-
         if(!matchGodCards.contains(godCard))
             matchGodCards.add(godCard);
         else
@@ -87,18 +100,22 @@ public class Cli extends View{
 
     private Set<String> getMatchGodCards() { return Set.copyOf(matchGodCards);}
 
+    /**
+     * Main CLI function.
+     * Prints content and handles User input according to ViewState state value.
+     */
     @Override
     public  void run() {
         printer.erase();
         printer.printTitle();
 
-        String input = "";
+        String input;
         printer.setAskMessage("Server to join: ");
         printer.print();
         in = new Scanner(System.in);
         setState(ViewState.CONNECTION);
 
-        quit = false;
+        boolean quit = false;
 
         while(!quit) {
 
@@ -109,20 +126,21 @@ public class Cli extends View{
                 Scanner parser = new Scanner(input);
 
                 try {
+
+                    //Cli decisions according to state
                     switch (getState()) {
                         case CONNECTION:
                             String ip = parser.nextLine();
                             printer.setAskMessage("port: ");
                             printer.print();
-                            int port = parseInteger();
-
-                            //in.nextLine();
+                            int port = getInteger();
 
                             notifyConnection(ip, port);
                             break;
 
                         case NUMPLAYERS:
-                            setNumberOfPlayers(parseInteger(input));
+                            setNumberOfPlayers(getInteger(input));
+
                             synchronized (this) {
                                 notifyNumberOfPlayers(getNumberOfPlayers());
                                 setState(ViewState.WAITING);
@@ -130,32 +148,32 @@ public class Cli extends View{
                             break;
                         case NICKDATE:
                             setNickname(parser.nextLine());
+
                             printer.erase();
                             printer.setAskMessage("Birth Date (yyyy.mm.dd): ");
                             printer.print();
-                            setDate(in.nextLine());
                             printer.erase();
+
+                            setDate(in.nextLine());
 
                             synchronized (this) {
                                 notifyNewPlayer(getNickname(), getDate());
                                 setState(ViewState.WAITING);
                             }
                             break;
+
                         case MATCHGODS:
                             while (getMatchGodCards().size() < getNumberOfPlayers()) {
-                                if (parser.hasNext()) {
-                                    addMatchGodCard(getOption(parseInteger(input)));
-                                    parser.nextLine(); //to read scanner buffer
+
+                                if (parser.hasNext()) {                             //if parser buffer is not empty we just entered case branch.
+                                    addMatchGodCard(getOption(getInteger(input)));  //it however uses String input and not parser.
+                                    parser.nextLine();                              //frees parser buffer.
                                 } else {
                                     chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
-                                    addMatchGodCard(getOption(parseInteger()));
-                                    //in.nextLine(); //to read new line character
+                                    addMatchGodCard(getOption(getInteger()));
                                 }
-
-
-                                //if(getMatchGodCards().size() == getNumberOfPlayers())
-                                //chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
                             }
+
                             printer.erase();
                             printer.print();
 
@@ -164,48 +182,48 @@ public class Cli extends View{
                                 setState(ViewState.WAITING);
                             }
                             break;
+
                         case STARTPLAYER:
                             synchronized (this) {
-                                notifySetStartPlayer(getNickname(), getOption(parseInteger(input)));
+                                notifySetStartPlayer(getNickname(), getOption(getInteger(input)));
                                 setState(ViewState.WAITING);
                             }
                             break;
+
                         case PLAYERGOD:
                             synchronized (this) {
-                                notifyGodCardChoice(getNickname(), getOption(parseInteger(input)));
+                                notifyGodCardChoice(getNickname(), getOption(getInteger(input)));
                                 setState(ViewState.WAITING);
                             }
                             break;
 
                         case BUILDERCOLOR:
                             synchronized (this) {
-                                notifyColorChoice(getNickname(), getOption(parseInteger(input)));
+                                notifyColorChoice(getNickname(), getOption(getInteger(input)));
                                 setState(ViewState.WAITING);
                             }
                             break;
 
                         case BUILDERPLACEMENT:
-                            boolean askForRow = false;
                             int row;
                             int column;
 
                             printer.erase();
 
                             while (getChosenBuilderPositions().size() < 2) {
-                                if (parser.hasNext()) {
-                                    row = parseInteger(input);
-                                    parser.nextLine(); //to free Scanner buffer
+                                if (parser.hasNext()) {                         //if parser buffer is not empty we just entered case branch.
+                                    row = getInteger(input);                    //it however uses String input and not parser.
+                                    parser.nextLine();                          //frees parser buffer.
                                 }
                                 else {
-                                    row = parseInteger();
+                                    row = getInteger();
                                 }
 
                                 printer.setAskMessage("COLUMN: ");
                                 printer.print();
-                                column = parseInteger();
-                                addBuilderPosition(new Coordinates(row, column));
 
-                                //in.nextLine(); //to read new line character
+                                column = getInteger();
+                                addBuilderPosition(new Coordinates(row, column));
 
                                 if (getChosenBuilderPositions().size() < 2) {
                                     printer.setAskMessage("Choose builder number " + (getChosenBuilderPositions().size() + 1) + "\nROW: ");
@@ -218,9 +236,10 @@ public class Cli extends View{
                                 setState(ViewState.WAITING);
                             }
                             break;
+
                         case STEP:
                             synchronized (this) {
-                                notifyStepChoice(getNickname(), getOption(parseInteger(input)));
+                                notifyStepChoice(getNickname(), getOption(getInteger(input)));
                                 setState(ViewState.WAITING);
                             }
                             break;
@@ -238,14 +257,18 @@ public class Cli extends View{
                             break;
 
                     }
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                    in.nextLine();
+                } catch (NullPointerException e) { //can occur when server disconnects client
+                    //e.printStackTrace();
+
                 } catch (InvalidOptionException e) {
                     printer.setInfoMessage(e.getMessage());
                     printer.print();
 
-                } catch (NoSuchElementException ignored) {
+                } catch (IllegalArgumentException e) {      //new Coordinates(a,b) throws IllegalArgumentException if (a,b) is out of Map.
+                    printer.setInfoMessage(e.getMessage());
+                    printer.setAskMessage("ROW: ");
+                    printer.print();
+                } catch (NoSuchElementException ignored) { //parser.nextLine() throws NoSuchElementException when user types '\n'
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -263,34 +286,55 @@ public class Cli extends View{
         System.exit(0);
     }
 
+
+    /**
+     * prints Coordinates request and acquire user input.
+     * Used in move() and build() functions.
+     * @return coordinates given.
+     */
     private Coordinates coordinatesInsertion() {
-        int row;
-        int column;
+        int row = 0;
+        int column = 0;
 
-        //asks for row
-        printer.erase();
-        printer.setAskMessage("ROW: ");
-        printer.print();
-        row = parseInteger();
+        boolean coordinatesOK = false;
 
-        //ask
-        printer.setAskMessage("COLUMN: ");
-        printer.print();
-        column = parseInteger();
+        while(!coordinatesOK) {
+            //asks for row
+            printer.erase();
+            printer.setAskMessage("ROW: ");
+            printer.print();
 
-        //in.nextLine(); //to read new line character
+            row = getInteger();
+
+            //asks for column
+            printer.setAskMessage("COLUMN: ");
+            printer.print();
+
+            column = getInteger();
+
+            if(row >= 0 && row < IslandBoard.dimension && column >= 0 && column < IslandBoard.dimension)
+                coordinatesOK = true;
+            else {
+                printer.setInfoMessage("This Coordinates are outside the map");
+                printer.print();
+            }
+        }
+
 
         return new Coordinates(row, column);
     }
 
-    private Coordinates chooseTurnBuilder () {
-        gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
-        gameMap.setChosenBuilderNum(0);
-        printer.setGameMapString(gameMap.toString());
 
+    private Coordinates chooseTurnBuilder () {
         Coordinates src;
+
+        gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
+        gameMap.setChosenBuilderNum(0); //resets builder choice
+
+        printer.setGameMapString(gameMap.toString());
         printer.setInfoMessage("Insert the coordinates of the builder you want to use ");
         printer.print();
+
         src = coordinatesInsertion();
 
         //verifies that the selected cell contains a valid builder
@@ -300,7 +344,10 @@ public class Cli extends View{
                         (!possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty())))) {
 
 
+            printer.setAskMessage(null);
             printer.setInfoMessage("Invalid coordinates, select a cell with a valid builder");
+            printer.print();
+
             src = coordinatesInsertion();
         }
 
@@ -311,32 +358,40 @@ public class Cli extends View{
         return src;
     }
 
-
-    private String displayMap(Map<String, String> map) {
+    /**
+     * returns string to print representing a Map Collection
+     * @param map to represent
+     * @return String to print
+     */
+    private String getMapRepresentation(Map<String, String> map) {
         StringBuilder result = new StringBuilder();
         inputOptions = new ArrayList<>();
-        int i = -1;
+        int index = -1;
 
         for(String godName : map.keySet()) {
-            i++;
-            result.append(i).append(") ").append(red).append(godName).append(Color.RESET).append(": ").append(map.get(godName)).append("\n");
-            inputOptions.add(i, godName);
+            index++;
+            result.append(index).append(") ").append(red).append(godName).append(Color.RESET).append(": ").append(map.get(godName)).append("\n");
+            inputOptions.add(index, godName);
         }
 
         return result.toString();
 
     }
 
-
-    private String displaySet(Set<String> set) {
+    /**
+     * returns string to print representing a Set Collection
+     * @param set to represent
+     * @return String to print
+     */
+    private String getSetRepresentation(Set<String> set) {
         StringBuilder result = new StringBuilder();
         inputOptions = new ArrayList<>();
-        int i = -1;
+        int index = -1;
 
         String realColor;
 
         for(String element : set) {
-            i++;
+            index++;
 
             switch (element) {
                 case "MAGENTA":
@@ -350,8 +405,8 @@ public class Cli extends View{
                     break;
             }
 
-            result.append(i).append(") ").append(realColor).append(element).append(Color.RESET).append("\n");
-            inputOptions.add(i, element);
+            result.append(index).append(") ").append(realColor).append(element).append(Color.RESET).append("\n");
+            inputOptions.add(index, element);
         }
 
 
@@ -359,7 +414,13 @@ public class Cli extends View{
     }
 
 
-    private String displayPlayerCards(Map<String, String> chosenGodCardsForPlayer, Map<String, String> chosenColors) {
+    /**
+     * returns a String that lists each player name colored according to his chosen color followed by his chosen card
+     * @param chosenGodCardsForPlayer map from player nickname to the card he chose.
+     * @param chosenColors map from player nickname to the color he chose
+     * @return String to print
+     */
+    private String getPlayersAndCardsRepresentation(Map<String, String> chosenGodCardsForPlayer, Map<String, String> chosenColors) {
         StringBuilder result = new StringBuilder();
 
         for (String player : chosenGodCardsForPlayer.keySet()) {
@@ -373,6 +434,12 @@ public class Cli extends View{
         return result.toString();
     }
 
+    /**
+     * get String from inputOptions attribute at choice position
+     * @param choice it's the index of inputOptions list to read at
+     * @return String at choice index
+     * @throws InvalidOptionException if choice is not a valid index of inputOptions list
+     */
     private String getOption(int choice) throws InvalidOptionException{
 
         if(choice < 0 || choice >= inputOptions.size())
@@ -381,10 +448,11 @@ public class Cli extends View{
         return inputOptions.get(choice);
     }
 
+
     //override View methods
 
     @Override
-    public synchronized void askNumberOfPlayers() {
+    public void askNumberOfPlayers() {
         super.askNumberOfPlayers();
 
         printer.setAskMessage("Number Of Players: ");
@@ -392,7 +460,7 @@ public class Cli extends View{
     }
 
     @Override
-    public synchronized void askNickAndDate() {
+    public void askNickAndDate() {
         super.askNickAndDate();
 
         printer.setAskMessage("Nickname: ");
@@ -407,15 +475,16 @@ public class Cli extends View{
         this.inputOptions = new ArrayList<>();
 
         Map<String, String> availableGods = new HashMap<>();
+
         for(String key : godDescriptionsParam.keySet())
             if(!getMatchGodCards().contains(key))
                 availableGods.put(key, godDescriptionsParam.get(key));
 
-
         String crown = Color.ANSI_YELLOW.escape() + crownSymbol + Color.RESET;
+
         printer.setInfoMessage("\n" + crown + "  You're the " + Color.ANSI_YELLOW.escape() + "Challenger" + Color.RESET + " of this match!  " + crown + "\n" +
                 "Choose " + (numOfPlayers - getMatchGodCards().size()) + " godCards for the match: \n");
-        printer.setChoiceList(displayMap(availableGods));
+        printer.setChoiceList(getMapRepresentation(availableGods));
         printer.setAskMessage("Choose " + getNumberOfPlayers() + " cards for the game.\nChoice: ");
         printer.print();
 
@@ -428,7 +497,7 @@ public class Cli extends View{
         inputOptions = new ArrayList<>();
         inputOptions.addAll(players);
         printer.setInfoMessage(null);
-        printer.setChoiceList(displaySet(players));
+        printer.setChoiceList(getSetRepresentation(players));
         printer.setAskMessage("Choice: ");
         printer.print();
     }
@@ -446,7 +515,7 @@ public class Cli extends View{
             inputOptions.add(godName);
         }
 
-        printer.setChoiceList(displayMap(availableGods));
+        printer.setChoiceList(getMapRepresentation(availableGods));
         printer.setAskMessage("Choice: ");
         printer.print();
     }
@@ -461,7 +530,7 @@ public class Cli extends View{
         setState(ViewState.BUILDERCOLOR);
         inputOptions = new ArrayList<>();
         inputOptions.addAll(allColors);
-        printer.setChoiceList(displaySet(allColors));
+        printer.setChoiceList(getSetRepresentation(allColors));
         printer.setAskMessage("Choice: ");
         printer.print();
     }
@@ -471,7 +540,7 @@ public class Cli extends View{
         super.placeBuilders();
 
         printer.setGameMapString(gameMap.toString());
-        printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+        printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
         printer.setChoiceList(null);
         printer.setAskMessage("Choose your first builder.\nROW: ");
         printer.print();
@@ -485,7 +554,7 @@ public class Cli extends View{
 
         inputOptions.addAll(possibleSteps);
 
-        printer.setChoiceList(displaySet(possibleSteps));
+        printer.setChoiceList(getSetRepresentation(possibleSteps));
         printer.setAskMessage("Next Step: ");
         printer.print();
 
@@ -501,10 +570,11 @@ public class Cli extends View{
             setState(ViewState.BUILD);
         }
         else {
+            gameMap.modifyHeight(dst, dome);
+
             gameMap.setPossibleDst(null, null);
             printer.setGameMapString(gameMap.toString());
-            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
-            gameMap.modifyHeight(dst, dome);
+            printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
 
             printer.setChoiceList(null);
             printer.setAskMessage(null);
@@ -519,13 +589,14 @@ public class Cli extends View{
 
         if(!result) {
             printer.setInfoMessage("Move failed");
+
             setState(ViewState.MOVE);
         }
         else {
             gameMap.setPossibleDst(null, null);
-            printer.setGameMapString(gameMap.toString());
-            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
 
+            printer.setGameMapString(gameMap.toString());
+            printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
             printer.setChoiceList(null);
             printer.setAskMessage(null);
         }
@@ -538,24 +609,25 @@ public class Cli extends View{
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         super.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2, result);
 
-
         if(!result) {
             printer.setInfoMessage("Builders placement failed");
             printer.setGameMapString(gameMap.toString());
-            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
-
+            printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
             printer.setAskMessage("ROW: ");
-            printer.print();
+
+            chosenBuilderPositions = new ArrayList<>();
             setState(ViewState.BUILDERPLACEMENT);
         }
         else {
             printer.erase();
             printer.setInfoMessage(nickname + "'s builders placed!");
             printer.setGameMapString(gameMap.toString());
-            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+            printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
 
-            printer.print();
+
         }
+
+        printer.print();
     }
 
     @Override
@@ -684,10 +756,6 @@ public class Cli extends View{
         printer.print();
         printer.erase();
 
-        /*printer.erase();
-        printer.setState(currState.toString());
-        printer.print();
-        printer.erase();*/
     }
 
     @Override
@@ -707,14 +775,10 @@ public class Cli extends View{
         super.updatePossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2);
 
         gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
-        //printer.setGameMapString(gameMap.toString());
         printer.setInfoMessage("Move action required.");
-        printer.setAskMessage("Press ENTER to start or enter QUIT to exit the game.");
+        printer.setAskMessage("Press ENTER.\n");
         printer.print();
 
-
-        //erase message that asks for ENTER
-        printer.setAskMessage(null);
 
     }
 
@@ -723,11 +787,10 @@ public class Cli extends View{
         super.updatePossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
 
         printer.setInfoMessage("Build action required.");
-        printer.setAskMessage("Press ENTER to start or enter QUIT to exit the game.");
+        printer.setAskMessage("Press ENTER.\n");
         printer.print();
 
-        //erase message
-        printer.setAskMessage(null);
+
     }
 
     @Override
@@ -817,7 +880,7 @@ public class Cli extends View{
 
         printer.erase();
         printer.setGameMapString(gameMap.toString());
-        printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+        printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
 
         printer.setInfoMessage("Insert the coordinates of where you want to move ");
         printer.print();
@@ -830,7 +893,7 @@ public class Cli extends View{
             printer.setInfoMessage("Invalid coordinates. Select a cell from the available ones");
 
             printer.setGameMapString(gameMap.toString());
-            printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+            printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
             dstMove = coordinatesInsertion();
         }
 

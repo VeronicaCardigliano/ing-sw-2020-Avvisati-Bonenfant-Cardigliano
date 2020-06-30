@@ -56,7 +56,6 @@ public class Printer {
     }
 
     public synchronized void print() {
-        //printTitle();
 
         if(state != null)
             out.println("\n" + state);

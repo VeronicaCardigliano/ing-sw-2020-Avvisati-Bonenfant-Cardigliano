@@ -18,7 +18,7 @@ public class Server
 
         MultiThreadServer server = new MultiThreadServer(port);
 
-        server.startServer(vm, controller);
+        server.startServer(controller);
 
     }
 }

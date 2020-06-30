@@ -19,11 +19,14 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Manages socket connection with server.
+ * It hides network layer between View and Server Controller.
+ */
 public class NetworkHandler extends ModelObservable implements Runnable, ConnectionObserver, BuilderBuildObserver, BuilderMoveObserver,
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
         StepChoiceObserver, StartPlayerObserver {
 
-    private final int timeout = 10 * 1000;
     private PrintWriter out;
     private View view;
     private int port;
@@ -31,7 +34,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     private static final String defaultIp = "localhost";
     private String ip;
 
-    private ExecutorService executorS;
+    private final ExecutorService executorS; //creates thread to send notifications to View
 
     private SocketObserver socketObserver;
     private OpponentDisconnectionObserver opponentDisconnectionObserver;
@@ -48,27 +51,15 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         this(defaultIp, defaultPort);
     }
 
-    public boolean setIp(String ip) {
-        boolean result = true;
+    public void setIp(String ip) {
 
-        if(ip != null)
-            this.ip = ip;
-        else
-            result = false;
+        this.ip = ip;
 
-        return result;
     }
 
-    public boolean setPort(int port) {
-        boolean result = true;
-        int minimumPort = 1025;
+    public void setPort(int port) {
+        this.port = port;
 
-        if(port >= minimumPort)
-            this.port = port;
-        else
-            result = false;
-
-        return result;
     }
 
     public void setView(View view) {
@@ -93,6 +84,8 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
             Socket socket = new Socket();
 
             try {
+                //Read timeout
+                int timeout = 10 * 1000;
                 socket.connect(new InetSocketAddress(ip, port), timeout);
                 socket.setSoTimeout(timeout);
                 socket.setKeepAlive(true);
@@ -116,8 +109,6 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
             try {
                 while (connected && (message = in.readLine()) != null) {
-                    if (!Messages.ping().equals(message))
-                        ;//System.out.println("Received message from " + socket.getRemoteSocketAddress() + ": " + message);
 
                     connected = handleMessage(message);
 
@@ -136,19 +127,19 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
         }
         catch (IOException e) {
-            //System.err.println(e.getMessage());
             e.printStackTrace();
         }
     }
 
     private void send(String message) {
-
-        if(!Messages.pong().equals(message))
-            ;//System.out.println("Sending: " + message);
         out.println(message);
     }
 
-
+    /**
+     * parses message received from network and notifies View
+     * @param message String received from network
+     * @return true if it was not a Disconnect message
+     */
     private boolean handleMessage(String message) {
         boolean connected = true;
 
@@ -161,7 +152,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
             switch (parser.getRequest()) {
 
-                //richieste Controller
+                //-------------------------------CONTROLLER REQUESTS---------------------------------------------------
 
                 case Messages.ASK_NUMBER_OF_PLAYERS:
                     executorS.execute(() -> view.askNumberOfPlayers());
@@ -202,7 +193,8 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
                     executorS.execute(() -> view.chooseStartPlayer(parser.getSetFromArray(Messages.PLAYERS)));
                     //view.chooseStartPlayer(parser.getSetFromArray(Messages.PLAYERS));
                     break;
-                //notify dal Model
+
+                //-------------------------------MODEL NOTIFICATIONS---------------------------------------------------
 
                 case Messages.MOVE:
                     notifyBuilderMovement(parser.getAttribute(Messages.NAME), parser.getSrcCoordinates(), parser.getDstCoordinates(), parser.getResult());
@@ -272,6 +264,9 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
                     notifyState(state);
                     break;
 
+                //------------------------------------------------------------------------------------------------------
+
+
                 case Messages.PLAYER_DISCONNECTED:
                     notifyOpponentDisconnection(parser.getAttribute(Messages.NAME));
                     break;
@@ -289,6 +284,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
                     connected = false;
                     break;
 
+                //Keep alive answer
                 case Messages.PING:
                     send(Messages.pong());
                     break;
@@ -302,62 +298,125 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         return connected;
     }
 
+    //-------------------------------------------NETWORK OUTPUT MESSAGES------------------------------------------------
+
+    /**
+     * Sends build request over the network
+     * @param nickname player that owns the builder at src position
+     * @param src position of the builder that wants to build
+     * @param dst where to build
+     * @param buildDome true if it is a build dome request
+     */
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
         send(Messages.build(nickname, src, dst, buildDome));
     }
 
+    /**
+     * Sends move request over the network
+     * @param nickname player that owns the builder at src position
+     * @param src position from which the builder moves
+     * @param dst where the builder tries to move
+     */
     @Override
     public void onBuilderMove(String nickname, Coordinates src, Coordinates dst) {
         send(Messages.move(nickname,src, dst));
     }
 
+    /**
+     * Sends builder position setup request over the network
+     * @param nickname player that wants to place his builders
+     * @param pos1 position for builder 1
+     * @param pos2 position for builder 2
+     */
     @Override
     public void onBuilderSetup(String nickname, Coordinates pos1, Coordinates pos2) {
         send(Messages.buildersPlacement(nickname, pos1, pos2));
     }
 
+    /**
+     * Sends color setup request over the network
+     * @param nickname player that wants to set his color
+     * @param chosenColor color chosen
+     */
     @Override
     public void onColorChoice(String nickname, String chosenColor) {
         send(Messages.colorUpdate(chosenColor));
     }
 
+    /**
+     * Sends God Card choice over the network
+     * @param nickname player that wants to set his card
+     * @param godCardName card's name
+     */
     @Override
     public void onGodCardChoice(String nickname, String godCardName) {
         send(Messages.setGodCard(godCardName));
     }
 
+    /**
+     * Sends God Cards choices over the network
+     * @param nickname player that wants to set match cards
+     * @param godNames cards chosen
+     */
     @Override
     public void onMatchGodCardsChoice(String nickname, Set<String> godNames) {
         send(Messages.setGodCardsToUse(nickname, godNames));
     }
 
+    /**
+     * Sends Nickname and Birth date registration request over the network
+     * @param nickname nick
+     * @param birthday birthDate
+     */
     @Override
     public void onNicknameAndDateInsertion(String nickname, String birthday) {
         send(Messages.addPlayer(nickname, birthday));
     }
 
+    /**
+     * Sends number of players setup request over the network
+     * @param num number of players for the game
+     */
     @Override
     public void onNumberInsertion(int num) {
         send(Messages.setNumberOfPlayers(num));
     }
 
+    /**
+     * Sends Step choice over the network
+     * @param nickname player that wants to set his step choice
+     * @param step (MOVE/BUILD/END)
+     */
     @Override
     public void onStepChoice(String nickname, String step) {
         send(Messages.stepChoice(nickname, step));
     }
 
+    /**
+     * Notifies imminent client disconnection to the server
+     */
     @Override
     public void onDisconnection() {
         send(Messages.disconnect());
     }
 
+    /**
+     * Sends starting player choice over the networks
+     * @param nickname player choosing starting player
+     * @param startPlayer nickname of the proposed starting player
+     */
     @Override
     public void onSetStartPlayer(String nickname, String startPlayer) {
         send(Messages.setStartPlayer(startPlayer));
     }
 
 
+    /**
+     * connects to server
+     * @param ip server ip/domain
+     * @param port server port
+     */
     @Override
     public void onConnection(String ip, int port) {
         setIp(ip);
@@ -365,10 +424,15 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         onConnection();
     }
 
+    /**
+     * connects to server
+     */
     @Override
     public void onConnection() {
         executorS.execute(this);
     }
+
+    //------------------------------------------------------------------------------------------------------------------
 
     public void notifyConnectionError(String message) {
         socketObserver.onConnectionError(message);
