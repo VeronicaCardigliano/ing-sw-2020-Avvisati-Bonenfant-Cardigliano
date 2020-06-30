@@ -1,9 +1,11 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -21,7 +23,8 @@ public class ChoicePopup extends Stage {
     private AnchorPane anchorPane;
     private Button submit;
 
-    public ChoicePopup(Stage ownerStage, Set<String> choices, String requestLabel, String title, ChoiceBox<String> choiceBox) {
+    public ChoicePopup(Stage ownerStage, Set<String> choices, String requestLabel, String title,
+                       ChoiceBox<String> choiceBox, EventHandler<WindowEvent> handler) {
 
         this.initOwner(ownerStage);
         this.setTitle(title);
@@ -57,14 +60,7 @@ public class ChoicePopup extends Stage {
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
         Platform.runLater(()-> anchorPane.getChildren().add(submit));
 
-        this.setOnCloseRequest(windowEvent -> {
-            if (Gui.confirmQuit()) {
-                this.close();
-                ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
-            }
-            else
-                windowEvent.consume();
-        });
+        this.setOnCloseRequest(handler);
 
         Scene scene = new Scene(anchorPane);
         this.setScene(scene);

@@ -78,6 +78,7 @@ public class Cli extends View{
     }
 
     private void addMatchGodCard(String godCard) throws Exception{
+
         if(!matchGodCards.contains(godCard))
             matchGodCards.add(godCard);
         else
@@ -503,6 +504,7 @@ public class Cli extends View{
             gameMap.setPossibleDst(null, null);
             printer.setGameMapString(gameMap.toString());
             printer.setPlayersList(displayPlayerCards(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+            gameMap.modifyHeight(dst, dome);
 
             printer.setChoiceList(null);
             printer.setAskMessage(null);

@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -20,10 +21,13 @@ import java.util.*;
 /**
  * This class is a Stage which shows the cards contained in godCardsDescriptions keyValues(), used for
  * setup purpose, to choose match/player cards, and during the match to show matchGodCards powers.
+ *
+ * In the last case, it's important that the stage is unique, so a singleton pattern is used.
  */
 public class GodCardsPopup extends Stage {
 
     private final static int cardsWidth = 100;
+    private static GodCardsPopup firstInstance;
     private Set<String> chosenGodCards;
     private Button submit;
     private TilePane tilePane;
@@ -32,16 +36,31 @@ public class GodCardsPopup extends Stage {
     private int maxSelectionsNum;
     private int selectionsNum;
 
+
+    /**
+     * This public method returns the unique instance of godCardsPopup if already created, otherwise creates it.
+     */
+    public static GodCardsPopup getInstance(Stage ownerStage, int maxSelections, Map<String, String> godCardsDescriptions,
+                                            EventHandler<WindowEvent> handler) {
+        if (firstInstance == null) {
+            firstInstance = new GodCardsPopup(ownerStage, maxSelections, godCardsDescriptions, handler);
+        }
+        firstInstance.show();
+        return firstInstance;
+    }
+
+
     /**
      * The scene is composed by a VBox with:
-     * different labels depending on maxSelection and so on the state of the match
+     * a labelVBox with different labels depending on maxSelection and so on the state of the match
      * a tilePane with the cards
      * a bottom anchor pane with a space to show errors and eventually a submit button
      * @param ownerStage the Stage on which the popup'll appear
      * @param maxSelections maximum number of cards that can be selected
      * @param godCardsDescriptions map of cards and descriptions that have to be showed
+     * @param handler to set the close request handler based on the state of the game
      */
-    public GodCardsPopup (Stage ownerStage, int maxSelections, Map<String, String> godCardsDescriptions) {
+    private GodCardsPopup (Stage ownerStage, int maxSelections, Map<String, String> godCardsDescriptions, EventHandler<WindowEvent> handler) {
 
         initOwner(ownerStage);
         maxSelectionsNum = maxSelections;
@@ -102,20 +121,11 @@ public class GodCardsPopup extends Stage {
 
         initializeImages(godCardsDescriptions);
 
-        // only if the match is not in phase GAME, so it is a setup popup, it creates a "confirmQuit" message
-        if (maxSelections != 0) {
-            this.setOnCloseRequest(windowEvent -> {
-                if (Gui.confirmQuit()) {
-                    this.close();
-                    ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
-                } else
-                    windowEvent.consume();
-            });
-        }
-
+        // only if the match is not in phase GAME, so it is a setup popup, it may create a "confirm quit" message
+        if (maxSelections != 0)
+            this.setOnCloseRequest(handler);
         Scene scene = new Scene(vbox);
         this.setScene(scene);
-        this.show();
     }
 
     /**
@@ -154,6 +164,13 @@ public class GodCardsPopup extends Stage {
      */
     protected Button getSubmit() {
         return submit;
+    }
+
+    /**
+     * Resets the first instance giving the possibility to create a new, different godCardsPopup in the phase of setup
+     */
+    protected void resetPopup () {
+        firstInstance = null;
     }
 
     /**

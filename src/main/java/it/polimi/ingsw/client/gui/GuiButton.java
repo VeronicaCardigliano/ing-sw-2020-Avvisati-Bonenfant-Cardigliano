@@ -1,6 +1,5 @@
 package it.polimi.ingsw.client.gui;
 
-import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.effect.DropShadow;
@@ -14,7 +13,6 @@ public class GuiButton extends Button {
      * This method creates a button given the following parameters:
      * @param btnName name shown on the button
      * @param backgroundSrc background image of the button
-     * @param parent the pane in which the button has to be positioned
      * @param handler what to do when the button is pressed
      * @param pressedBtnSrc background image of the pressed button
      */

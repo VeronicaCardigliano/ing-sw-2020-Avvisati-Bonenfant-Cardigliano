@@ -21,6 +21,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 import java.util.*;
@@ -80,9 +81,9 @@ public class Gui extends View {
     private boolean buildDome;
     private Text connectionErrorText = new Text();
     private Text setupErrorText = new Text();
+    private GodCardsPopup godCardsPopup;
     private PlayerSetupPopup playerSetupPopup;
     private ChoicePopup choiceSetupPopup;
-    private GodCardsPopup godCardsPopup;
     private Map<String, Text> playersNameTags = new HashMap<>();
     private boolean challenger;
 
@@ -116,6 +117,7 @@ public class Gui extends View {
             try {
                 int portNum = Integer.parseInt(portInsertion.getText());
                 notifyConnection(IPInsertion.getText(), portNum);
+                homeScene.getPlayBtn().setOnMouseClicked(null);
             }
             catch (NumberFormatException e) {
                 onConnectionError("WRONG FORMAT: Insert an Integer as port value");
@@ -326,14 +328,26 @@ public class Gui extends View {
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
         Platform.runLater(() -> {
             choiceSetupPopup = new ChoicePopup(primaryStage, possibleNumPlayers,
-                    "You're the first player! Select number of players: ", "New match", choiceBox);
-
+                    "You're the first player! Select number of players: ", "New match", choiceBox,
+                    windowEvent -> popupClosing(choiceSetupPopup, windowEvent));
             choiceSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
 
                 notifyNumberOfPlayers(Integer.parseInt(choiceBox.getValue()));
                 choiceSetupPopup.close();
             });
         });
+    }
+
+    private void popupClosing (Stage popup, WindowEvent windowEvent) {
+        if (!getState().equals(ViewState.CONNECTION)) {
+            if (confirmQuit()) {
+                popup.close();
+                primaryStage.fireEvent(new WindowEvent(primaryStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+            } else
+                windowEvent.consume();
+        }
+        else
+            popup.close();
     }
 
     /**
@@ -353,7 +367,8 @@ public class Gui extends View {
         birthdayInsertion.setFont(new Font("Arial", fontSize));
 
         Platform.runLater(() -> {
-            playerSetupPopup = new PlayerSetupPopup(primaryStage, nickInsertion, birthdayInsertion);
+            playerSetupPopup = new PlayerSetupPopup(primaryStage, nickInsertion, birthdayInsertion,
+                    windowEvent -> popupClosing(playerSetupPopup, windowEvent));
 
             playerSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
                 String nickname = nickInsertion.getText();
@@ -385,7 +400,8 @@ public class Gui extends View {
         challenger = true;
 
         Platform.runLater(() -> {
-            godCardsPopup = new GodCardsPopup(primaryStage, numOfPlayers, godDescriptionsParam);
+            godCardsPopup = GodCardsPopup.getInstance(primaryStage, numOfPlayers, godDescriptionsParam,
+                    windowEvent -> popupClosing(godCardsPopup, windowEvent));
 
             godCardsPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
                 if (godCardsPopup.getSelectionsNum() == numOfPlayers)
@@ -405,6 +421,8 @@ public class Gui extends View {
     public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenCards) {
 
         super.askGodCard(godDescriptions, chosenCards);
+        if (godCardsPopup != null)
+            godCardsPopup.resetPopup();
         matchGodCards = godDescriptions;
         Map<String, String> availableGods = new HashMap<>();
 
@@ -413,7 +431,8 @@ public class Gui extends View {
 
 
         Platform.runLater(() -> {
-            godCardsPopup = new GodCardsPopup(primaryStage, godsForPlayer, availableGods);
+            godCardsPopup = GodCardsPopup.getInstance(primaryStage, godsForPlayer, availableGods,
+                    windowEvent -> popupClosing(godCardsPopup, windowEvent));
 
             godCardsPopup.getSubmit().setOnMouseClicked(mouseEvent -> {
                 if (godCardsPopup.getSelectionsNum() == godsForPlayer)
@@ -435,7 +454,8 @@ public class Gui extends View {
 
         ChoiceBox<String> choiceBox= new ChoiceBox<>();
         Platform.runLater(() -> {
-            choiceSetupPopup = new ChoicePopup(primaryStage, players, "Choose the first player", "StartPlayer", choiceBox);
+            choiceSetupPopup = new ChoicePopup(primaryStage, players, "Choose the first player", "StartPlayer", choiceBox,
+                    windowEvent -> popupClosing(choiceSetupPopup, windowEvent));
             choiceSetupPopup.getSubmit().setOnMouseClicked(mouseEvent -> notifySetStartPlayer(getNickname(), choiceBox.getValue()));
         });
     }
@@ -462,7 +482,8 @@ public class Gui extends View {
 
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
         Platform.runLater(() -> {
-            choiceSetupPopup = new ChoicePopup(primaryStage, printableColors, "Choose builders color", "Builders color", choiceBox);
+            choiceSetupPopup = new ChoicePopup(primaryStage, printableColors, "Choose builders color", "Builders color", choiceBox,
+                    windowEvent -> popupClosing(choiceSetupPopup, windowEvent));
             choiceSetupPopup.getSubmit().setOnMouseClicked(mouseEvent ->
                     notifyColorChoice(getNickname(), choiceBox.getValue().replace(' ','_').toUpperCase()));
         });
@@ -539,9 +560,10 @@ public class Gui extends View {
         for (String step: possibleSteps)
             stepChoice.getItems().add(step);
         // set a default value
-        stepChoice.setValue(possibleSteps.iterator().next());
-        stepChoice.setStyle("-fx-background-color: tomato; -fx-border-color: brown; -fx-mark-color: brown; -fx-border-radius: 20; -fx-background-radius: 20;");
-
+        if (!possibleSteps.isEmpty()) {
+            stepChoice.setValue(possibleSteps.iterator().next());
+            stepChoice.setStyle("-fx-background-color: tomato; -fx-border-color: brown; -fx-mark-color: brown; -fx-border-radius: 20; -fx-background-radius: 20;");
+        }
 
         Platform.runLater(() -> dialogRegion.getChildren().addAll(chooseStep, stepChoice));
 
@@ -593,77 +615,80 @@ public class Gui extends View {
      */
     private void chooseTurnBuilder() {
 
+        boolean first = true;
         for (Coordinates coord: gameMap.getOccupiedCells().get(getNickname())) {
 
-            int currBuilderIndexStack;
+            //verifies that the occupiedCell does not contain a locked builder
+            if ((first && (!possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty())) ||
+                    (!first && (!possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty()))) {
 
-            StackPane tmp = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coord));
+                int currBuilderIndexStack;
+                StackPane tmp = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coord));
+                currBuilderIndexStack = gameMap.getCurBuilderIndexInStack(coord);
 
-            currBuilderIndexStack = gameMap.getCurBuilderIndexInStack(coord);
+                tmp.getChildren().get(currBuilderIndexStack).setOnMouseEntered(mouseEvent -> {
+                    ImageView builderToHandle = (ImageView) mouseEvent.getSource();
+                    DropShadow shadow = new DropShadow();
+                    builderToHandle.setEffect(shadow);
+                });
 
-            tmp.getChildren().get(currBuilderIndexStack).setOnMouseEntered(mouseEvent -> {
-                ImageView builderToHandle = (ImageView) mouseEvent.getSource();
-                DropShadow shadow = new DropShadow();
-                builderToHandle.setEffect(shadow);
-            });
+                tmp.getChildren().get(currBuilderIndexStack).setOnMouseExited(mouseEvent -> {
+                    ImageView builderToHandle = (ImageView) mouseEvent.getSource();
+                    builderToHandle.setEffect(null);
+                });
 
-            tmp.getChildren().get(currBuilderIndexStack).setOnMouseExited(mouseEvent -> {
-                ImageView builderToHandle = (ImageView) mouseEvent.getSource();
-                builderToHandle.setEffect(null);
-            });
+                tmp.getChildren().get(currBuilderIndexStack).setOnMouseClicked(mouseEvent -> {
 
-            tmp.getChildren().get(currBuilderIndexStack).setOnMouseClicked(mouseEvent -> {
+                    int currentBuilderIndexInStack;
+                    //takes the builder and sets its opacity to show that it's been selected
+                    ImageView clickedBuilder = (ImageView) mouseEvent.getSource();
+                    clickedBuilder.setOpacity(Gui.selectionOpacity);
 
-                int currentBuilderIndexInStack;
-                //takes the builder and sets its opacity to show that it's been selected
-                ImageView clickedBuilder = (ImageView) mouseEvent.getSource();
-                clickedBuilder.setOpacity(Gui.selectionOpacity);
+                    //controls if the chosen builder is the first one or the second one of current player's builders
+                    Coordinates coordOfFirstBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
+                    StackPane firstBuilderCell = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coordOfFirstBuilderCell));
+                    Coordinates coordOfSecondBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
+                    StackPane secondBuilderCell = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coordOfSecondBuilderCell));
 
-                //controls if the chosen builder is the first one or the second one of current player's builders
-                Coordinates coordOfFirstBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
-                StackPane firstBuilderCell = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coordOfFirstBuilderCell));
-                Coordinates coordOfSecondBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
-                StackPane secondBuilderCell = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coordOfSecondBuilderCell));
+                    clickedBuilder.setOnMouseClicked(null);
+                    clickedBuilder.setOnMouseEntered(null);
 
-                clickedBuilder.setOnMouseClicked(null);
-                clickedBuilder.setOnMouseEntered(null);
+                    currentBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
 
-                currentBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
+                    if (firstBuilderCell.getChildren().get(currentBuilderIndexInStack).equals(clickedBuilder)) {
 
-                if (firstBuilderCell.getChildren().get(currentBuilderIndexInStack).equals(clickedBuilder)) {
+                        int secondBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfSecondBuilderCell);
 
-                    int secondBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfSecondBuilderCell);
+                        secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseClicked(null);
+                        secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseEntered(null);
+                        currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
+                        gameMap.setChosenBuilderNum(1);
+                    }
+                    else {
 
-                    secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseClicked(null);
-                    secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseEntered(null);
-                    currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
-                    gameMap.setChosenBuilderNum(1);
-                }
+                        int firstBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
+                        firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseClicked(null);
+                        firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseEntered(null);
+                        currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
+                        gameMap.setChosenBuilderNum(2);
+                    }
 
-                else {
+                    gameMap.resetPossibleDestinations();
 
-                    int firstBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
-                    firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseClicked(null);
-                    firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseEntered(null);
-                    currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
-                    gameMap.setChosenBuilderNum(2);
-                }
+                    if (getState().toString().equals("MOVE")) {
+                        printMessage("Select where you want to move", false);
+                        moveOnBuilderChosen();
+                    } else {
+                        printMessage("Select where you want to build", false);
+                        if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) ||
+                                (!possibleDstBuilder2forDome.isEmpty() && gameMap.getChosenBuilderNum() == 2))
+                            askForDome();
+                        buildToDst();
+                    }
 
-                gameMap.resetPossibleDestinations();
-
-                if(getState().toString().equals("MOVE")) {
-                    printMessage("Select where you want to move", false);
-                    moveOnBuilderChosen();
-                }
-                else {
-                    printMessage("Select where you want to build", false);
-                    if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
-                            gameMap.getChosenBuilderNum() == 2))
-                        askForDome();
-                    buildToDst();
-                }
-
-            });
+                });
+            }
+            first = false;
         }
     }
 
@@ -816,6 +841,7 @@ public class Gui extends View {
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
 
+        super.onBuilderBuild(nickname,src, dst, dome, result);
         if(result) {
             if (getNickname().equals(nickname))
                 gameMap.resetPossibleDestinations();
@@ -862,7 +888,8 @@ public class Gui extends View {
     @Override
     public void onBuilderPushed(String nickname, Coordinates src, Coordinates dst) {
 
-        gameMap.pushBuilder(nickname,src, dst);
+        gameMap.moveBuilder(gameMap.coordinatesToIndex(src), gameMap.coordinatesToIndex(dst));
+        gameMap.updateOccupiedCells(nickname, src, dst);
     }
 
     /**
@@ -1008,6 +1035,7 @@ public class Gui extends View {
      */
     @Override
     public void onWrongNumberInsertion() {
+        super.onWrongNumberInsertion();
         printMessage("Invalid number Insertion.", false);
         askNumberOfPlayers();
     }
@@ -1026,6 +1054,7 @@ public class Gui extends View {
             if (result) {
                 printMessage("GodCard assigned correctly.", false);
                 Platform.runLater(() -> godCardsPopup.close());
+                godCardsPopup.resetPopup();
             }
             else
                 printMessage("Invalid insertion of godCard.", true);
@@ -1170,7 +1199,7 @@ public class Gui extends View {
             bottomBtns.setSpacing(marginLength);
 
             Button godCardsBtn = new GuiButton("GodCards",buttonCoralSrc, mouseEvent ->
-                    new GodCardsPopup(primaryStage, 0, matchGodCards), buttonCoralPressedSrc);
+                GodCardsPopup.getInstance(primaryStage, 0, matchGodCards, null), buttonCoralPressedSrc);
 
             Button quitBtn = new GuiButton("QUIT",buttonCoralSrc,  mouseEvent -> {
                 notifyDisconnection();
@@ -1249,10 +1278,11 @@ public class Gui extends View {
      */
     @Override
     public void onDisconnection() {
-        super.onDisconnection();
 
+        super.onDisconnection();
         if (!getState().equals(View.ViewState.END)) {
 
+            printMessage(warning + " You're disconnected " + warning, false);
             Button playAgainBtn = new GuiButton("Play Again", submitButton, mouseEvent -> resetAll(), submitButtonPressed);
             playAgainBtn.setTextFill(Color.WHITESMOKE);
             setPrimarySceneButtonBinding(playAgainBtn);

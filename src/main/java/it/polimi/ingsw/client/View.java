@@ -23,12 +23,13 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     protected Coordinates currentTurnBuilderPos;
 
-    protected Set<Coordinates> possibleDstBuilder1;
-    protected Set<Coordinates> possibleDstBuilder2;
-    protected Set<Coordinates> possibleDstBuilder1forDome;
-    protected Set<Coordinates> possibleDstBuilder2forDome;
+    protected Set<Coordinates> possibleDstBuilder1 = new HashSet<>();
+    protected Set<Coordinates> possibleDstBuilder2 = new HashSet<>();
+    protected Set<Coordinates> possibleDstBuilder1forDome = new HashSet<>();
+    protected Set<Coordinates> possibleDstBuilder2forDome = new HashSet<>();
 
     private Map<String, String> chosenGodCardsForPlayer = new HashMap<>();
+    //private Map<String,String> matchGodCards = new HashMap<>();
 
     protected GameMap gameMap;
     private String nickname;
@@ -66,6 +67,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         setState(ViewState.NUMPLAYERS);
     }
     public void askNickAndDate () {
+
         setState(ViewState.NICKDATE);
     }
 
@@ -109,8 +111,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
-        if(result)
-            gameMap.modifyHeight(dst, dome);
+        possibleDstBuilder1forDome.clear();
+        possibleDstBuilder2forDome.clear();
     }
 
     @Override
@@ -174,6 +176,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     @Override
     public void onWrongNumberInsertion() {
+        setNumberOfPlayers(0);
     }
 
     @Override

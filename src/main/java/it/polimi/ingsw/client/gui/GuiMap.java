@@ -220,8 +220,7 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * MoveBuilder moves the builder in the chosen cell and removes any already present builder, which'll be saved and
-     * re-inserted after onBuilderPushed update, in the method pushBuilder
+     * MoveBuilder moves the builder in the chosen cell and removes any already present builder
      * @param src index of source of move step
      * @param dst index of the destination cell
      */
@@ -339,23 +338,6 @@ public class GuiMap extends GameMap {
             else
                 chooseDst(possibleDstBuilder2, event);
         }
-    }
-
-
-    /**
-     * This method has to be called after a push update. Inserts a new builder in the new position and updates the occupiedCells map.
-     * @param nickname of the player whose builder have been pushed
-     * @param src source coordinates
-     * @param dst where the builder has to be added
-     */
-    protected void pushBuilder(String nickname, Coordinates src, Coordinates dst) {
-
-        moveBuilder(coordinatesToIndex(src), coordinatesToIndex(dst));
-
-        if (Coordinates.equals(getOccupiedCells().get(nickname).get(GameMap.firstBuilderIndex), src))
-            setOccupiedCells(nickname, dst, getOccupiedCells().get(nickname).get(GameMap.secondBuilderIndex));
-        else
-            setOccupiedCells(nickname, getOccupiedCells().get(nickname).get(GameMap.firstBuilderIndex), dst);
     }
 
     /**

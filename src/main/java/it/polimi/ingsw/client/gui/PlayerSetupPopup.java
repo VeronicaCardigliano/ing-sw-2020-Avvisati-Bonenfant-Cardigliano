@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -28,7 +29,7 @@ public class PlayerSetupPopup extends Stage {
      * @param nickInsertion textField to insert the player name
      * @param birthdayInsertion textField to insert the birthday of the player
      */
-    public PlayerSetupPopup(Stage ownerStage, TextField nickInsertion, TextField birthdayInsertion) {
+    public PlayerSetupPopup(Stage ownerStage, TextField nickInsertion, TextField birthdayInsertion, EventHandler<WindowEvent> handler) {
 
         this.initOwner(ownerStage);
         this.initStyle(StageStyle.DECORATED);
@@ -70,14 +71,7 @@ public class PlayerSetupPopup extends Stage {
         AnchorPane.setBottomAnchor(submit,Gui.marginLength);
         Platform.runLater(()-> anchorPane.getChildren().add(submit));
 
-        this.setOnCloseRequest(windowEvent -> {
-            if (Gui.confirmQuit()) {
-                this.close();
-                ownerStage.fireEvent(new WindowEvent(ownerStage, WindowEvent.WINDOW_CLOSE_REQUEST));
-            }
-            else
-                windowEvent.consume();
-        });
+        this.setOnCloseRequest(handler);
 
         Scene scene = new Scene(anchorPane);
         this.setScene(scene);
