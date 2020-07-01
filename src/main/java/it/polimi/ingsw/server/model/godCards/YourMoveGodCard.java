@@ -5,7 +5,6 @@ import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
-
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -29,7 +28,6 @@ public class YourMoveGodCard extends GodCard {
         this.pushForce = intParameters.get("pushForce");
         this.secondMoveDiffDst = flagParameters.get("secondMoveDiffDst");
         this.extraMovePerimeter = flagParameters.get("extraMovePerimeter");
-
     }
 
     @Override
@@ -43,8 +41,8 @@ public class YourMoveGodCard extends GodCard {
                 builderToPush = gameMap.getCell(i_dst, j_dst).getBuilder();
                 gameMap.getCell(i_dst, j_dst).removeOccupant();
             }
-            if (super.askMove(i_src, j_src, i_dst, j_dst) && extraMovePerimeter){
-                if (i_dst == 0 || j_dst == 0 || i_dst == IslandBoard.dimension - 1 || j_dst == IslandBoard.dimension - 1){
+            if (super.askMove(i_src, j_src, i_dst, j_dst) && extraMovePerimeter) {
+                if (i_dst == 0 || j_dst == 0 || i_dst == IslandBoard.dimension - 1 || j_dst == IslandBoard.dimension - 1) {
                     ArrayList<String> list = new ArrayList<>(statesCopy.get(0));
                     list.add(step, "MOVE");
                     statesCopy.add(0, list);
@@ -64,7 +62,7 @@ public class YourMoveGodCard extends GodCard {
      * Function used to support move function for YourMoveGodCard. Called after the askPush function pushes an enemy
      * into another cell
      */
-    private void push(Builder builderToPush, int i_src, int j_src, int i_dst, int j_dst){
+    private void push(Builder builderToPush, int i_src, int j_src, int i_dst, int j_dst) {
         int i_enemy_dst = (i_dst - i_src) * pushForce + i_dst;
         int j_enemy_dst = (j_dst - j_src) * pushForce + j_dst;
         gameMap.getCell(i_enemy_dst,j_enemy_dst).setOccupant(builderToPush);
@@ -89,7 +87,7 @@ public class YourMoveGodCard extends GodCard {
 
 
     @Override
-    public boolean askMove(int i_src, int j_src, int i_dst, int j_dst){
+    public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
         boolean extraConditions = true;
         Cell src = gameMap.getCell(i_src, j_src);
         Cell dst = gameMap.getCell(i_dst, j_dst);

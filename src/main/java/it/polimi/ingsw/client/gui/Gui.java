@@ -53,6 +53,7 @@ public class Gui extends View {
     private static final Color SEA = Color.rgb(51,184,253);
     private final static int maxMessagesShown = 3;
     private final static int maxNicknameLength = 10;
+    private static final int builderIndexInStack = 1;
 
     private static final String warning = "\u26A0";
     private static final String buttonCoralSrc = "/btn_coral.png";
@@ -64,6 +65,7 @@ public class Gui extends View {
     private static final String backgroundSrc = "/SantoriniBoard.png";
     private static final String titleSrc = "/title.png";
     private static final String iconSrc = "/icon.png";
+    private static final Font stdFont = new Font("Arial", fontSize);
 
     private Map<String, String> matchGodCards = new HashMap<>();
     private Stage primaryStage;
@@ -71,12 +73,11 @@ public class Gui extends View {
     private HomeScene homeScene;
     private BorderPane root;
     private AnchorPane bottomAnchorPane;
-    private AnchorPane home;
+    private AnchorPane homePane;
     private VBox bottomMessagesVBox;
     private VBox playersRegion;
     private TilePane tile;
     private VBox dialogRegion;
-    private GuiMap gameMap;
     private Insets playersRegionInsets;
     private int numMessages;
     private boolean buildDome;
@@ -86,8 +87,9 @@ public class Gui extends View {
     private PlayerSetupPopup playerSetupPopup;
     private ChoicePopup choiceSetupPopup;
     private Map<String, Text> playersNameTags = new HashMap<>();
-    private Set<Coordinates> chosenCells = new HashSet<>();
     private boolean challenger;
+    private TextField IPInsertion;
+    private TextField portInsertion;
 
     /**
      * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
@@ -104,31 +106,20 @@ public class Gui extends View {
         super();
         this.primaryStage = primaryStageParam;
 
-        this.home = new AnchorPane();
+        this.homePane = new AnchorPane();
 
-        TextField IPInsertion = new TextField ("IP");
+        IPInsertion = new TextField ("IP");
         IPInsertion.setFont(new Font("Arial", fontSize/1.2));
         IPInsertion.setStyle("-fx-text-inner-color: antiquewhite;");
-        TextField portInsertion = new TextField("Port");
+        portInsertion = new TextField("Port");
         portInsertion.setFont(new Font("Arial", fontSize/1.2));
         portInsertion.setStyle("-fx-text-inner-color: antiquewhite;");
 
-        homeScene = new HomeScene (home, sceneWidth, sceneHeight, IPInsertion, portInsertion);
-
-        homeScene.getPlayBtn().setOnMouseClicked(mouseEvent -> {
-            try {
-                if (getState().equals(ViewState.CONNECTION)) {
-                    int portNum = Integer.parseInt(portInsertion.getText());
-                    notifyConnection(IPInsertion.getText(), portNum);
-                }
-            }
-            catch (NumberFormatException e) {
-                onConnectionError("WRONG FORMAT: Insert an Integer as port value");
-            }
-        });
+        homeScene = new HomeScene (homePane, sceneWidth, sceneHeight, IPInsertion, portInsertion);
+        activatePlayBtn();
 
         setupErrorText.setFill(Color.FIREBRICK);
-        setupErrorText.setFont(new Font("Arial", fontSize));
+        setupErrorText.setFont(stdFont);
         AnchorPane.setBottomAnchor(setupErrorText, Gui.marginLength);
         AnchorPane.setLeftAnchor(setupErrorText, Gui.marginLength);
         challenger = false;
@@ -172,8 +163,8 @@ public class Gui extends View {
                 new BackgroundImage(new Image(getClass().getResourceAsStream(backgroundSrc)), BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT, BackgroundPosition.DEFAULT, new BackgroundSize(0, 0, false, false, false, true))));
 
-        primaryStage.minWidthProperty().bind(home.heightProperty().multiply((double)sceneWidth/sceneHeight));
-        primaryStage.minHeightProperty().bind(home.widthProperty().divide((double)sceneWidth/sceneHeight));
+        primaryStage.minWidthProperty().bind(homePane.heightProperty().multiply((double)sceneWidth/sceneHeight));
+        primaryStage.minHeightProperty().bind(homePane.widthProperty().divide((double)sceneWidth/sceneHeight));
 
         primaryStage.widthProperty().addListener((o, oldValue, newValue)-> {
             if(newValue.intValue() < minSceneWidth) {
@@ -196,6 +187,23 @@ public class Gui extends View {
             primaryStage.close();
             Platform.exit();
             System.exit(0);
+        });
+    }
+
+    private void activatePlayBtn () {
+        IPInsertion.setEditable(true);
+        portInsertion.setEditable(true);
+        homeScene.getPlayBtn().setOnMouseClicked(mouseEvent -> {
+            try {
+                int portNum = Integer.parseInt(portInsertion.getText());
+                notifyConnection(IPInsertion.getText(), portNum);
+                homeScene.getPlayBtn().setOnMouseClicked(null);
+                IPInsertion.setEditable(false);
+                portInsertion.setEditable(false);
+            }
+            catch (NumberFormatException e) {
+                onConnectionError("WRONG FORMAT: Insert an Integer as port value");
+            }
         });
     }
 
@@ -238,11 +246,11 @@ public class Gui extends View {
         switch (currState) {
 
             case "CONNECTION":
-                if (!home.getChildren().contains(connectionErrorText)) {
+                if (!homePane.getChildren().contains(connectionErrorText)) {
                     connectionErrorText.setText(message);
                     connectionErrorText.setStyle("-fx-font-weight: bold; -fx-stroke: red");
-                    connectionErrorText.setFont(new Font("Arial", fontSize));
-                    Platform.runLater(()->home.getChildren().add(connectionErrorText));
+                    connectionErrorText.setFont(stdFont);
+                    Platform.runLater(()-> homePane.getChildren().add(connectionErrorText));
                     AnchorPane.setBottomAnchor(connectionErrorText, marginLength);
                     AnchorPane.setLeftAnchor(connectionErrorText, (double) sceneWidth/10);
                 }
@@ -296,7 +304,7 @@ public class Gui extends View {
     private void printOnPrimaryScene(String message) {
 
         Text messageText = new Text(message);
-        messageText.setFont(new Font("Arial", fontSize));
+        messageText.setFont(stdFont);
         messageText.setFill(Color.RED);
 
         if (numMessages >= maxMessagesShown) {
@@ -364,10 +372,10 @@ public class Gui extends View {
 
         TextField nickInsertion = new TextField ("nickname");
         TextField birthdayInsertion = new TextField("birthday");
-        nickInsertion.setFont(new Font("Arial", fontSize));
+        nickInsertion.setFont(stdFont);
         nickInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue;");
         birthdayInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue;");
-        birthdayInsertion.setFont(new Font("Arial", fontSize));
+        birthdayInsertion.setFont(stdFont);
 
         Platform.runLater(() -> {
             playerSetupPopup = new PlayerSetupPopup(primaryStage, nickInsertion, birthdayInsertion,
@@ -522,19 +530,26 @@ public class Gui extends View {
                     }
 
                     for (String player : gameMap.getOccupiedCells().keySet()) {
-                        if (gameMap.getOccupiedCells().get(player).contains(gameMap.indexToCoord(index)))
+                        if (gameMap.getOccupiedCells().get(player).contains(GameMap.indexToCoord(index)))
                             free = false;
                     }
 
-                    //add returns false if the cell has already been chosen
-                    if (free && chosenCells.add(gameMap.indexToCoord(index))) {
+                    ArrayList<Coordinates> currPlayerBuildersPositions = gameMap.getOccupiedCells().get(getNickname());
 
-                        gameMap.createBuilder(getChosenColorsForPlayer().get(getNickname()), gameMap.indexToCoord(index));
+                    //if the clicked cell is free and eventually different from the other one chosen by the player
+                    if (free && (currPlayerBuildersPositions == null ||
+                            !currPlayerBuildersPositions.get(GameMap.firstBuilderIndex).equals(GameMap.indexToCoord(index)))) {
 
-                        if (chosenCells.size() == GameMap.buildersNum) {
-                            Iterator<Coordinates> chosenCell = chosenCells.iterator();
-                            notifySetupBuilders(getNickname(), chosenCell.next(), chosenCell.next());
+                        if (currPlayerBuildersPositions != null) {
+
+                            gameMap.setOccupiedCells(getNickname(),null, GameMap.indexToCoord(index));
+                            currPlayerBuildersPositions = gameMap.getOccupiedCells().get(getNickname());
+                            notifySetupBuilders(getNickname(), currPlayerBuildersPositions.get(GameMap.firstBuilderIndex),
+                                    currPlayerBuildersPositions.get(GameMap.secondBuilderIndex));
                         }
+
+                        else
+                            gameMap.setOccupiedCells(getNickname(), GameMap.indexToCoord(index), null);
                     }
                 }
             });
@@ -551,7 +566,7 @@ public class Gui extends View {
         super.chooseNextStep(possibleSteps);
 
         Label chooseStep = new Label ("Choose the next step: ");
-        chooseStep.setFont(new Font("Arial", fontSize));
+        chooseStep.setFont(stdFont);
         ChoiceBox<String> stepChoice = new ChoiceBox<>();
         for (String step: possibleSteps)
             stepChoice.getItems().add(step);
@@ -593,7 +608,8 @@ public class Gui extends View {
         if (gameMap.getChosenBuilderNum() == 0) {
 
             //getChosenBuilderNum() returns 0 until a turn builder is chosen, until the user don't choose it prints all the possible dsts
-            gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, null);
+            ((GuiMap)gameMap).setCurrClickCellHandler(null);
+            gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
 
             printMessage("Select your turn builder", false);
             chooseTurnBuilder();
@@ -620,8 +636,8 @@ public class Gui extends View {
                     (!first && (!possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty()))) {
 
                 int currBuilderIndexStack;
-                StackPane tmp = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coord));
-                currBuilderIndexStack = gameMap.getBuilderIndexInStack(coord);
+                StackPane tmp = (StackPane) tile.getChildren().get(GameMap.coordinatesToIndex(coord));
+                currBuilderIndexStack = getBuilderIndexInStack(coord);
 
                 tmp.getChildren().get(currBuilderIndexStack).setOnMouseEntered(mouseEvent -> {
                     ImageView builderToHandle = (ImageView) mouseEvent.getSource();
@@ -644,37 +660,38 @@ public class Gui extends View {
 
                     //controls if the chosen builder is the first one or the second one of current player's builders
                     Coordinates coordOfFirstBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
-                    StackPane firstBuilderCell = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coordOfFirstBuilderCell));
+                    StackPane firstBuilderCell = (StackPane) tile.getChildren().get(GameMap.coordinatesToIndex(coordOfFirstBuilderCell));
                     Coordinates coordOfSecondBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
-                    StackPane secondBuilderCell = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coordOfSecondBuilderCell));
+                    StackPane secondBuilderCell = (StackPane) tile.getChildren().get(GameMap.coordinatesToIndex(coordOfSecondBuilderCell));
 
-                    int currentBuilderIndexInStack = gameMap.getBuilderIndexInStack(coordOfFirstBuilderCell);
+                    int currentBuilderIndexInStack = getBuilderIndexInStack(coordOfFirstBuilderCell);
 
                     //if the clicked builder is the first one, I reset the not clicked one (second one)
                     if (firstBuilderCell.getChildren().get(currentBuilderIndexInStack).equals(clickedBuilder)) {
 
-                        int secondBuilderIndexInStack = gameMap.getBuilderIndexInStack(coordOfSecondBuilderCell);
+                        int secondBuilderIndexInStack = getBuilderIndexInStack(coordOfSecondBuilderCell);
 
                         secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseClicked(null);
                         secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseEntered(null);
-                        currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
+                        gameMap.setCurrentTurnBuilderPos(gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex));
                         gameMap.setChosenBuilderNum(1);
                     }
                     else {
 
-                        int firstBuilderIndexInStack = gameMap.getBuilderIndexInStack(coordOfFirstBuilderCell);
+                        int firstBuilderIndexInStack = getBuilderIndexInStack(coordOfFirstBuilderCell);
                         firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseClicked(null);
                         firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseEntered(null);
-                        currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
+                        gameMap.setCurrentTurnBuilderPos(gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex));
                         gameMap.setChosenBuilderNum(2);
                     }
 
-                    gameMap.resetPossibleDestinations();
+                    gameMap.setPossibleDst(null, null);
 
                     if (getState().toString().equals("MOVE")) {
                         printMessage("Select where you want to move", false);
                         moveOnBuilderChosen();
-                    } else {
+                    }
+                    else {
                         printMessage("Select where you want to build", false);
                         if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) ||
                                 (!possibleDstBuilder2forDome.isEmpty() && gameMap.getChosenBuilderNum() == 2))
@@ -694,7 +711,7 @@ public class Gui extends View {
      */
     private void moveOnBuilderChosen() {
 
-        gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, mouseEvent -> {
+        ((GuiMap)gameMap).setCurrClickCellHandler(mouseEvent -> {
             int dstIndex = 0;
             StackPane clickedCell = (StackPane) mouseEvent.getSource();
 
@@ -706,9 +723,11 @@ public class Gui extends View {
                     break;
             }
 
-            notifyMove(getNickname(), currentTurnBuilderPos, gameMap.indexToCoord(dstIndex));
-            currentTurnBuilderPos = gameMap.indexToCoord(dstIndex);
+            notifyMove(getNickname(), gameMap.getCurrentTurnBuilderPos(), GameMap.indexToCoord(dstIndex));
+            gameMap.setCurrentTurnBuilderPos(GameMap.indexToCoord(dstIndex));
         });
+
+        gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
     }
 
     /**
@@ -717,25 +736,28 @@ public class Gui extends View {
      */
     private void buildToDst() {
 
-        gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome,
-                buildDome, mouseEvent -> {
+        ((GuiMap)gameMap).setCurrClickCellHandler(mouseEvent -> {
 
-                //if the turnBuilder have been chosen
-                if (currentTurnBuilderPos != null) {
-                    int index = 0;
+            //if the turnBuilder have been chosen
+            if (gameMap.getCurrentTurnBuilderPos() != null) {
+                int index = 0;
 
-                    StackPane clickedCell = (StackPane) mouseEvent.getSource();
+                StackPane clickedCell = (StackPane) mouseEvent.getSource();
 
-                    //finds the index of the clickedCell
-                    for (Node node : tile.getChildren()) {
-                        if (!node.equals(clickedCell))
-                            index++;
-                        else
-                            break;
-                    }
-                    notifyBuild(getNickname(), currentTurnBuilderPos, gameMap.indexToCoord(index), buildDome);
+                //finds the index of the clickedCell
+                for (Node node : tile.getChildren()) {
+                    if (!node.equals(clickedCell))
+                        index++;
+                    else
+                        break;
                 }
-            });
+                notifyBuild(getNickname(), gameMap.getCurrentTurnBuilderPos(), GameMap.indexToCoord(index), buildDome);
+            }
+        });
+        if (!buildDome)
+            gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
+        else
+            gameMap.setPossibleDst(possibleDstBuilder1forDome, possibleDstBuilder2forDome);
     }
 
     /**
@@ -744,6 +766,7 @@ public class Gui extends View {
     private void askForDome() {
 
         Label domeRequest = new Label ("Do you want to build a dome? ");
+        domeRequest.setFont(stdFont);
         Platform.runLater(() -> dialogRegion.getChildren().add(domeRequest));
 
         Button yesBtn = new GuiButton("YES", submitButton, mouseEvent ->  {
@@ -771,8 +794,13 @@ public class Gui extends View {
     private void afterDomeChoice() {
 
         Platform.runLater(() -> dialogRegion.getChildren().clear());
-        gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
-                possibleDstBuilder2forDome, buildDome, null);
+
+        ((GuiMap)gameMap).setCurrClickCellHandler(null);
+        if (!buildDome)
+            gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
+        else
+            gameMap.setPossibleDst(possibleDstBuilder1forDome, possibleDstBuilder2forDome);
+
         if (gameMap.getChosenBuilderNum() == 0) {
             printMessage("Select your turn builder",false);
             chooseTurnBuilder();
@@ -795,11 +823,14 @@ public class Gui extends View {
         if (gameMap.getChosenBuilderNum() == 0) {
 
             //if the player can build a dome somewhere, he's asked what he wants to build
-            if (!possibleDstBuilder1forDome.isEmpty() && !possibleDstBuilder2forDome.isEmpty())
+            if (!possibleDstBuilder1forDome.isEmpty() || !possibleDstBuilder2forDome.isEmpty())
                 askForDome();
             else {
-                gameMap.showPossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome,
-                        possibleDstBuilder2forDome, buildDome, null);
+                ((GuiMap)gameMap).setCurrClickCellHandler(null);
+                if (!buildDome)
+                    gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
+                else
+                    gameMap.setPossibleDst(possibleDstBuilder1forDome, possibleDstBuilder2forDome);
                 printMessage("Select your turn builder", false);
                 chooseTurnBuilder();
             }
@@ -832,14 +863,7 @@ public class Gui extends View {
 
         super.onBuilderBuild(nickname,src, dst, dome, result);
 
-        if(result) {
-            if (getNickname().equals(nickname))
-                gameMap.resetPossibleDestinations();
-
-            gameMap.createBuilding(gameMap.coordinatesToIndex(dst), dome, nickname);
-        }
-
-        else
+        if (!result)
             printMessage("Could not build", false);
     }
 
@@ -854,31 +878,13 @@ public class Gui extends View {
      */
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
-        //TODO:super
+        super.onBuilderMovement(nickname, src, dst, result);
         if(result) {
-            if(getNickname().equals(nickname)) {
-                currentTurnBuilderPos = dst;
-                gameMap.resetPossibleDestinations();
-            }
-
-            //does the effective move of the builder in map
-            gameMap.moveBuilder(gameMap.coordinatesToIndex(src), gameMap.coordinatesToIndex(dst));
-            gameMap.updateOccupiedCells(nickname, src, dst);
+            if(getNickname().equals(nickname))
+                gameMap.setPossibleDst(null, null);
         }
         else
             printMessage("Could not move.", false);
-    }
-
-    /**
-     * @param nickname player whose builder have been pushed
-     * @param src old position of the builder
-     * @param dst new position in which the builder have been pushed from an opponent during move
-     */
-    @Override
-    public void onBuilderPushed(String nickname, Coordinates src, Coordinates dst) {
-
-        gameMap.moveBuilder(gameMap.coordinatesToIndex(src), gameMap.coordinatesToIndex(dst));
-        gameMap.updateOccupiedCells(nickname, src, dst);
     }
 
     /**
@@ -901,8 +907,10 @@ public class Gui extends View {
     public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
 
         super.updatePossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2);
-        if (gameMap.getChosenBuilderNum() == 0)
-            gameMap.showPossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2, null);
+        if (gameMap.getChosenBuilderNum() == 0) {
+            ((GuiMap)gameMap).setCurrClickCellHandler(null);
+            gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
+        }
         move();
     }
 
@@ -917,6 +925,7 @@ public class Gui extends View {
     @Override
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
 
+        super.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2, result);
         if (result) {
             //resets the handler of cell clicked
             for (Node node : tile.getChildren())
@@ -924,18 +933,10 @@ public class Gui extends View {
 
             if (getNickname().equals(nickname))
                 printMessage("Builders positioned correctly.", false);
-            else {
-                gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), positionBuilder1);
-                gameMap.createBuilder(getChosenColorsForPlayer().get(nickname), positionBuilder2);
-            }
-
-            gameMap.setOccupiedCells(nickname, positionBuilder1, positionBuilder2);
-
         }
         else if (getNickname().equals(nickname)) {
             printMessage("ERROR in builders placement", false);
-            gameMap.removeBuilders(positionBuilder1, positionBuilder2);
-            chosenCells.clear();
+            gameMap.removePlayer(nickname);
         }
 
     }
@@ -981,6 +982,7 @@ public class Gui extends View {
     @Override
     public void onEndGameUpdate(String winnerNickname) {
         super.onEndGameUpdate(winnerNickname);
+        Platform.runLater(() -> dialogRegion.getChildren().clear());
 
         if (!getNickname().equals(winnerNickname)) {
 
@@ -1001,11 +1003,12 @@ public class Gui extends View {
      * Private method used to reset primaryScene and homeScene for a new match. It creates also a new GuiMap
      */
     private void resetAll () {
-        //resets all
-        if (home.getChildren().contains(connectionErrorText))
-            Platform.runLater(()->home.getChildren().remove(connectionErrorText));
+
+        if (homePane.getChildren().contains(connectionErrorText))
+            Platform.runLater(()-> homePane.getChildren().remove(connectionErrorText));
 
         Platform.runLater(() -> primaryStage.setScene(homeScene));
+        activatePlayBtn();
         Platform.runLater(() -> playersRegion.getChildren().clear());
         playersRegion.setBorder(null);
         playersRegion.setBackground(null);
@@ -1112,17 +1115,14 @@ public class Gui extends View {
 
         super.onLossUpdate(nickname);
 
-        gameMap.removePlayer(nickname);
         if (!getNickname().equals(nickname)) {
             printMessage(nickname + " lost!", false);
-            gameMap.removeBuilders(gameMap.getOccupiedCells().get(nickname).get(GameMap.firstBuilderIndex),
-                    gameMap.getOccupiedCells().get(nickname).get(GameMap.secondBuilderIndex));
         }
         else {
+            Platform.runLater(() -> dialogRegion.getChildren().clear());
             EndGameMessage endGameMessage = new EndGameMessage("YOU LOSE", Color.BLUE, dialogRegion, MouseEvent -> resetAll());
             setPrimarySceneButtonBinding(endGameMessage.getPlayAgainBtn());
         }
-
         matchGodCards.remove(nickname);
         setPlayersRegion();
     }
@@ -1134,15 +1134,8 @@ public class Gui extends View {
      */
     @Override
     public void onPlayerTurn(String nickname) {
-
-        gameMap.setChosenBuilderNum(0);
-
+        super.onPlayerTurn(nickname);
         String state = getState().toString();
-        if (currentTurnBuilderPos != null) {
-
-            gameMap.resetBuilder(currentTurnBuilderPos);
-            currentTurnBuilderPos = null;
-        }
 
         if (state.equals("BUILD") || state.equals("MOVE") || state.equals("STEP") || state.equals("BUILDERPLACEMENT")) {
 
@@ -1181,7 +1174,6 @@ public class Gui extends View {
      */
     @Override
     public void onStateUpdate(Model.State currState) {
-        super.onStateUpdate(currState);
 
         if (currState.equals(Model.State.SETUP_BUILDERS)) {
 
@@ -1228,7 +1220,7 @@ public class Gui extends View {
 
             Label label = new Label("Waiting for players... ");
             label.setTextFill(Color.RED);
-            label.setFont(new Font("Arial", fontSize));
+            label.setFont(stdFont);
 
             FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), label);
             fadeTransition.setFromValue(1.0);
@@ -1266,6 +1258,7 @@ public class Gui extends View {
     @Override
     public void onConnectionError(String message) {
         printMessage(message, false);
+        activatePlayBtn();
     }
 
     /**
@@ -1285,7 +1278,6 @@ public class Gui extends View {
             Platform.runLater(()-> dialogRegion.getChildren().add(playAgainBtn));
         }
         setState(ViewState.CONNECTION);
-        gameMap.setChosenBuilderNum(0);
     }
 
     /**
@@ -1348,6 +1340,18 @@ public class Gui extends View {
     @Override
     public void onOpponentDisconnection(String nickname) {
         printMessage(warning + " " + nickname + " disconnected " + warning, false);
+    }
+
+    /**
+     * Returns the position(index) of the builder in the StackPane (cell)
+     * @param cellStackCoord coordinates of the cell with the builder
+     */
+    private int getBuilderIndexInStack(Coordinates cellStackCoord) {
+        int result = 0;
+        if (gameMap.getHeights().get(cellStackCoord) != 0)
+            result = builderIndexInStack;
+
+        return result;
     }
 }
 

@@ -1,7 +1,9 @@
 package it.polimi.ingsw.client;
 
+import it.polimi.ingsw.client.gui.Gui;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
+
 import java.util.*;
 
 /**
@@ -16,6 +18,7 @@ public abstract class GameMap {
     public static final int firstBuilderIndex = 0;
     public static final int secondBuilderIndex = 1;
     public static final int buildersNum = 2;
+    protected Coordinates currentTurnBuilderPos; //position of the chosen builder during turn
 
     private Set<Coordinates> possibleDstBuilder1 = new HashSet<>();
     private Set<Coordinates> possibleDstBuilder2 = new HashSet<>();
@@ -38,6 +41,13 @@ public abstract class GameMap {
 
     public int getChosenBuilderNum() {
         return chosenBuilderNumber;
+    }
+
+    public void setCurrentTurnBuilderPos(Coordinates currentBuilderPos) {
+        currentTurnBuilderPos = currentBuilderPos;
+    }
+    public Coordinates getCurrentTurnBuilderPos() {
+        return currentTurnBuilderPos;
     }
 
     public ArrayList<Set<Coordinates>> getPossibleDst() {
@@ -86,6 +96,26 @@ public abstract class GameMap {
 
     public Map<Coordinates, Integer> getHeights() {
         return this.heights;
+    }
+
+    /**
+     * Converts coordinates to the one-dimensional index with which children in tilePane are sorted
+     * @param coord coordinates to convert
+     * @return relative index
+     */
+    public static int coordinatesToIndex (Coordinates coord) {
+        return coord.getI()* Gui.mapDimension + coord.getJ();
+    }
+
+    /**
+     * Converts one-dimentional index to coordinates i and j
+     * @param index index to convert
+     * @return relative coordinates
+     */
+    public static Coordinates indexToCoord(int index) {
+        int j = index % Gui.mapDimension;
+        int i = index/Gui.mapDimension;
+        return new Coordinates(i,j);
     }
 
 }

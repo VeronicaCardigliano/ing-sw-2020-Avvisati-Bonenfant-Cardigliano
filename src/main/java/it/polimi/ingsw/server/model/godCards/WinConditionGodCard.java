@@ -10,8 +10,6 @@ import java.util.Map;
 /**
  * God card with different conditions to win
  */
-
-
 public class WinConditionGodCard extends GodCard {
 
     private final int minimumDownStepsToWin;

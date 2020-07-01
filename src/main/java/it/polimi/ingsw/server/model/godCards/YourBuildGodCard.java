@@ -7,10 +7,9 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- * Specific Card associated to a god whom effect activates during his turn. This kind of god implements its own
+ * Specific Card associated to a god whom effect activates during his turn. This kind of god implements his own
  * build depending on three different parameters read from the json file.
  */
-
 public class YourBuildGodCard extends GodCard {
 
     private boolean canBuildDomeEverywhere;
@@ -21,7 +20,7 @@ public class YourBuildGodCard extends GodCard {
     private int numberOfBuilds;
     private Cell firstBuildDst;
 
-    public YourBuildGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
+    public YourBuildGodCard (Player player, String name, String description, ArrayList<ArrayList<String>> states,
                             Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
         super(player, name, description, states);
 
@@ -34,7 +33,11 @@ public class YourBuildGodCard extends GodCard {
 
     }
 
-
+    /**
+     * This override of askBuild considers extraConditions of the gods which can build a second time in a different or same
+     * space or not in the perimeter. Considers also cards that can build a dome everywhere and a block under themselves.
+     * @param buildDome true if the builder wants to build a dome
+     */
     @Override
     public boolean askBuild(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
 
@@ -56,7 +59,7 @@ public class YourBuildGodCard extends GodCard {
                                        j_dst != 0 && j_dst != IslandBoard.dimension - 1);
             }
         }
-        return (super.askBuild(i_src, j_src, i_dst, j_dst,buildDome) || (src.getBuilder() != null &&
+        return (super.askBuild(i_src, j_src, i_dst, j_dst, buildDome) || (src.getBuilder() != null &&
                 src.getBuilder().getPlayer().equals(player) && !dst.isDomePresent() && !dst.isOccupied() && IslandBoard.distanceOne(src, dst) &&
                 canBuildDomeEverywhere && (dst.getHeight() < IslandBoard.maxHeight || buildDome)) ||
                 (src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) && !dst.isDomePresent() &&
@@ -65,6 +68,9 @@ public class YourBuildGodCard extends GodCard {
     }
 
 
+    /**
+     * This override of build saves the firstBuildDst to do the necessary checks if there's a possible second build
+     */
     @Override
     public boolean build (int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
         if (numberOfBuilds == 2 && super.step == 1)

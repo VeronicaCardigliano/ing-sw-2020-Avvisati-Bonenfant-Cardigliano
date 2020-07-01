@@ -25,8 +25,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
     protected static final Map<String,String> chosenColorsForPlayer = new HashMap<>();
 
-    protected Coordinates currentTurnBuilderPos; //position of the chosen builder during turn
-
     protected Set<Coordinates> possibleDstBuilder1 = new HashSet<>();       //positions at which builder 1 can move or build
     protected Set<Coordinates> possibleDstBuilder2 = new HashSet<>();       //positions at which builder 2 can move or build
     protected Set<Coordinates> possibleDstBuilder1forDome = new HashSet<>();//positions at which builder 1 can build a dome
@@ -81,14 +79,13 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
 
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
-        this.numberOfPlayers = numOfPlayers;
 
+        this.numberOfPlayers = numOfPlayers;
         setState(ViewState.MATCHGODS);
     }
 
     public void askGodCard (Map<String, String> godDescriptions, Set<String> chosenCards) {
         setState(ViewState.PLAYERGOD);
-
     }
 
     public void chooseStartPlayer (Set<String> players) {
@@ -137,6 +134,10 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
         if(!result)
             setState(ViewState.BUILD);
+        else {
+            gameMap.modifyHeight(dst, dome);
+            gameMap.setPossibleDst(null, null);
+        }
         possibleDstBuilder1forDome.clear();
         possibleDstBuilder2forDome.clear();
     }
@@ -151,13 +152,13 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
         if(result) {
+
             gameMap.updateOccupiedCells(nickname, src, dst);
-
             if(getNickname().equals(nickname))
-                currentTurnBuilderPos = dst;
-        } else
+                gameMap.setCurrentTurnBuilderPos(dst);
+        }
+        else
             setState(ViewState.MOVE);
-
     }
 
     /**
@@ -310,18 +311,23 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
      */
     @Override
     public void onLossUpdate(String nickname) {
-
+        gameMap.removePlayer(nickname);
         chosenGodCardsForPlayer.remove(nickname);
     }
 
     /**
-     * Handles server notification about who is now playing
+     * Handles server notification about who is now playing, resets the chosen builder number if it was set (different from zero)
+     * and sets the current turn builder position to null.
      * @param nickname nickname of the player whose turn is
      */
     @Override
     public void onPlayerTurn(String nickname) {
 
-        gameMap.setChosenBuilderNum(0);
+        if (gameMap.getChosenBuilderNum() != 0)
+            gameMap.setChosenBuilderNum(0);
+
+        if (getState().equals(ViewState.MOVE) || getState().equals(ViewState.BUILD) || getState().equals(ViewState.STEP))
+            gameMap.setCurrentTurnBuilderPos(null);
     }
 
     /**
@@ -339,8 +345,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
      * Notifies an update in Model state
      */
     @Override
-    public void onStateUpdate(Model.State currState) {
-    }
+    abstract public void onStateUpdate(Model.State currState);
 
     /**
      * called when network handler socket is disconnected from server.
@@ -354,8 +359,9 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         setDate(null);
         //resetting all game data
         chosenGodCardsForPlayer = new HashMap<>();
-        currentTurnBuilderPos = null;
-        //gameMap.setChosenBuilderNum(0);
+        if (gameMap.getChosenBuilderNum() != 0)
+            gameMap.setChosenBuilderNum(0);
+        gameMap.setCurrentTurnBuilderPos(null);
     }
 
     //-----------------------------------------------------------------------------------------------------------------

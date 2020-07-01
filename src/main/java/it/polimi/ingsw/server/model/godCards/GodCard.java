@@ -77,7 +77,7 @@ public class GodCard {
         for (Builder  b : player.getBuilders()){
             currBuilder = b;
             //Hold most populated list
-            ArrayList tmpArray = new ArrayList(currStateList);
+            ArrayList<String> tmpArray = new ArrayList<>(currStateList);
             filterNextState();
             if (currStateList.size() < tmpArray.size())
                 currStateList = tmpArray;
@@ -231,7 +231,12 @@ public class GodCard {
         this.gameMap = gameMap;
     }
 
-    public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
+    /**
+     * Method used to actually do a build if askBuild returned a true value, adds a dome or a block based on buildDome parameter
+     * @param buildDome specifies whether you want to build a dome or not
+     * @return true if it was successful (used for test purpose)
+     */
+    public boolean build (int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
         boolean built = false;
         Cell dst;
 

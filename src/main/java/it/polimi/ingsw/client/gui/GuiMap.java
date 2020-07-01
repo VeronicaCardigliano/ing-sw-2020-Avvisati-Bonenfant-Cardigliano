@@ -1,6 +1,7 @@
 package it.polimi.ingsw.client.gui;
 
 import it.polimi.ingsw.client.GameMap;
+import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -29,6 +30,7 @@ public class GuiMap extends GameMap {
     private static final int cellGap = 1;
     private Scene scene;
     private TilePane tile;
+    private EventHandler<MouseEvent> currClickCellHandler;
 
     /**
      * This constructor sets the features of the tilePane and adds to it mapDimension x mapDimension StackPanes (Cells)
@@ -50,38 +52,175 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * Used to get the height in a specific coordinate
-     * @param coord coordinate of the cell of which height is demanded
-     * @return int value of height
+     * This override method sets the chosen number calling super() and resets the builder selection if the parameter is 0
+     * @param chosenBuilderNumber number of the chosen builder
      */
-    public int getHeight(Coordinates coord) {
-        return getHeights().get(coord);
+    @Override
+    public void setChosenBuilderNum(int chosenBuilderNumber) {
+        super.setChosenBuilderNum(chosenBuilderNumber);
+        if(chosenBuilderNumber == 0)
+            resetBuilder(getCurrentTurnBuilderPos());
     }
 
     /**
-     * This override of setOccupiedCells allows to add one builder at a time
+     * This override of setOccupiedCells allows to add one builder at a time and creates, with "create builder" method,
+     * a new builder or two new builders. This is done if the player's builders haven't been positioned yet.
      * @param nickname player who owns the builders
      * @param builder1 first builder
      * @param builder2 second builder
      */
     @Override
     public void setOccupiedCells (String nickname, Coordinates builder1, Coordinates builder2) {
-        ArrayList<Coordinates> positions = new ArrayList<>();
 
-        if (builder2 == null) {
-            positions.add(builder1);
+        if (getOccupiedCells().get(nickname) == null || !(getOccupiedCells().get(nickname).size() == buildersNum)) {
+
+            ArrayList<Coordinates> positions = new ArrayList<>();
+            if (builder2 == null) {
+                positions.add(builder1);
+                createBuilder(View.getColor(nickname).toUpperCase(), builder1);
+            }
+
+            else if (builder1 == null) {
+                positions.add(getOccupiedCells().get(nickname).get(firstBuilderIndex));
+                createBuilder(View.getColor(nickname).toUpperCase(), builder2);
+                positions.add(builder2);
+            }
+            else {
+                positions.add(builder1);
+                createBuilder(View.getColor(nickname).toUpperCase(), builder1);
+                positions.add(builder2);
+                createBuilder(View.getColor(nickname).toUpperCase(), builder2);
+            }
+
+            occupiedCells.put(nickname, positions);
         }
+    }
 
-        else if (builder1 == null) {
-            positions.add(getOccupiedCells().get(nickname).get(firstBuilderIndex));
-            positions.add(builder2);
+    /**
+     * Shows the possible destinations for a move or build, can be called before the builder choice or after.
+     * If the builder has been chosen, uses the attribute event to handle when a possibleDst is clicked.
+     */
+    @Override
+    public void setPossibleDst (Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
+
+        if (possibleDstBuilder1 == null && possibleDstBuilder2 == null)
+            resetPossibleDestinations();
+        else if (possibleDstBuilder1 != null && possibleDstBuilder2 != null)
+        {
+            if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 1) {
+                for (Coordinates coord : possibleDstBuilder1)
+                    setPossibleDstCell(coordinatesToIndex(coord));
+            }
+
+            if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 2) {
+                for (Coordinates coord : possibleDstBuilder2)
+                    setPossibleDstCell(coordinatesToIndex(coord));
+            }
+
+            if (getChosenBuilderNum() == 1)
+                chooseDst(possibleDstBuilder1, currClickCellHandler);
+            else if (getChosenBuilderNum() == 2)
+                chooseDst(possibleDstBuilder2, currClickCellHandler);
+        }
+    }
+
+    /**
+     * This override method calls the super() to update the occupied cells after a move/push event, then moves the builder
+     * calling the private method moveBuilder
+     * @param nickname of the player who's moving/been moved
+     * @param src old position of the builder
+     * @param dst new position of the builder
+     */
+    @Override
+    public void updateOccupiedCells(String nickname, Coordinates src, Coordinates dst) {
+
+        super.updateOccupiedCells(nickname, src, dst);
+
+        moveBuilder(coordinatesToIndex(src), coordinatesToIndex(dst));
+        resetPossibleDestinations();
+    }
+
+    /**
+     * Calls the private method removeBuilders to remove the player builders, then removes the builders cells from the occupiedCells.
+     * @param nickname player who loss/whose builders placement was wrong
+     */
+    @Override
+    public void removePlayer (String nickname) {
+        removeBuilders(getOccupiedCells().get(nickname).get(firstBuilderIndex),
+                getOccupiedCells().get(nickname).get(secondBuilderIndex));
+        occupiedCells.remove(nickname);
+    }
+
+    /**
+     * This method modifies the height of the destination cell and creates also a new building based on reached height
+     * placing it in the right destination.
+     * @param dstCoord coordinates of the destination of the build
+     * @param buildDome this flag is true when a dome has to be built
+     */
+    @Override
+    public void modifyHeight(Coordinates dstCoord, boolean buildDome) {
+        ImageView newBuilding = null;
+        int oldHeight;
+        int dstIndex = coordinatesToIndex(dstCoord);
+
+        StackPane clickedCell = (StackPane) tile.getChildren().get(dstIndex);
+
+        oldHeight = getHeights().get(dstCoord);
+        if (oldHeight != 0)
+            Platform.runLater(() -> clickedCell.getChildren().remove(buildingIndexInStack));
+
+        super.modifyHeight(dstCoord, buildDome);
+
+        //adds the right image in function to height
+        if (buildDome) {
+            switch (oldHeight) {
+                case 0:
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/groundDome.png")));
+                    break;
+                case 1:
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeFirstLevel.png")));
+                    break;
+                case 2:
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeSecondLevel.png")));
+                    break;
+                case 3:
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeThirdLevel.png")));
+                    break;
+            }
         }
         else {
-            positions.add(builder1);
-            positions.add(builder2);
+            switch (getHeights().get(dstCoord)) {
+                case 1:
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/firstLevel.png")));
+                    break;
+                case 2:
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/secondLevel.png")));
+                    break;
+                case 3:
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/thirdLevel.png")));
+                    break;
+            }
         }
 
-        occupiedCells.put(nickname, positions);
+        if (newBuilding != null) {
+            newBuilding.setPreserveRatio(true);
+            newBuilding.fitHeightProperty().bind(scene.heightProperty().multiply(Gui.ratioCellHeight));
+
+            ImageView finalNewBuilding = newBuilding;
+
+            //if (getOccupiedCells().get(nickname).contains(indexToCoord(dstIndex)))
+            Platform.runLater(() -> clickedCell.getChildren().add(buildingIndexInStack, finalNewBuilding));
+            //else
+            //    Platform.runLater(() -> clickedCell.getChildren().add(finalNewBuilding));
+        }
+    }
+
+    /**
+     * This method is used to set from Gui an handler for the mouse clicked event on cells
+     * @param handler handles what will happen when a user clicks on a possible cell
+     */
+    public void setCurrClickCellHandler(EventHandler<MouseEvent> handler) {
+        currClickCellHandler = handler;
     }
 
     /**
@@ -103,9 +242,9 @@ public class GuiMap extends GameMap {
      * Returns the position(index) of the builder in the StackPane (cell)
      * @param cellStackCoord coordinates of the cell with the builder
      */
-    protected int getBuilderIndexInStack(Coordinates cellStackCoord) {
+    private int getBuilderIndexInStack(Coordinates cellStackCoord) {
         int result = 0;
-        if (getHeight(cellStackCoord) != 0)
+        if (getHeights().get(cellStackCoord) != 0)
             result = builderIndexInStack;
 
         return result;
@@ -116,7 +255,7 @@ public class GuiMap extends GameMap {
      * @param color color of the builder owner
      * @param cellCoord where the new builder has to be put
      */
-    protected void createBuilder(String color, Coordinates cellCoord) {
+    private void createBuilder(String color, Coordinates cellCoord) {
 
         StackPane dstCell = (StackPane) tile.getChildren().get(coordinatesToIndex(cellCoord));
 
@@ -149,7 +288,7 @@ public class GuiMap extends GameMap {
      * Resets old turn builder selection
      * @param builderCell the cell occupied by the last turn builder
      */
-    protected void resetBuilder (Coordinates builderCell) {
+    private void resetBuilder (Coordinates builderCell) {
 
         StackPane oldBuilderCell = (StackPane) tile.getChildren().get(coordinatesToIndex(builderCell));
 
@@ -159,73 +298,11 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * This method creates a new building based on reached height and puts it in the right destination.
-     * @param dstIndex index of the destination of the build
-     * @param buildDome this flag is true when a dome has to be built
-     * @param nickname currPlayer who has built, to check if there's already a player in the build destination
-     */
-    public void createBuilding(int dstIndex, boolean buildDome, String nickname) {
-        ImageView newBuilding = null;
-        int oldHeight;
-
-        StackPane clickedCell = (StackPane) tile.getChildren().get(dstIndex);
-
-        oldHeight = getHeight(indexToCoord(dstIndex));
-        if (oldHeight != 0)
-                Platform.runLater(() -> clickedCell.getChildren().remove(buildingIndexInStack));
-
-        modifyHeight(indexToCoord(dstIndex), buildDome);
-
-        //adds the right image in function to height
-        if (buildDome) {
-            switch (oldHeight) {
-                case 0:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/groundDome.png")));
-                    break;
-                case 1:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeFirstLevel.png")));
-                    break;
-                case 2:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeSecondLevel.png")));
-                    break;
-                case 3:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeThirdLevel.png")));
-                    break;
-            }
-        }
-        else {
-            switch (getHeight(indexToCoord(dstIndex))) {
-                case 1:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/firstLevel.png")));
-                    break;
-                case 2:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/secondLevel.png")));
-                    break;
-                case 3:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/thirdLevel.png")));
-                    break;
-            }
-        }
-
-        if (newBuilding != null) {
-            newBuilding.setPreserveRatio(true);
-            newBuilding.fitHeightProperty().bind(scene.heightProperty().multiply(Gui.ratioCellHeight));
-
-            ImageView finalNewBuilding = newBuilding;
-
-            if (getOccupiedCells().get(nickname).contains(indexToCoord(dstIndex)))
-                Platform.runLater(() -> clickedCell.getChildren().add(buildingIndexInStack, finalNewBuilding));
-            else
-                Platform.runLater(() -> clickedCell.getChildren().add(finalNewBuilding));
-        }
-    }
-
-    /**
      * MoveBuilder moves the builder in the chosen cell and removes any already present builder
      * @param src index of source of move step
      * @param dst index of the destination cell
      */
-    protected void moveBuilder (int src, int dst) {
+    private void moveBuilder (int src, int dst) {
 
         int builderIndex;
         builderIndex= getBuilderIndexInStack(indexToCoord(src));
@@ -274,77 +351,9 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * Shows the possible destinations for a move, can be called before the builder choice or after.
-     * If the builder has been chosen, event handles the actions when a possibleDst is clicked
-     * @param event handles the actions when a possibleDst is clicked
-     */
-    protected void showPossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
-                                       EventHandler<MouseEvent> event){
-
-        if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 1) {
-            for (Coordinates coord: possibleDstBuilder1)
-                setPossibleDstCell(coordinatesToIndex(coord));
-        }
-
-        if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 2) {
-            for (Coordinates coord: possibleDstBuilder2)
-                setPossibleDstCell(coordinatesToIndex(coord));
-        }
-
-        if (getChosenBuilderNum() == 1)
-            chooseDst(possibleDstBuilder1, event);
-        else if (getChosenBuilderNum() == 2)
-            chooseDst(possibleDstBuilder2, event);
-    }
-
-    /**
-     * Shows the possible destinations for a build, can be called before the builder/dome choice or after.
-     * PossibleDst sets have to be set to null if they're not to be considered, same for event in case the builder hasn't been chosen yet.
-     */
-    protected void showPossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
-                                     Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome,
-                                        boolean buildDome, EventHandler<MouseEvent> event) {
-
-        if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 1) {
-            if (buildDome) {
-                for (Coordinates coord: possibleDstBuilder1forDome)
-                    setPossibleDstCell(coordinatesToIndex(coord));
-            }
-            else {
-                for (Coordinates coord : possibleDstBuilder1)
-                    setPossibleDstCell(coordinatesToIndex(coord));
-            }
-        }
-
-        if (getChosenBuilderNum() == 0 || getChosenBuilderNum() == 2) {
-            if (buildDome) {
-                for (Coordinates coord: possibleDstBuilder2forDome)
-                    setPossibleDstCell(coordinatesToIndex(coord));
-            }
-            else {
-                for (Coordinates coord: possibleDstBuilder2)
-                    setPossibleDstCell(coordinatesToIndex(coord));
-            }
-        }
-
-        if (getChosenBuilderNum() == 1) {
-            if (buildDome)
-                chooseDst(possibleDstBuilder1forDome, event);
-            else
-                chooseDst(possibleDstBuilder1, event);
-        }
-        else if (getChosenBuilderNum() == 2) {
-            if (buildDome)
-                chooseDst(possibleDstBuilder2forDome, event);
-            else
-                chooseDst(possibleDstBuilder2, event);
-        }
-    }
-
-    /**
      * Resets the possible destinations cells after builder/destination choice
      */
-    protected void resetPossibleDestinations() {
+    private void resetPossibleDestinations() {
         for (Node cell : tile.getChildren()) {
 
             cell.setOnMouseClicked(null);
@@ -354,10 +363,9 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * Removes the builders from builder1Coord and builder2Coord if a player loses or if buildersPlacement
-     * was not successful
+     * Removes the builders from builder1Coord and builder2Coord if a player loses or if buildersPlacement was not successful
      */
-    protected void removeBuilders (Coordinates builder1Coord, Coordinates builder2Coord) {
+    private void removeBuilders (Coordinates builder1Coord, Coordinates builder2Coord) {
 
         ImageView builder1, builder2;
 
@@ -368,25 +376,5 @@ public class GuiMap extends GameMap {
         StackPane cellBuilder2 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder2Coord));
         builder2 = (ImageView) cellBuilder2.getChildren().get(getBuilderIndexInStack(builder1Coord));
         Platform.runLater(() -> cellBuilder2.getChildren().remove(builder2));
-    }
-
-    /**
-     * Converts coordinates to the one-dimensional index with which children in tilePane are sorted
-     * @param coord coordinates to convert
-     * @return relative index
-     */
-    public int coordinatesToIndex(Coordinates coord) {
-        return coord.getI()* Gui.mapDimension + coord.getJ();
-    }
-
-    /**
-     * Converts one-dimentional index to coordinates i and j
-     * @param index index to convert
-     * @return relative coordinates
-     */
-    public Coordinates indexToCoord(int index) {
-        int j = index % Gui.mapDimension;
-        int i = index/Gui.mapDimension;
-        return new Coordinates(i,j);
     }
 }

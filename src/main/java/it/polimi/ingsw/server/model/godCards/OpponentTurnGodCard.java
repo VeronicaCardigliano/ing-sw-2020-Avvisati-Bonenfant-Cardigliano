@@ -98,8 +98,7 @@ public class OpponentTurnGodCard extends GodCard {
             }
 
         }
-
-            return allowed;
+        return allowed;
     }
 }
 
