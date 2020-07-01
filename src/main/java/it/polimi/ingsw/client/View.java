@@ -117,8 +117,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     public void notifyDisconnection() {connectionObserver.onDisconnection();}
 
     //build and move functions overridden by each specific UI
-    abstract public void build();
-    abstract public void move();
+    abstract protected void build();
+    abstract protected void move();
 
 
 
@@ -135,6 +135,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
      */
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
+        if(!result)
+            setState(ViewState.BUILD);
         possibleDstBuilder1forDome.clear();
         possibleDstBuilder2forDome.clear();
     }
@@ -153,7 +155,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
 
             if(getNickname().equals(nickname))
                 currentTurnBuilderPos = dst;
-        }
+        } else
+            setState(ViewState.MOVE);
 
     }
 
@@ -197,7 +200,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         this.possibleDstBuilder2forDome = new HashSet<>();
 
         setState(ViewState.MOVE);
-        //logger.askForAction(getState());
     }
 
     /**
@@ -212,7 +214,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         if(result)
             gameMap.setOccupiedCells(nickname, positionBuilder1, positionBuilder2);
         else
-
             setState(ViewState.BUILDERPLACEMENT);
     }
 

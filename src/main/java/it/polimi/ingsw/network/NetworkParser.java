@@ -1,6 +1,5 @@
 package it.polimi.ingsw.network;
 
-//Parses a string containing a json to evaluate e request coming from the view
 
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.json.JSONArray;
@@ -8,9 +7,12 @@ import org.json.JSONObject;
 
 import java.util.*;
 
+/**
+ * NetworkParser objects are created from JSONObject objects and offer different functions to parse the json String associated to the JSONObject
+ */
 public class NetworkParser {
 
-    private final JSONObject jsonObject;
+    private final JSONObject jsonObject; //JSONObject to parse
 
     public NetworkParser(String jsonString){
 

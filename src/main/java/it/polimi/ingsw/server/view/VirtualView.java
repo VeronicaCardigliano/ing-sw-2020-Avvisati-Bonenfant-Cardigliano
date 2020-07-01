@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class VirtualView extends ViewObservable implements Runnable {
 
-    private final int timeout = 0 * 1000;
     private boolean connected;
     private final int pingDelay = 2;
     private final Socket socket;
@@ -81,6 +80,7 @@ public class VirtualView extends ViewObservable implements Runnable {
     @Override
     public void run() {
         try {
+            int timeout = 10 * 1000;
             socket.setSoTimeout(timeout);
         } catch (SocketException e) {
             e.printStackTrace();
@@ -138,6 +138,9 @@ public class VirtualView extends ViewObservable implements Runnable {
             e.printStackTrace();
         }
 
+        System.out.println(socket.getRemoteSocketAddress() + " disconnected.");
+
+
         if(nickname != null)
             notifyDisconnection(nickname);
         else
@@ -146,10 +149,7 @@ public class VirtualView extends ViewObservable implements Runnable {
     }
 
     public void disconnect(){
-
-        System.out.println(socket.getRemoteSocketAddress() + " disconnected.");
         connected = false;
-
     }
 
     public void send(String message){

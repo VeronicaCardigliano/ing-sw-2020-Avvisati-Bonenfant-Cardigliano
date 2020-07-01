@@ -117,7 +117,7 @@ public class Cli extends View{
 
         boolean quit = false;
 
-        while(!quit) {
+        while (!quit) {
 
             input = in.nextLine();
 
@@ -141,10 +141,9 @@ public class Cli extends View{
                         case NUMPLAYERS:
                             setNumberOfPlayers(getInteger(input));
 
-                            synchronized (this) {
-                                notifyNumberOfPlayers(getNumberOfPlayers());
-                                setState(ViewState.WAITING);
-                            }
+                            notifyNumberOfPlayers(getNumberOfPlayers());
+                            setState(ViewState.WAITING);
+
                             break;
                         case NICKDATE:
                             setNickname(parser.nextLine());
@@ -156,10 +155,9 @@ public class Cli extends View{
 
                             setDate(in.nextLine());
 
-                            synchronized (this) {
-                                notifyNewPlayer(getNickname(), getDate());
-                                setState(ViewState.WAITING);
-                            }
+                            notifyNewPlayer(getNickname(), getDate());
+                            setState(ViewState.WAITING);
+
                             break;
 
                         case MATCHGODS:
@@ -177,31 +175,27 @@ public class Cli extends View{
                             printer.erase();
                             printer.print();
 
-                            synchronized (this) {
-                                notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
-                                setState(ViewState.WAITING);
-                            }
+                            notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
+                            setState(ViewState.WAITING);
+
                             break;
 
                         case STARTPLAYER:
-                            synchronized (this) {
-                                notifySetStartPlayer(getNickname(), getOption(getInteger(input)));
-                                setState(ViewState.WAITING);
-                            }
+                            notifySetStartPlayer(getNickname(), getOption(getInteger(input)));
+                            setState(ViewState.WAITING);
+
                             break;
 
                         case PLAYERGOD:
-                            synchronized (this) {
-                                notifyGodCardChoice(getNickname(), getOption(getInteger(input)));
-                                setState(ViewState.WAITING);
-                            }
+                            notifyGodCardChoice(getNickname(), getOption(getInteger(input)));
+                            setState(ViewState.WAITING);
+
                             break;
 
                         case BUILDERCOLOR:
-                            synchronized (this) {
-                                notifyColorChoice(getNickname(), getOption(getInteger(input)));
-                                setState(ViewState.WAITING);
-                            }
+                            notifyColorChoice(getNickname(), getOption(getInteger(input)));
+                            setState(ViewState.WAITING);
+
                             break;
 
                         case BUILDERPLACEMENT:
@@ -214,8 +208,7 @@ public class Cli extends View{
                                 if (parser.hasNext()) {                         //if parser buffer is not empty we just entered case branch.
                                     row = getInteger(input);                    //it however uses String input and not parser.
                                     parser.nextLine();                          //frees parser buffer.
-                                }
-                                else {
+                                } else {
                                     row = getInteger();
                                 }
 
@@ -231,17 +224,16 @@ public class Cli extends View{
                                 }
                             }
 
-                            synchronized (this) {
-                                notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
-                                setState(ViewState.WAITING);
-                            }
+
+                            notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
+                            setState(ViewState.WAITING);
+
                             break;
 
                         case STEP:
-                            synchronized (this) {
-                                notifyStepChoice(getNickname(), getOption(getInteger(input)));
-                                setState(ViewState.WAITING);
-                            }
+                            notifyStepChoice(getNickname(), getOption(getInteger(input)));
+                            setState(ViewState.WAITING);
+
                             break;
 
                         case MOVE:
@@ -281,9 +273,10 @@ public class Cli extends View{
 
             }
         }
-
-        System.out.println("You exited the game.");
-        System.exit(0);
+        synchronized (this) {
+            System.out.println("You exited the game.");
+            System.exit(0);
+        }
     }
 
 
@@ -324,7 +317,11 @@ public class Cli extends View{
         return new Coordinates(row, column);
     }
 
-
+    /**
+     * Asks user to insert coordinates of the builder to use.
+     * It keeps asking until a valid position is given
+     * @return coordinates of the valid builder position
+     */
     private Coordinates chooseTurnBuilder () {
         Coordinates src;
 
@@ -527,7 +524,6 @@ public class Cli extends View{
         Set<String> allColors = new HashSet<>(Set.of("MAGENTA", "WHITE", "LIGHT_BLUE"));
         allColors.removeAll(chosenColors);
 
-        setState(ViewState.BUILDERCOLOR);
         inputOptions = new ArrayList<>();
         inputOptions.addAll(allColors);
         printer.setChoiceList(getSetRepresentation(allColors));
@@ -567,7 +563,6 @@ public class Cli extends View{
 
         if(!result) {
             printer.setInfoMessage("Build failed");
-            setState(ViewState.BUILD);
         }
         else {
             gameMap.modifyHeight(dst, dome);
@@ -590,7 +585,6 @@ public class Cli extends View{
         if(!result) {
             printer.setInfoMessage("Move failed");
 
-            setState(ViewState.MOVE);
         }
         else {
             gameMap.setPossibleDst(null, null);
@@ -616,7 +610,6 @@ public class Cli extends View{
             printer.setAskMessage("ROW: ");
 
             chosenBuilderPositions = new ArrayList<>();
-            setState(ViewState.BUILDERPLACEMENT);
         }
         else {
             printer.erase();
@@ -800,8 +793,6 @@ public class Cli extends View{
         Set<Coordinates> possibleDstBuilder;
         boolean buildDome = false;
 
-        //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
-
         if (gameMap.getChosenBuilderNum() == 0)
             currentTurnBuilderPos = chooseTurnBuilder();
 
@@ -810,13 +801,11 @@ public class Cli extends View{
             printer.setAskMessage("Select what you want to build: insert 'D' for dome or 'B' for building: ");
             printer.print();
             buildType = in.nextLine().toUpperCase();
-            //checkLeaving(buildType);
 
             while (!(buildType.equals("D") || buildType.equals("B"))) {
                 printer.setAskMessage("Invalid insertion. Select what you want to build: insert 'D' for dome or 'B' for building ");
                 printer.print();
                 buildType = in.nextLine().toUpperCase();
-                //checkLeaving(buildType);
             }
         }
 
@@ -861,8 +850,6 @@ public class Cli extends View{
     public void move() {
 
         Set<Coordinates> possibleDstBuilder;
-
-        //gameMap.show(possibleDstBuilder1, possibleDstBuilder2, getChosenBuilderNum());
 
         if (gameMap.getChosenBuilderNum() == 0)
             currentTurnBuilderPos = chooseTurnBuilder();
@@ -914,7 +901,7 @@ public class Cli extends View{
     }
 
     @Override
-    public void onDisconnection() {
+    public synchronized void onDisconnection() {
         super.onDisconnection();
 
         setState(ViewState.CONNECTION);
@@ -925,6 +912,7 @@ public class Cli extends View{
         chosenBuilderPositions = new ArrayList<>();
         matchGodCards = new HashSet<>();
 
+        printer.erase();
         printer.setInfoMessage("Disconnecting");
         printer.print();
         printer.erase();
@@ -935,6 +923,7 @@ public class Cli extends View{
 
     @Override
     public void onOpponentDisconnection(String nickname) {
+        printer.erase();
         printer.setInfoMessage(nickname + " disconnected");
         printer.print();
     }

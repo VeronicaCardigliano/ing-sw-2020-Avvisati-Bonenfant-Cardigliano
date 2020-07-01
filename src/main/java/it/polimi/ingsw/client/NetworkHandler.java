@@ -27,6 +27,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
         BuilderSetupObserver, ColorChoiceObserver, GodCardChoiceObserver, NewPlayerObserver, NumberOfPlayersObserver,
         StepChoiceObserver, StartPlayerObserver {
 
+    private Socket socket;
     private PrintWriter out;
     private View view;
     private int port;
@@ -81,7 +82,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     @Override
     public void run() {
         try {
-            Socket socket = new Socket();
+            socket = new Socket();
 
             try {
                 //Read timeout
@@ -101,15 +102,19 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
             boolean connected = socket.isConnected();
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-            out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
-
+            BufferedReader in;
+            try {
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                notifyConnectionError(e.getMessage());
+                return;
+            }
 
             String message;
 
             try {
                 while (connected && (message = in.readLine()) != null) {
-
                     connected = handleMessage(message);
 
                 }
@@ -118,8 +123,6 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
             } finally {
 
-                in.close();
-                out.close();
                 socket.close();
 
                 notifyDisconnection();
@@ -132,7 +135,8 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
     }
 
     private void send(String message) {
-        out.println(message);
+        if(socket != null && socket.isConnected())
+            out.println(message);
     }
 
     /**
@@ -398,6 +402,7 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
      */
     @Override
     public void onDisconnection() {
+
         send(Messages.disconnect());
     }
 

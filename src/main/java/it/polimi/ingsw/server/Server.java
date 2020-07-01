@@ -5,7 +5,9 @@ import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.view.ViewManager;
 
 /**
- * Hello world!
+ * Server entry point.
+ * Contains main function that initializes Model, ViewManager,
+ * Controller and a listening Multithread server.
  *
  */
 public class Server
