@@ -7,10 +7,13 @@ import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 
+/**
+ * Generic button which extends Button class and can be created with more specific parameters
+ */
 public class GuiButton extends Button {
 
     /**
-     * This method creates a button given the following parameters:
+     * This method creates a button given the specific parameter
      * @param btnName name shown on the button
      * @param backgroundSrc background image of the button
      * @param handler what to do when the button is pressed

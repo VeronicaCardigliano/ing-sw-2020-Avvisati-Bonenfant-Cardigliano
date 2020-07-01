@@ -31,9 +31,17 @@ public class HomeScene extends Scene {
 
     private ImageView playBtn = new ImageView(new Image (getClass().getResourceAsStream(playButtonSrc)));
 
-    public HomeScene(Pane home, double v, double v1, TextField IPInsertion, TextField portInsertion) {
+    /**
+     * Creates a new HomeScene setting home pane children's properties and handlers on mouse events.
+     * @param home main pane
+     * @param width width of the scene
+     * @param height height of the scene
+     * @param IPInsertion TextField to insert the IP
+     * @param portInsertion TextField to insert the port
+     */
+    public HomeScene(Pane home, double width, double height, TextField IPInsertion, TextField portInsertion) {
 
-        super(home, v, v1);
+        super(home, width, height);
 
         home.prefWidthProperty().bind(home.widthProperty());
         home.prefHeightProperty().bind(home.heightProperty());

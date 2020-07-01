@@ -21,8 +21,7 @@ import java.util.*;
 /**
  * This class is a Stage which shows the cards contained in godCardsDescriptions keyValues(), used for
  * setup purpose, to choose match/player cards, and during the match to show matchGodCards powers.
- *
- * In the last case, it's important that the stage is unique, so a singleton pattern is used.
+ * In the latter case, it's important for the stage to be unique, so a singleton pattern is used.
  */
 public class GodCardsPopup extends Stage {
 
@@ -52,8 +51,8 @@ public class GodCardsPopup extends Stage {
 
     /**
      * The scene is composed by a VBox with:
-     * a labelVBox with different labels depending on maxSelection and so on the state of the match
-     * a tilePane with the cards
+     * a labelVBox with different labels depending on maxSelection and so on the state of the match,
+     * a tilePane with the cards,
      * a bottom anchor pane with a space to show errors and eventually a submit button
      * @param ownerStage the Stage on which the popup'll appear
      * @param maxSelections maximum number of cards that can be selected
@@ -144,7 +143,7 @@ public class GodCardsPopup extends Stage {
     }
 
     /**
-     * Adds a Text which'll show error messages if still not present
+     * Adds a Text which'll show error messages
      * @param node text node
      */
     protected void addErrorMessage(Text node) {
@@ -152,15 +151,17 @@ public class GodCardsPopup extends Stage {
     }
 
     /**
+     * Lets you know if a node is present in the bottom pane
      * @param node node to search for
-     * @return true if the node is present in the bottomPane of the stage
+     * @return true if the node is present in the bottomPane (AnchorPane) of the stage
      */
     protected boolean isPresentOnBottom (Node node) {
         return bottomPane.getChildren().contains(node);
     }
 
     /**
-     * @return the submit button used to set the handler of an event from outside of the class
+     * Method which returns the submit button. Can be used, for example, to set the handler of an event from outside the class.
+     * @return the submit button of the stage
      */
     protected Button getSubmit() {
         return submit;

@@ -12,12 +12,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
+/**
+ * Game over message created in the end of the match to show if the player has lost or won
+ */
 public class EndGameMessage {
 
     Button playAgainBtn;
 
     /**
-     * End game message of victory or loss with a button to eventually play again.
+     * Creates end game message of victory or loss with a button to eventually play again.
      * @param message string to print
      */
     public EndGameMessage(String message, Color color, Pane ownerPane, EventHandler<MouseEvent> handler) {

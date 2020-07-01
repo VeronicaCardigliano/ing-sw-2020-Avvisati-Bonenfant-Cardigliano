@@ -22,6 +22,7 @@ import java.util.*;
  */
 public class GuiMap extends GameMap {
 
+    //index of the building in the StackPane which represents the cell
     private static final int buildingIndexInStack = 0;
     private static final int builderIndexInStack = 1;
     private static final double cellDimension = 78.0;
@@ -99,10 +100,10 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * @param cellStackCoord stackPane of the cell
-     * @return the position of the current index in the cell StackPane
+     * Returns the position(index) of the builder in the StackPane (cell)
+     * @param cellStackCoord coordinates of the cell with the builder
      */
-    protected int getCurBuilderIndexInStack(Coordinates cellStackCoord) {
+    protected int getBuilderIndexInStack(Coordinates cellStackCoord) {
         int result = 0;
         if (getHeight(cellStackCoord) != 0)
             result = builderIndexInStack;
@@ -152,7 +153,7 @@ public class GuiMap extends GameMap {
 
         StackPane oldBuilderCell = (StackPane) tile.getChildren().get(coordinatesToIndex(builderCell));
 
-        int currBuilderIndexStack = getCurBuilderIndexInStack(builderCell);
+        int currBuilderIndexStack = getBuilderIndexInStack(builderCell);
         ImageView builder = (ImageView) oldBuilderCell.getChildren().get(currBuilderIndexStack);
         builder.setOpacity(1);
     }
@@ -161,7 +162,7 @@ public class GuiMap extends GameMap {
      * This method creates a new building based on reached height and puts it in the right destination.
      * @param dstIndex index of the destination of the build
      * @param buildDome this flag is true when a dome has to be built
-     * @param nickname currPlayer who has built
+     * @param nickname currPlayer who has built, to check if there's already a player in the build destination
      */
     public void createBuilding(int dstIndex, boolean buildDome, String nickname) {
         ImageView newBuilding = null;
@@ -227,7 +228,7 @@ public class GuiMap extends GameMap {
     protected void moveBuilder (int src, int dst) {
 
         int builderIndex;
-        builderIndex= getCurBuilderIndexInStack(indexToCoord(src));
+        builderIndex= getBuilderIndexInStack(indexToCoord(src));
         StackPane sourceCell = (StackPane) tile.getChildren().get(src);
         ImageView builderToMove = (ImageView) sourceCell.getChildren().get(builderIndex);
         Platform.runLater(() -> sourceCell.getChildren().remove(builderToMove));
@@ -260,7 +261,7 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * Small method to set the onMouseClicked handler for the effective possible destinations of move/build after the turn
+     * Small method to set the MouseClicked event handler for the effective possible destinations of move/build after the turn
      * builder choice.
      * @param possibleDst set of possible destinations
      * @param event event handler to manage the choice
@@ -274,7 +275,7 @@ public class GuiMap extends GameMap {
 
     /**
      * Shows the possible destinations for a move, can be called before the builder choice or after.
-     * If the builder has been chosen
+     * If the builder has been chosen, event handles the actions when a possibleDst is clicked
      * @param event handles the actions when a possibleDst is clicked
      */
     protected void showPossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
@@ -298,7 +299,7 @@ public class GuiMap extends GameMap {
 
     /**
      * Shows the possible destinations for a build, can be called before the builder/dome choice or after.
-     * PossibleDst sets are set to null if they're not to be considered, same for event in case the builder hasn't been chosen.
+     * PossibleDst sets have to be set to null if they're not to be considered, same for event in case the builder hasn't been chosen yet.
      */
     protected void showPossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
                                      Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome,
@@ -361,11 +362,11 @@ public class GuiMap extends GameMap {
         ImageView builder1, builder2;
 
         StackPane cellBuilder1 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder1Coord));
-        builder1 = (ImageView) cellBuilder1.getChildren().get(getCurBuilderIndexInStack(builder1Coord));
+        builder1 = (ImageView) cellBuilder1.getChildren().get(getBuilderIndexInStack(builder1Coord));
         Platform.runLater(() -> cellBuilder1.getChildren().remove(builder1));
 
         StackPane cellBuilder2 = (StackPane) tile.getChildren().get(coordinatesToIndex(builder2Coord));
-        builder2 = (ImageView) cellBuilder2.getChildren().get(getCurBuilderIndexInStack(builder1Coord));
+        builder2 = (ImageView) cellBuilder2.getChildren().get(getBuilderIndexInStack(builder1Coord));
         Platform.runLater(() -> cellBuilder2.getChildren().remove(builder2));
     }
 
@@ -379,7 +380,9 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * Converts one-dimentional index to coordinates
+     * Converts one-dimentional index to coordinates i and j
+     * @param index index to convert
+     * @return relative coordinates
      */
     public Coordinates indexToCoord(int index) {
         int j = index % Gui.mapDimension;

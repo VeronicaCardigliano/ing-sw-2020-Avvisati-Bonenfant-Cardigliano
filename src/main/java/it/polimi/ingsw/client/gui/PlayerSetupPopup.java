@@ -14,7 +14,7 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
 /**
- * Creates a new window with two Text and TextField objects for the insertion of nickname and date and a submit button
+ * Subclass of Stage with two Text and TextField objects for the insertion of nickname and date and a submit button
  */
 public class PlayerSetupPopup extends Stage {
 
@@ -79,21 +79,24 @@ public class PlayerSetupPopup extends Stage {
     }
 
     /**
-     * @return the submit button used to set the handler of an event from outside of the class
+     * Method which returns the submit button. Can be used, for example, to set the handler of an event from outside the class.
+     * @return the submit button of the stage
      */
     protected Button getSubmit() {
         return submit;
     }
 
     /**
-     * @param node node to be added to the main pane of the stage
+     * Adds a node to the main pane of the Stage (to the anchorPane)
+     * @param node node to insert
      */
     protected void addChildren(Node node) {
         Platform.runLater(() -> anchorPane.getChildren().add(node));
     }
 
     /**
-     * @param node node of which I wonder if present in the main pane of the stage
+     * Lets you know if a node is present in the main pane of the stage.
+     * @param node node you want to know if present
      * @return true if the node is present, false otherwise
      */
     protected boolean isChildPresent(Node node) {

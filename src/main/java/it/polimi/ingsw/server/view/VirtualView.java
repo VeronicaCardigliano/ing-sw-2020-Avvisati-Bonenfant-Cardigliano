@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class VirtualView extends ViewObservable implements Runnable {
 
-    private final int timeout = 10 * 1000;
+    private final int timeout = 0 * 1000;
     private boolean connected;
     private final int pingDelay = 2;
     private final Socket socket;

@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author veronica
+ *
  * Graphical User Interface which extends the abstract class View, to share methods and attributes with Cli
  */
 public class Gui extends View {
@@ -616,7 +617,7 @@ public class Gui extends View {
 
                 int currBuilderIndexStack;
                 StackPane tmp = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coord));
-                currBuilderIndexStack = gameMap.getCurBuilderIndexInStack(coord);
+                currBuilderIndexStack = gameMap.getBuilderIndexInStack(coord);
 
                 tmp.getChildren().get(currBuilderIndexStack).setOnMouseEntered(mouseEvent -> {
                     ImageView builderToHandle = (ImageView) mouseEvent.getSource();
@@ -643,12 +644,12 @@ public class Gui extends View {
                     Coordinates coordOfSecondBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
                     StackPane secondBuilderCell = (StackPane) tile.getChildren().get(gameMap.coordinatesToIndex(coordOfSecondBuilderCell));
 
-                    int currentBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
+                    int currentBuilderIndexInStack = gameMap.getBuilderIndexInStack(coordOfFirstBuilderCell);
 
                     //if the clicked builder is the first one, I reset the not clicked one (second one)
                     if (firstBuilderCell.getChildren().get(currentBuilderIndexInStack).equals(clickedBuilder)) {
 
-                        int secondBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfSecondBuilderCell);
+                        int secondBuilderIndexInStack = gameMap.getBuilderIndexInStack(coordOfSecondBuilderCell);
 
                         secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseClicked(null);
                         secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseEntered(null);
@@ -657,7 +658,7 @@ public class Gui extends View {
                     }
                     else {
 
-                        int firstBuilderIndexInStack = gameMap.getCurBuilderIndexInStack(coordOfFirstBuilderCell);
+                        int firstBuilderIndexInStack = gameMap.getBuilderIndexInStack(coordOfFirstBuilderCell);
                         firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseClicked(null);
                         firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseEntered(null);
                         currentTurnBuilderPos = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
