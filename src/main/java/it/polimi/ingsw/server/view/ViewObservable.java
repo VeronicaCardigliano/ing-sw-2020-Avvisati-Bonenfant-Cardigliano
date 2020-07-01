@@ -13,25 +13,8 @@ public abstract class ViewObservable {
     NumberOfPlayersObserver numberOfPlayersObserver;
     StepChoiceObserver stepChoiceObserver;
     BuilderSetupObserver builderSetupObserver;
-    //DisconnectionObserver disconnectionObserver;
     GodCardChoiceObserver godCardChoiceObserver;
     StartPlayerObserver startPlayerObserver;
-
-
-    public void setObservers(Object o) {
-        setBuilderBuildObserver((BuilderBuildObserver) o);
-        setBuilderMoveObserver((BuilderMoveObserver) o);
-        setColorChoiceObserver((ColorChoiceObserver) o);
-        setNewPlayerObserver( (NewPlayerObserver) o);
-        setNumberOfPlayersObserver((NumberOfPlayersObserver) o);
-        setStepChoiceObserver((StepChoiceObserver) o);
-        setBuilderSetupObserver((BuilderSetupObserver) o);
-        //setDisconnectionObserver((DisconnectionObserver) o);
-        setGodCardChoiceObserver((GodCardChoiceObserver) o);
-        setStartPlayerObserver((StartPlayerObserver) o);
-
-    }
-
 
     public void setStartPlayerObserver(StartPlayerObserver o) { startPlayerObserver = o;}
 
@@ -62,10 +45,6 @@ public abstract class ViewObservable {
     public void setBuilderSetupObserver(BuilderSetupObserver o) {
         builderSetupObserver = o;
     }
-
-    /*public void setDisconnectionObserver(DisconnectionObserver o) {
-        disconnectionObserver = o;
-    }*/
 
     public void setGodCardChoiceObserver(GodCardChoiceObserver o) {
         godCardChoiceObserver = o;
@@ -119,21 +98,6 @@ public abstract class ViewObservable {
         else
             System.out.println("builder setup observer is not set");
     }
-
-    /*protected void notifyDisconnection(String player) {
-        if(disconnectionObserver != null)
-            disconnectionObserver.onDisconnection(player);
-        else
-            System.out.println("disconnection observer is not set");
-    }
-
-    protected void notifyEarlyDisconnection(VirtualView view) {
-        if(disconnectionObserver != null)
-            disconnectionObserver.onEarlyDisconnection(view);
-        else
-            System.out.println("early disconnection observer is not set");
-
-    }*/
 
     protected void notifyGodCardChoice(String player, String godCard) {
         if(godCardChoiceObserver != null)

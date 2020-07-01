@@ -117,9 +117,10 @@ public class Gui extends View {
 
         homeScene.getPlayBtn().setOnMouseClicked(mouseEvent -> {
             try {
-                int portNum = Integer.parseInt(portInsertion.getText());
-                notifyConnection(IPInsertion.getText(), portNum);
-                homeScene.getPlayBtn().setOnMouseClicked(null);
+                if (getState().equals(ViewState.CONNECTION)) {
+                    int portNum = Integer.parseInt(portInsertion.getText());
+                    notifyConnection(IPInsertion.getText(), portNum);
+                }
             }
             catch (NumberFormatException e) {
                 onConnectionError("WRONG FORMAT: Insert an Integer as port value");
@@ -174,7 +175,7 @@ public class Gui extends View {
         primaryStage.minWidthProperty().bind(home.heightProperty().multiply((double)sceneWidth/sceneHeight));
         primaryStage.minHeightProperty().bind(home.widthProperty().divide((double)sceneWidth/sceneHeight));
 
-        primaryStage.widthProperty().addListener((o, oldValue, newValue)->{
+        primaryStage.widthProperty().addListener((o, oldValue, newValue)-> {
             if(newValue.intValue() < minSceneWidth) {
                 primaryStage.setResizable(false);
                 primaryStage.setWidth(minSceneWidth);
@@ -399,8 +400,8 @@ public class Gui extends View {
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
 
         super.chooseMatchGodCards(numOfPlayers, godDescriptionsParam);
-        challenger = true;
 
+        challenger = true;
         Platform.runLater(() -> {
             godCardsPopup = GodCardsPopup.getInstance(primaryStage, numOfPlayers, godDescriptionsParam,
                     windowEvent -> popupClosing(godCardsPopup, windowEvent));
@@ -423,14 +424,15 @@ public class Gui extends View {
     public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenCards) {
 
         super.askGodCard(godDescriptions, chosenCards);
+
         if (godCardsPopup != null)
             godCardsPopup.resetPopup();
-        matchGodCards = godDescriptions;
-        Map<String, String> availableGods = new HashMap<>();
 
+        matchGodCards = godDescriptions;
+
+        Map<String, String> availableGods = new HashMap<>();
         for(String godName : godDescriptions.keySet().stream().filter(godName -> !chosenCards.contains(godName)).collect(Collectors.toSet()))
             availableGods.put(godName, godDescriptions.get(godName));
-
 
         Platform.runLater(() -> {
             godCardsPopup = GodCardsPopup.getInstance(primaryStage, godsForPlayer, availableGods,
@@ -545,6 +547,8 @@ public class Gui extends View {
      */
     @Override
     public void chooseNextStep (Set<String> possibleSteps) {
+
+        super.chooseNextStep(possibleSteps);
 
         Label chooseStep = new Label ("Choose the next step: ");
         chooseStep.setFont(new Font("Arial", fontSize));
@@ -831,6 +835,7 @@ public class Gui extends View {
         if(result) {
             if (getNickname().equals(nickname))
                 gameMap.resetPossibleDestinations();
+
             gameMap.createBuilding(gameMap.coordinatesToIndex(dst), dome, nickname);
         }
 
@@ -849,7 +854,7 @@ public class Gui extends View {
      */
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
-
+        //TODO:super
         if(result) {
             if(getNickname().equals(nickname)) {
                 currentTurnBuilderPos = dst;
@@ -882,6 +887,7 @@ public class Gui extends View {
     @Override
     public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2,
                                        Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
+
 
         super.updatePossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2,possibleDstBuilder1forDome, possibleDstBuilder2forDome);
         buildDome = false;

@@ -53,36 +53,7 @@ public class NetworkParser {
 
 
     public String getDate() {
-        /*String date = jsonObject.getString(Messages.DATE);
-
-        List<String> components = Arrays.asList(date.split("\\."));
-
-        int thisYear = Integer.parseInt(new SimpleDateFormat("yyyy").format(new Date()));
-        int thisMonth = Integer.parseInt(new SimpleDateFormat("MM").format(new Date()));
-        int thisDay = Integer.parseInt(new SimpleDateFormat("dd").format(new Date()));
-
-        int inputYear, inputMonth, inputDay;
-
-        //MUST VERIFY THAT DATE CONTAINS ONLY DOTS AND NUMBERS
-        if (date.matches("\\d{4}\\.\\d{2}\\.\\d{2}")){
-            inputYear = Integer.parseInt(components.get(0));
-            inputMonth = Integer.parseInt(components.get(1));
-            inputDay = Integer.parseInt(components.get(2));
-
-            if (inputYear > 0) {
-                if (inputYear < thisYear)
-                    return date;
-                else if (inputYear == thisYear)
-                    if (inputMonth < thisMonth && inputMonth > 0 && inputMonth < 13)
-                        if (inputDay < thisDay && inputDay > 0 && inputDay < 31)
-                            return date;
-                //SHOULD SWITCH CASE TO VERIFY THAT DAY IS CORRECT
-            }
-        }
-        throw new JSONException("");*/
-
         return jsonObject.getString(Messages.DATE);
-
     }
 
     public boolean getResult() {
@@ -99,7 +70,6 @@ public class NetworkParser {
 
     /**
      * create a Set of Coordinates from a JSONArray
-     * @return
      */
     private Set<Coordinates> fromJSONArray(JSONArray array) {
         Set<Coordinates> set = new HashSet<>();
@@ -121,7 +91,6 @@ public class NetworkParser {
         return list;
 
     }
-
 
     public ArrayList<Set<Coordinates>> getCoordSetList() {
         JSONArray arr = jsonObject.getJSONArray(Messages.POSSIBLE_DST);

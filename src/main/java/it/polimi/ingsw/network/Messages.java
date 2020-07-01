@@ -35,15 +35,6 @@ public abstract class Messages {
     public static final String PING = "ping";
     public static final String PONG = "pong";
 
-    public static final String PARSE_ERROR_COLOR = "parseErrorColor";
-    public static final String PARSE_ERROR_MOVE = "parseErrorMove";
-    public static final String PARSE_ERROR_BUILD = "parseErrorBuild";
-    public static final String PARSE_ERROR_GOD = "parseErrorGod";
-    public static final String PARSE_ERROR_STEP_CHOICE = "parseErrorStepChoice";
-    public static final String PARSE_ERROR_BUILDERS = "parseErrorBuilders";
-    public static final String PARSE_ERROR_NUMBER = "parseErrorNumber";
-    public static final String PARSE_ERROR_PLAYER = "parseErrorPlayer";
-
     public static final String COLOR_UPDATE = "colorUpdate";
     public static final String TURN_UPDATE = "turnUpdate";
     public static final String LOST_UPDATE = "lostUpdate";
@@ -82,10 +73,7 @@ public abstract class Messages {
     public static final String GOD_DESCRIPTIONS = "godDescriptions";        //for ASK_GOD
     public static final String CHOSEN_GOD_CARDS = "chosenGodCards";         //for ASK_GOD
     public static final String CHOSEN_COLORS = "chosenColors";              //for ASK_COLOR
-    public static final String MESSAGE = "message";                         //for PLAYER_DISCONNECTED
     public static final String PLAYERS = "players";                         //for CHOOSE_START_PLAYER
-
-
 
 
     private static JSONObject fromCoordinates(Coordinates coord) {
@@ -104,7 +92,6 @@ public abstract class Messages {
         return array;
     }
 
-
     public static String possibleBuildDestinations(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
         JSONObject message = new JSONObject();
         message.put(TYPE, POSSIBLE_BUILD_DESTINATIONS);
@@ -118,7 +105,6 @@ public abstract class Messages {
         message.put(POSSIBLE_DST, possibleDst);
 
         return message.toString();
-
     }
 
     public static String possibleMoveDestinations(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
@@ -130,7 +116,6 @@ public abstract class Messages {
         possibleDst.put(fromCollection(possibleDstBuilder2));
 
         message.put(POSSIBLE_DST, possibleDst);
-
 
         return message.toString();
     }
@@ -158,12 +143,6 @@ public abstract class Messages {
         return message.toString();
     }
 
-    /**
-     * Used
-     * @param src
-     * @param dst
-     * @return
-     */
     public static String move(String nickname, Coordinates src, Coordinates dst) {
         JSONObject message = new JSONObject();
         message.put(TYPE, MOVE);
@@ -174,7 +153,6 @@ public abstract class Messages {
         return message.toString();
     }
 
-
     public static String move(String nickname, Coordinates src, Coordinates dst, boolean result) {
 
         return (new JSONObject(move(nickname,src, dst))).put(RESULT, result).toString();
@@ -183,7 +161,6 @@ public abstract class Messages {
     public static String builderPushed(String nickname, Coordinates src, Coordinates dst) {
         return (new JSONObject()).put(TYPE, BUILDER_PUSHED).put(NAME, nickname).put(SRC, fromCoordinates(src)).put(DST, fromCoordinates(dst)).toString();
     }
-
 
     public static String build(String nickname, Coordinates src, Coordinates dst, boolean buildDome) {
         JSONObject message = new JSONObject();
@@ -200,7 +177,6 @@ public abstract class Messages {
 
         return (new JSONObject(build(nickname, src, dst, buildDome))).put(RESULT, result).toString();
     }
-
 
     public static String buildersPlacement(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         return (new JSONObject(buildersPlacement(nickname, positionBuilder1, positionBuilder2))).put(RESULT, result).toString();
@@ -223,8 +199,6 @@ public abstract class Messages {
     public static String disconnect() {
         return (new JSONObject()).put(TYPE, DISCONNECT).toString();
     }
-
-
 
     public static String stepChoice(String nickname, String choice, boolean result) {
         return (new JSONObject(stepChoice(nickname, choice))).put(RESULT, result).toString();
@@ -307,7 +281,6 @@ public abstract class Messages {
         return (new JSONObject()).put(TYPE, SET_START_PLAYER).put(NAME, nickname).toString();
     }
 
-
     public static String turnUpdate(String nickname){
         return (new JSONObject()).put(TYPE, TURN_UPDATE).put(NAME, nickname).toString();
     }
@@ -327,7 +300,6 @@ public abstract class Messages {
     public static String playerAdded(String nickname, boolean result) {
         return (new JSONObject()).put(TYPE, PLAYER_ADDED).put(NAME, nickname).put(RESULT, result).toString();
     }
-
 
     public static String godCardAssigned(String nickname, String godCard, boolean result){
         return (new JSONObject()).put(TYPE, GOD_CARD_ASSIGNED).put(NAME, nickname).put(GOD_CARD, godCard).put(RESULT, result).toString();
@@ -358,8 +330,8 @@ public abstract class Messages {
         message.put(NAME, nickname);
 
         return message.toString();
-
     }
+
     //--------------------------------
     //KEEP-ALIVE Connection Messages
 
@@ -375,21 +347,4 @@ public abstract class Messages {
     public static String errorNumber(){
         return (new JSONObject()).put(TYPE, ERROR_NUMBER).toString();
     }
-
-    public static String parseErrorNumber() {return (new JSONObject()).put(TYPE, PARSE_ERROR_NUMBER).toString();}
-
-    public static String parseErrorColor() {return (new JSONObject()).put(TYPE, PARSE_ERROR_COLOR).toString();}
-
-    public static String parseErrorMove() {return (new JSONObject()).put(TYPE, PARSE_ERROR_MOVE).toString();}
-
-    public static String parseErrorBuild() {return (new JSONObject()).put(TYPE, PARSE_ERROR_BUILD).toString();}
-
-    public static String parseErrorGod() {return (new JSONObject()).put(TYPE, PARSE_ERROR_GOD).toString();}
-
-    public static String parseErrorBuilders() {return (new JSONObject()).put(TYPE, PARSE_ERROR_BUILDERS).toString();}
-
-    public static String parseErrorStepChoice() {return (new JSONObject()).put(TYPE, PARSE_ERROR_STEP_CHOICE).toString();}
-
-    public static String parseErrorPlayer() {return (new JSONObject()).put(TYPE, PARSE_ERROR_PLAYER).toString();}
-
 }
