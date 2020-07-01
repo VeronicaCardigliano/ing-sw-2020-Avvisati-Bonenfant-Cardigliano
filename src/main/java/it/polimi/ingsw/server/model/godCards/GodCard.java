@@ -2,22 +2,23 @@ package it.polimi.ingsw.server.model.godCards;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.Event;
+import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
 
 
 /**
- * @author thomas
- *
  * Generic Card associated to a god. Every Card has a corresponging json file with all its properties.
  * GodCard manages move and build logic interacting with the IslandBoard gameMap.
  */
 public class GodCard {
-    public static int maxHeightDifference = 1;
+    public static final int maxHeightDifference = 1;
     private final String name;
     private final String description;
     protected final Player player;
@@ -53,7 +54,6 @@ public class GodCard {
     }
 
     /**
-     * @author thomas
      * Has to be called when the player associated to this card starts his turn.
      * It creates a copy of the states array to consume during the turn.
      */
@@ -76,12 +76,15 @@ public class GodCard {
 
         for (Builder  b : player.getBuilders()){
             currBuilder = b;
-                filterNextState();
+            //Hold most populated list
+            ArrayList tmpArray = new ArrayList(currStateList);
+            filterNextState();
+            if (currStateList.size() < tmpArray.size())
+                currStateList = tmpArray;
         }
 
         currBuilder = null;
 
-        //activate pending constraint
         if(gameMap == null)
             throw new RuntimeException("GameMap has to be set before starting turn.");
         gameMap.loadConstraint();
@@ -150,6 +153,33 @@ public class GodCard {
         filterNextState();
     }
 
+    public Set<Coordinates> findBuilderPossibleDest(Builder builder, boolean buildDome){
+        Set<Coordinates> possibleDstBuilder = new HashSet<>();
+        Coordinates src = builder.getCell();
+        int x, y;
+        int i_src = src.getI();
+        int j_src = src.getJ();
+        for (x = 0; x < IslandBoard.dimension; x++)
+            for (y = 0; y < IslandBoard.dimension; y++){
+
+                switch (currState) {
+                    case "MOVE":
+                        if (askMove(i_src,
+                                j_src, x, y)) {
+                            possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
+                        }
+                        break;
+
+                    case "BUILD":
+                        if (askBuild(i_src, j_src, x, y, buildDome)) {
+                            possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
+                        }
+                        break;
+                }
+            }
+        return possibleDstBuilder;
+    }
+
 
     private void filterNextState(){
         if (currStateList.size()>1){
@@ -168,14 +198,13 @@ public class GodCard {
 
                             switch (step) {
                                 case "MOVE":
-                                    if (IslandBoard.distanceOne(i_src, j_src, x, y) && askMove(i_src, j_src, x, y)) {
+                                    if (askMove(i_src, j_src, x, y)) {
                                         canMove = true;
                                     }
                                     break;
 
                                 case "BUILD":
-                                    if ((x == i_src && y == j_src || IslandBoard.distanceOne(i_src, j_src, x, y)) &&
-                                            (askBuild(i_src, j_src, x, y, false) || askBuild(i_src, j_src, x, y, true))) {
+                                    if ((askBuild(i_src, j_src, x, y, false) || askBuild(i_src, j_src, x, y, true))) {
                                         canBuild = true;
                                     }
                                     break;

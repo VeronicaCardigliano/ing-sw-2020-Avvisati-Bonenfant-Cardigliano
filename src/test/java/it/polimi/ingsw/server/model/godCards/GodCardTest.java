@@ -299,10 +299,10 @@ class GodCardTest {
         //builder 5 can only perform a build
         opponentGodCard2.startTurn();
 
-        assertEquals(1, opponentGodCard2.currStateList.size());
+        assertEquals(2, opponentGodCard2.currStateList.size());
         assertTrue(opponentGodCard2.currStateList.contains("BUILD"));
-        assertEquals("BUILD", opponentGodCard2.currState);
-        assertFalse(opponentGodCard2.currStateList.contains("MOVE"));
+        assertEquals("REQUIRED", opponentGodCard2.currState);
+        assertTrue(opponentGodCard2.currStateList.contains("MOVE"));
         assertNotEquals("END", opponentGodCard2.currState);
 
     }

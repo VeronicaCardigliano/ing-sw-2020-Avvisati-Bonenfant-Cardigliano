@@ -21,7 +21,7 @@ public class OpponentTurnGodCard extends GodCard {
 
     /**
      * GodCard constructor. Parses JSON
-     * @param player     whose card is
+     * @param player whose card is
      */
     public OpponentTurnGodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states,
                                Map<String, Boolean> flagParameters, Map<String, Integer> intParameters) {
@@ -72,7 +72,10 @@ public class OpponentTurnGodCard extends GodCard {
         return result;
     }
 
-    //TODO javadoc
+    /**
+     * Check an event given card constraints
+     * @return True if no constrain conflict with the input Event
+     */
     public boolean checkFutureEvent(Event futureEvent) {
         boolean allowed = true;
 

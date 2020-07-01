@@ -96,6 +96,10 @@ public class IslandBoard {
         constraintsList.remove(card);
     }
 
+    /**
+     * Check if given an event a constrain is activated or not
+     * @param event Event to check
+     */
     public boolean check(Event event) {
         boolean allowed = true;
         for(OpponentTurnGodCard constraintCard : constraintsList)

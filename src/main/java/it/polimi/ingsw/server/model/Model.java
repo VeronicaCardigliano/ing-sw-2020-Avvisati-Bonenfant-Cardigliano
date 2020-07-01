@@ -100,6 +100,10 @@ public class Model extends ModelObservableWithSelect {
         currStep = currPlayer.getGodCard().getCurrState().toUpperCase();
     }
 
+    public void loadConstrain(){
+        gameMap.loadConstraint();
+    }
+
     public String getStartPlayerNickname() {return startPlayerNickname;}
 
     public void setStartPlayerNickname(String startPlayerNickname) {this.startPlayerNickname = startPlayerNickname;}
@@ -308,7 +312,7 @@ public class Model extends ModelObservableWithSelect {
 
 
     /**
-     * @param matchGodCards Set of god cards the challenger has chosen
+     * @param matchGodCards Set of god cards the challenger has chose
      */
     public boolean setMatchCards(Set<String> matchGodCards) {
         boolean set = true;
@@ -327,7 +331,7 @@ public class Model extends ModelObservableWithSelect {
     }
 
 
-    /** This method is used to assign a god card to a player
+    /** This method used to assign a god card to a player
      * @param chosenGodCard Name of the GodCard the current player has chosen
      * @return False if the god card doesn't exist or isn't in the list of the available ones
      */
@@ -390,7 +394,7 @@ public class Model extends ModelObservableWithSelect {
     }
 
 
-    /** Assigns a color to the current player and to all his builders. Gives an error whether the player choose a
+    /** Assign a color to the current player and to all his builders. Gives an error whether the player choose a
      * different color from the ones available
      * @param chosenColor Name of the chosen color
      */
@@ -428,7 +432,7 @@ public class Model extends ModelObservableWithSelect {
 
 
     /**
-     * Places builders of the current player on the game map
+     * Place builders of the current player on the game map
      * @param builder1Coord Coordinates where place first builder
      * @param builder2Coord Coordinates where place second builder
      * @return True if builders are placed
@@ -476,51 +480,23 @@ public class Model extends ModelObservableWithSelect {
 
 
     /**
-     * Finds the possible destinations for both the builders of the current player
+     * Find the possible destinations for both the builders of the current player
      * @param builderIndex index of the Builder x of the currentPlayer
      * @return the possible destination cells for a MOVE
      */
     public Set<Coordinates> possibleDstCells (int builderIndex, boolean buildDome) {
-        Set<Coordinates> possibleDstBuilder = new HashSet<>();
         Builder builder = currPlayer.getBuilders().get(builderIndex);
-
         notifyViewSelection(currPlayer.getNickname());
-
-        Coordinates src = builder.getCell();
-        int x, y;
-        int i_src = src.getI();
-        int j_src = src.getJ();
-        for (x = 0; x < IslandBoard.dimension; x++)
-            for (y = 0; y < IslandBoard.dimension; y++){
-
-                switch (currStep) {
-                    case "MOVE":
-                        if (currPlayer.getGodCard().askMove(i_src,
-                            j_src, x, y)) {
-                            possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
-                        }
-                        break;
-
-                    case "BUILD":
-                        if (currPlayer.getGodCard().askBuild(i_src, j_src, x, y, buildDome)) {
-                            possibleDstBuilder.add(new Coordinates(gameMap.getCell(x, y)));
-                        }
-                        break;
-                }
-            }
-        return possibleDstBuilder;
+        return currPlayer.getGodCard().findBuilderPossibleDest(builder, buildDome);
     }
 
     /**
      * This method is called after every move to control if the current player has lost
      */
     public boolean hasNotLostDuringMove() {
-
         if (chosenBuilder == null)
             return !possibleDstBuilder1.isEmpty() || !possibleDstBuilder2.isEmpty();
-
         else {
-
             if (chosenBuilder.equals(currPlayer.getBuilders().get(firstBuilderIndex)))
                 return !possibleDstBuilder1.isEmpty();
             else
@@ -532,13 +508,10 @@ public class Model extends ModelObservableWithSelect {
      * This method is called after every build to control if the current player has lost
      */
     public boolean hasNotLostDuringBuild() {
-
         if (chosenBuilder == null)
             return !possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty() ||
                     !possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty();
-
         else {
-
             if (chosenBuilder.equals(currPlayer.getBuilders().get(firstBuilderIndex)))
                 return !possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty();
             else

@@ -150,6 +150,8 @@ public class Controller extends AbstractController implements ConnectionObserver
         if (model.getCurrState() == Model.State.SETUP_BUILDERS && model.getCurrPlayer().equals(nickname))
             if (model.setCurrPlayerBuilders(builder1, builder2)){
                 model.setNextPlayer();
+                //used to initialize constrains if necessary
+                    model.loadConstrain();
 
                 if (model.getCurrPlayer().equals(model.getStartPlayerNickname())) {
                     model.setNextState();
@@ -266,14 +268,16 @@ public class Controller extends AbstractController implements ConnectionObserver
 
     /**
      * If a player has lost it gets removed and the next player is picked. After that another check is called
-     * recursively
+     * recursively. If there are 3 or more players only the server sends a message to show that the current player
+     * has lost, otherwise and end game message is sent.
      */
     private void checkHasLost(){
         model.findPossibleDestinations();
         if (!model.hasNotLostDuringMove() || !model.hasNotLostDuringBuild()){
             String playerToRemove = model.getCurrPlayer();
             model.setNextPlayer();
-            model.notifyLoss(playerToRemove);
+            if (model.getPlayers().size()>2)
+                model.notifyLoss(playerToRemove);
             model.deletePlayer(playerToRemove);
             if (model.endGame()) {
                 viewManager.removeAndDisconnectAll();

@@ -1253,7 +1253,6 @@ public class Gui extends View {
         ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         alert.getDialogPane().getButtonTypes().add(yes);
         alert.getDialogPane().getButtonTypes().add(cancel);
-
         alert.setTitle("Quit");
         alert.setHeaderText("Closing this window you'll leave the game");
         alert.setContentText("Do you want to quit?");
