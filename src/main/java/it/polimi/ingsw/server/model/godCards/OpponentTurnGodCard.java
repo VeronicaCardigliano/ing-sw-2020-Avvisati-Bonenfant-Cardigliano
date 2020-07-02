@@ -31,7 +31,6 @@ public class OpponentTurnGodCard extends GodCard {
         this.blockMoveUp = flagParameters.get("blockMoveUp");
         this.limusPower = flagParameters.get("limusPower");
         this.alwaysActive = flagParameters.get("alwaysActive");
-
     }
 
     @Override
@@ -50,6 +49,11 @@ public class OpponentTurnGodCard extends GodCard {
     }
 
 
+    /**
+     * Like {@link GodCard#setGameMap(IslandBoard)} but adds god constraints if necessary
+     * @param gameMap Every GodCard will be interacting with.
+     * @throws IllegalArgumentException
+     */
     @Override
     public void setGameMap(IslandBoard gameMap) throws IllegalArgumentException{
         super.setGameMap(gameMap);
@@ -58,6 +62,11 @@ public class OpponentTurnGodCard extends GodCard {
     }
 
 
+    /**
+     * Like a god card move but uses {@link #check()} to add constraints
+     * @see GodCard#move(int, int, int, int)
+     * @return True if move is performed
+     */
     @Override
     public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
         boolean result =  super.move(i_src, j_src, i_dst, j_dst);
@@ -65,6 +74,13 @@ public class OpponentTurnGodCard extends GodCard {
         return result;
     }
 
+
+    /**
+     * Like a god card build but uses {@link #check()} to add constraints
+     * @see GodCard#build(int, int, int, int, boolean)
+     * @param buildDome Specifies whether you want to build a dome or not
+     * @return True if build is performed.
+     */
     @Override
     public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
         boolean result = super.build(i_src, j_src, i_dst, j_dst, buildDome);
@@ -72,8 +88,9 @@ public class OpponentTurnGodCard extends GodCard {
         return result;
     }
 
+
     /**
-     * Check an event given card constraints
+     * Check a requested event given card constraints.
      * @return True if no constrain conflict with the input Event
      */
     public boolean checkFutureEvent(Event futureEvent) {

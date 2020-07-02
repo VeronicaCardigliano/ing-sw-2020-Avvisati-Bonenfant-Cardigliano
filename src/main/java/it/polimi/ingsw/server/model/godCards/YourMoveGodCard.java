@@ -30,6 +30,11 @@ public class YourMoveGodCard extends GodCard {
         this.extraMovePerimeter = flagParameters.get("extraMovePerimeter");
     }
 
+
+    /**
+     * Override used to manage different behaviours of {@link YourMoveGodCard}
+     * @return True if move is performed
+     */
     @Override
     public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
         boolean result = false;
@@ -59,8 +64,8 @@ public class YourMoveGodCard extends GodCard {
 
 
     /**
-     * Function used to support move function for YourMoveGodCard. Called after the askPush function pushes an enemy
-     * into another cell
+     * Function used to support move function for {@link YourMoveGodCard}. Called after the {@link #askPush(int, int, int, int)} function
+     * pushes an enemy into another cell
      */
     private void push(Builder builderToPush, int i_src, int j_src, int i_dst, int j_dst) {
         int i_enemy_dst = (i_dst - i_src) * pushForce + i_dst;
@@ -70,7 +75,7 @@ public class YourMoveGodCard extends GodCard {
 
 
     /**
-     * Check if an enemy can be pushed. Uses card push force read from the json
+     * Check if an enemy can be pushed. Uses card push force param read from the json
      * @return True if push can be performed
      */
     private boolean askPush(int i_src, int j_src, int i_dst, int j_dst) {
@@ -86,6 +91,10 @@ public class YourMoveGodCard extends GodCard {
     }
 
 
+    /**
+     * Override to cover different ways to move for {@link YourMoveGodCard}. Every coordinate must be in range 0 - IslandBoard.dimension
+     * @return True if destination is reachable from source
+     */
     @Override
     public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
         boolean extraConditions = true;

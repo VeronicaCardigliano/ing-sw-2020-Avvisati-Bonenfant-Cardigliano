@@ -37,7 +37,8 @@ public class GodCard {
 
     /**
      * GodCard constructor.
-     * @param player whose card is
+     * @param player Whose card is
+     * @throws RuntimeException If player is null
      */
     public GodCard(Player player, String name, String description, ArrayList<ArrayList<String>> states) {
         if(player == null)
@@ -76,7 +77,6 @@ public class GodCard {
 
         for (Builder  b : player.getBuilders()){
             currBuilder = b;
-            //Hold most populated list
             ArrayList<String> tmpArray = new ArrayList<>(currStateList);
             filterNextState();
             if (currStateList.size() < tmpArray.size())
@@ -112,6 +112,10 @@ public class GodCard {
         return player;
     }
 
+    /**
+     * Update the list of available steps for a player given the step chosen previously.
+     * @param previousStep Step chosen before
+     */
     private void setNextState(String previousStep) {
         step++;
 
@@ -153,6 +157,13 @@ public class GodCard {
         filterNextState();
     }
 
+
+    /**
+     * Find all possible cells where a builder can move or build
+     * @param builder Builder we want to use
+     * @param buildDome True if wants to try to build a dome
+     * @return A set of available coordinates for moving/building
+     */
     public Set<Coordinates> findBuilderPossibleDest(Builder builder, boolean buildDome){
         Set<Coordinates> possibleDstBuilder = new HashSet<>();
         Coordinates src = builder.getCell();
@@ -181,6 +192,12 @@ public class GodCard {
     }
 
 
+    /**
+     * This method removes steps that will bring the player into a lose condition. If for example a builder has both
+     * option of move and build, but there is a constraint which doesn't allow him to build, the build option will be
+     * removed. These control is performer using {@link #askMove(int, int, int, int)} and
+     * {@link #askBuild(int, int, int, int, boolean)}
+     */
     private void filterNextState(){
         if (currStateList.size()>1){
 
@@ -231,10 +248,11 @@ public class GodCard {
         this.gameMap = gameMap;
     }
 
+    
     /**
      * Method used to actually do a build if askBuild returned a true value, adds a dome or a block based on buildDome parameter
      * @param buildDome specifies whether you want to build a dome or not
-     * @return true if it was successful (used for test purpose)
+     * @return True if it was successful (used for test purpose)
      */
     public boolean build (int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
         boolean built = false;
@@ -263,12 +281,9 @@ public class GodCard {
 
 
     /**
-     * @author thomas
-     *
-     * moves a builder owned by godCard's player to an adiacent cell.
-     * It first calls askMove to validate the move and returns if the moved happened
-     *
-     * @return if the move did occur.
+     * Moves a builder owned by godCard's player.
+     * It first calls {@link #askMove(int, int, int, int)} to validate the move and returns if the moved happened
+     * @return True if the move did occur.
      */
     public boolean move(int i_src, int j_src, int i_dst, int j_dst)
     {
@@ -293,11 +308,11 @@ public class GodCard {
         return moved;
     }
 
+    
     /**
      * Try to move a builder from src position to dst position.
-     *
      * @param i_src every coordinate must be in range 0 - IslandBoard.dimension (usually 5)
-     * @return Returns true if the required move has distance of one, height difference between destination cell and
+     * @return True if the required move has distance of one, height difference between destination cell and
      * source is less than one and there isn't a dome or an occupant on destination Cell.
      */
     public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
@@ -318,10 +333,8 @@ public class GodCard {
     /**
      * Tries to build from (i_src, j_src) to (i_dst, j_dst). If flag buildDome is set to true
      * it tries to build a dome instead of a block.
-     *
-     *
      * @param buildDome true if the builder wants to build a dome
-     * @return true if the builder can build at (i_dst, j_dst)
+     * @return True if the builder can build at (i_dst, j_dst)
      */
     public boolean askBuild(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
         Cell src;
@@ -342,14 +355,12 @@ public class GodCard {
     }
 
     /**
-     * Has to be called after a move or a build.
-     * @return if that event causes the player associated to the godCard to win.
+     * Has to be called after a {@link #move(int, int, int, int)} or a {@link #build(int, int, int, int, boolean)}.
+     * @return True if that event causes the player associated to the godCard to win.
      */
     public boolean winCondition() {
-
         return event != null && event.getType() == Event.EventType.MOVE && event.heightDifference() == 1 &&
                 event.getDstBlockHeight() == IslandBoard.maxHeight;
-
     }
 
     public String getCurrState() {
@@ -358,6 +369,11 @@ public class GodCard {
 
     public int getStepNumber () {return step;}
 
+
+    /**
+     * @param o GodCard Object
+     * @return True if god names are equals
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

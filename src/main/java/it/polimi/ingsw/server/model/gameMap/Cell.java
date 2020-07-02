@@ -34,6 +34,10 @@ public class Cell extends Coordinates{
     }
 
 
+    /**
+     * Add a block on this cell
+     * @return True if height is less than max height and there isn't a dome
+     */
     public boolean addBlock() {
         boolean added = false;
 
@@ -46,6 +50,10 @@ public class Cell extends Coordinates{
     }
 
 
+    /**
+     * Put a dome on this cell
+     * @return True if there wasn't a dome before
+     */
     public boolean addDome() {
         boolean added = false;
 

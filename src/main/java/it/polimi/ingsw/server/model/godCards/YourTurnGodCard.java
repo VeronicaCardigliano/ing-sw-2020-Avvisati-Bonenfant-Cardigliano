@@ -28,7 +28,7 @@ public class YourTurnGodCard extends GodCard {
     }
 
     /**
-     * This override of build method, sets the built attribute to true if the flag blockMovingUpIfBuilt is true
+     *Override used to manage {@link YourTurnGodCard} build behaviour
      */
     @Override
     public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
@@ -37,6 +37,9 @@ public class YourTurnGodCard extends GodCard {
         return super.build(i_src, j_src, i_dst, j_dst, buildDome);
     }
 
+    /**
+     *Override used to manage {@link YourTurnGodCard} move behaviour
+     */
     @Override
     public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
         boolean prometheusCondition = blockMovingUpIfBuilt &&
