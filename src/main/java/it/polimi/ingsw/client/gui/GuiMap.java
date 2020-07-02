@@ -31,7 +31,7 @@ public class GuiMap extends GameMap {
     protected static final String domeSecondLevel = "/Images/domeSecondLevel.png";
     private static final String domeThirdLevel = "/Images/domeThirdLevel.png";
     private static final String firstLevel = "/Images/firstLevel.png";
-    protected static final String secondLevel = "/Images/domeSecondLevel.png";
+    protected static final String secondLevel = "/Images/secondLevel.png";
     protected static final String thirdLevel =  "/Images/thirdLevel.png";
 
     //index of the building in the StackPane which represents the cell
@@ -148,7 +148,7 @@ public class GuiMap extends GameMap {
 
         super.updateOccupiedCells(nickname, src, dst);
 
-        moveBuilder(coordinatesToIndex(src), coordinatesToIndex(dst));
+        moveBuilder(src, dst);
         resetPossibleDestinations();
     }
 
@@ -314,15 +314,15 @@ public class GuiMap extends GameMap {
      * @param src index of source of move step
      * @param dst index of the destination cell
      */
-    private void moveBuilder (int src, int dst) {
+    private void moveBuilder (Coordinates src, Coordinates dst) {
 
-        int builderIndex;
-        builderIndex= getBuilderIndexInStack(indexToCoord(src));
-        StackPane sourceCell = (StackPane) tile.getChildren().get(src);
+        int builderIndex = getBuilderIndexInStack(src);
+
+        StackPane sourceCell = (StackPane) tile.getChildren().get(coordinatesToIndex(src));
         ImageView builderToMove = (ImageView) sourceCell.getChildren().get(builderIndex);
         Platform.runLater(() -> sourceCell.getChildren().remove(builderToMove));
 
-        StackPane clickedCell = (StackPane) tile.getChildren().get(dst);
+        StackPane clickedCell = (StackPane) tile.getChildren().get(coordinatesToIndex(dst));
         Platform.runLater(() -> clickedCell.getChildren().add(builderToMove));
 
     }

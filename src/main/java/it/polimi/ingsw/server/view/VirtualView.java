@@ -69,8 +69,8 @@ public class VirtualView extends ViewObservable implements Runnable {
         registered = true;
     }
 
-    public boolean registered() {
-        return registered;
+    public boolean notRegistered() {
+        return !registered;
     }
 
     /**
@@ -79,7 +79,7 @@ public class VirtualView extends ViewObservable implements Runnable {
     @Override
     public void run() {
         try {
-            int timeout = 10 * 1000;
+            int timeout = 0 * 1000;
             socket.setSoTimeout(timeout);
         } catch (SocketException e) {
             e.printStackTrace();

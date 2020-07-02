@@ -129,7 +129,6 @@ public class Gui extends View {
 
         this.root = new BorderPane();
         this.primaryScene = new Scene (root, sceneWidth, sceneHeight);
-        //homeScene.getStylesheets().add(getClass().getResource("/stylesheet.css").toExternalForm());
 
         tile = new TilePane();
         gameMap = new GuiMap(tile, primaryScene);
@@ -183,7 +182,6 @@ public class Gui extends View {
         primaryStage.getIcons().add(new Image(getClass().getResourceAsStream(iconSrc)));
         primaryStage.setScene(homeScene);
 
-        //TODO: verify max Width
         primaryStage.setMaxWidth(maxSceneWidth);
 
         primaryStage.setOnCloseRequest(windowEvent -> {
@@ -298,7 +296,7 @@ public class Gui extends View {
                 }
                 else
                     printOnPrimaryScene(message);
-                 break;
+                break;
             case "STARTPLAYER":
             case "BUILDERCOLOR":
                 setupErrorText.setText(message);
@@ -525,7 +523,7 @@ public class Gui extends View {
         Set<String> printableColors = new HashSet<>();
         for (String s: availableColors)
             printableColors.add(s.replace('_',' ').toLowerCase());
-        
+
         setState(ViewState.BUILDERCOLOR);
 
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
@@ -809,14 +807,14 @@ public class Gui extends View {
         Platform.runLater(() -> dialogRegion.getChildren().add(domeRequest));
 
         Button yesBtn = new GuiButton("YES", submitButton, mouseEvent ->  {
-                    buildDome = true;
-                    afterDomeChoice();
-                }, submitButtonPressed);
+            buildDome = true;
+            afterDomeChoice();
+        }, submitButtonPressed);
 
         Button noBtn = new GuiButton ("NO", submitButton, mouseEvent -> {
-                    buildDome = false;
-                    afterDomeChoice();
-                }, submitButtonPressed);
+            buildDome = false;
+            afterDomeChoice();
+        }, submitButtonPressed);
 
         yesBtn.setTextFill(Color.WHITESMOKE);
         setPrimarySceneButtonBinding(yesBtn);
@@ -1059,7 +1057,10 @@ public class Gui extends View {
      */
     @Override
     public void onWrongInsertionUpdate(String error) {
-        printMessage(error, false);
+        if (getState().equals(ViewState.NICKDATE))
+            printMessage(error, true);
+        else
+            printMessage(error, false);
     }
 
     /**
@@ -1125,16 +1126,12 @@ public class Gui extends View {
         if(result) {
             if (getNickname() != null && getNickname().equals(nickname))
                 Platform.runLater(() -> playerSetupPopup.close());
-            //if Nickname == null, it means the setUp player popup is still open
+
+                //if Nickname == null, it means the setUp player popup is still open
             else  if (getNickname() == null)
                 onPopup = true;
             printMessage (nickname + " joined the game!", onPopup);
         }
-        else if (getNickname() != null && getNickname().equals(nickname)) {
-                printMessage("Invalid nickname or date.", true);
-                setNickname(null);
-                setDate(null);
-            }
     }
 
     /**
@@ -1241,25 +1238,25 @@ public class Gui extends View {
                 break;
 
             case "SETUP_PLAYERS":
-                    this.bottomMessagesVBox = new VBox();
-                    bottomMessagesVBox.setSpacing(marginLength / 10);
-                    bottomAnchorPane.getChildren().add(bottomMessagesVBox);
-                    AnchorPane.setLeftAnchor(bottomMessagesVBox, marginLength);
-                    AnchorPane.setTopAnchor(bottomMessagesVBox, marginLength / 4);
-                    bottomMessagesVBox.setAlignment(Pos.CENTER);
+                this.bottomMessagesVBox = new VBox();
+                bottomMessagesVBox.setSpacing(marginLength / 10);
+                bottomAnchorPane.getChildren().add(bottomMessagesVBox);
+                AnchorPane.setLeftAnchor(bottomMessagesVBox, marginLength);
+                AnchorPane.setTopAnchor(bottomMessagesVBox, marginLength / 4);
+                bottomMessagesVBox.setAlignment(Pos.CENTER);
 
-                    Platform.runLater(() -> primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double) Gui.sceneWidth / Gui.sceneHeight)));
-                    Platform.runLater(() -> primaryStage.minHeightProperty().bind(root.widthProperty().divide((double) Gui.sceneWidth / Gui.sceneHeight)));
-                    Platform.runLater(() -> primaryStage.setScene(primaryScene));
+                Platform.runLater(() -> primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double) Gui.sceneWidth / Gui.sceneHeight)));
+                Platform.runLater(() -> primaryStage.minHeightProperty().bind(root.widthProperty().divide((double) Gui.sceneWidth / Gui.sceneHeight)));
+                Platform.runLater(() -> primaryStage.setScene(primaryScene));
 
-                    Label label = new Label("Waiting for players... ");
-                    setFadeTransition(label);
+                Label label = new Label("Waiting for players... ");
+                setFadeTransition(label);
 
-                    playersRegion.setAlignment(Pos.CENTER);
-                    Platform.runLater(() -> playersRegion.getChildren().add(label));
-                    if (homePane.getChildren().contains(connecting))
-                        Platform.runLater(()-> homePane.getChildren().remove(connecting));
-                    break;
+                playersRegion.setAlignment(Pos.CENTER);
+                Platform.runLater(() -> playersRegion.getChildren().add(label));
+                if (homePane.getChildren().contains(connecting))
+                    Platform.runLater(()-> homePane.getChildren().remove(connecting));
+                break;
         }
     }
 
@@ -1302,9 +1299,20 @@ public class Gui extends View {
 
         super.onDisconnection();
 
-        printMessage(warning + " You're disconnected " + warning, false);
+        if (!homePane.getChildren().contains(connecting))
+            printMessage(warning + " You're disconnected " + warning, false);
+        else
+             Platform.runLater(()-> homePane.getChildren().remove(connecting));
+
         if (!dialogRegion.getChildren().contains(playAgainBtn))
             Platform.runLater(()-> dialogRegion.getChildren().add(playAgainBtn));
+
+        ViewState currState = getState();
+        if (currState.equals(ViewState.NICKDATE) || currState.equals(ViewState.MATCHGODS) ||
+                currState.equals(ViewState.PLAYERGOD) || currState.equals(ViewState.BUILDERCOLOR))
+            Platform.runLater(()->playersRegion.getChildren().clear());
+
+        setState(ViewState.CONNECTION);
     }
 
     /**
@@ -1337,7 +1345,7 @@ public class Gui extends View {
             StackPane tagImageText = new StackPane();
 
             Text text = new Text(player + ": " + chosenGodCards.get(player));
-            text.setFont(new Font("Courier", (float) fontSize));
+            text.setFont(stdFont);
             text.setStyle("-fx-font-weight: bold");
 
             playersNameTags.put(player, text);

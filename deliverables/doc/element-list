@@ -1,0 +1,12 @@
+it.polimi.ingsw
+it.polimi.ingsw.client
+it.polimi.ingsw.client.cli
+it.polimi.ingsw.client.gui
+it.polimi.ingsw.network
+it.polimi.ingsw.server
+it.polimi.ingsw.server.controller
+it.polimi.ingsw.server.model
+it.polimi.ingsw.server.model.gameMap
+it.polimi.ingsw.server.model.godCards
+it.polimi.ingsw.server.parser
+it.polimi.ingsw.server.view

@@ -1,0 +1,204 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: OpponentTurnGodCard</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">it.polimi.ingsw.server.model.godCards</a> ]
+</div>
+
+<h1>Coverage Summary for Class: OpponentTurnGodCard (it.polimi.ingsw.server.model.godCards)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">OpponentTurnGodCard</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (7/ 7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (37/ 37)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package it.polimi.ingsw.server.model.godCards;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import it.polimi.ingsw.server.model.Event;
+<i>4</i>&nbsp;import it.polimi.ingsw.server.model.Player;
+<i>5</i>&nbsp;import it.polimi.ingsw.server.model.gameMap.Builder;
+<i>6</i>&nbsp;import it.polimi.ingsw.server.model.gameMap.IslandBoard;
+<i>7</i>&nbsp;
+<i>8</i>&nbsp;import java.util.ArrayList;
+<i>9</i>&nbsp;import java.util.Map;
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;/**
+<i>12</i>&nbsp; * God card with powers that are applied during enemies turns.
+<i>13</i>&nbsp; */
+<i>14</i>&nbsp;public class OpponentTurnGodCard extends GodCard {
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;    private final boolean activeOnMoveUp;
+<i>17</i>&nbsp;    private final boolean alwaysActive;
+<i>18</i>&nbsp;
+<i>19</i>&nbsp;    private final boolean blockMoveUp;
+<i>20</i>&nbsp;    private final boolean limusPower;
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;    /**
+<i>23</i>&nbsp;     * GodCard constructor. Parses JSON
+<i>24</i>&nbsp;     * @param player whose card is
+<i>25</i>&nbsp;     */
+<i>26</i>&nbsp;    public OpponentTurnGodCard(Player player, String name, String description, ArrayList&lt;ArrayList&lt;String&gt;&gt; states,
+<i>27</i>&nbsp;                               Map&lt;String, Boolean&gt; flagParameters, Map&lt;String, Integer&gt; intParameters) {
+<b class="fc"><i>28</i>&nbsp;        super(player, name, description, states);</b>
+<i>29</i>&nbsp;
+<b class="fc"><i>30</i>&nbsp;        this.activeOnMoveUp = flagParameters.get(&quot;activeOnMoveUp&quot;);</b>
+<b class="fc"><i>31</i>&nbsp;        this.blockMoveUp = flagParameters.get(&quot;blockMoveUp&quot;);</b>
+<b class="fc"><i>32</i>&nbsp;        this.limusPower = flagParameters.get(&quot;limusPower&quot;);</b>
+<b class="fc"><i>33</i>&nbsp;        this.alwaysActive = flagParameters.get(&quot;alwaysActive&quot;);</b>
+<b class="fc"><i>34</i>&nbsp;    }</b>
+<i>35</i>&nbsp;
+<i>36</i>&nbsp;    @Override
+<i>37</i>&nbsp;    public void startTurn() {
+<b class="fc"><i>38</i>&nbsp;        super.startTurn();</b>
+<b class="fc"><i>39</i>&nbsp;        if(!alwaysActive)</b>
+<b class="fc"><i>40</i>&nbsp;            gameMap.removeConstraint(this);</b>
+<b class="fc"><i>41</i>&nbsp;    }</b>
+<i>42</i>&nbsp;
+<i>43</i>&nbsp;    /**
+<i>44</i>&nbsp;     * Check if constraint should be added
+<i>45</i>&nbsp;     */
+<i>46</i>&nbsp;    public void check() {
+<b class="fc"><i>47</i>&nbsp;        if(activeOnMoveUp &amp;&amp; event.getType() == Event.EventType.MOVE &amp;&amp; event.heightDifference() &gt; 0)</b>
+<b class="fc"><i>48</i>&nbsp;            gameMap.addConstraint(this);</b>
+<b class="fc"><i>49</i>&nbsp;    }</b>
+<i>50</i>&nbsp;
+<i>51</i>&nbsp;
+<i>52</i>&nbsp;    /**
+<i>53</i>&nbsp;     * Like {@link GodCard#setGameMap(IslandBoard)} but adds god constraints if necessary
+<i>54</i>&nbsp;     * @param gameMap Every GodCard will be interacting with.
+<i>55</i>&nbsp;     * @throws IllegalArgumentException
+<i>56</i>&nbsp;     */
+<i>57</i>&nbsp;    @Override
+<i>58</i>&nbsp;    public void setGameMap(IslandBoard gameMap) throws IllegalArgumentException{
+<b class="fc"><i>59</i>&nbsp;        super.setGameMap(gameMap);</b>
+<b class="fc"><i>60</i>&nbsp;        if(alwaysActive)</b>
+<b class="fc"><i>61</i>&nbsp;            gameMap.addConstraint(this);</b>
+<b class="fc"><i>62</i>&nbsp;    }</b>
+<i>63</i>&nbsp;
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;    /**
+<i>66</i>&nbsp;     * Like a god card move but uses {@link #check()} to add constraints
+<i>67</i>&nbsp;     * @see GodCard#move(int, int, int, int)
+<i>68</i>&nbsp;     * @return True if move is performed
+<i>69</i>&nbsp;     */
+<i>70</i>&nbsp;    @Override
+<i>71</i>&nbsp;    public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
+<b class="fc"><i>72</i>&nbsp;        boolean result =  super.move(i_src, j_src, i_dst, j_dst);</b>
+<b class="fc"><i>73</i>&nbsp;        check();</b>
+<b class="fc"><i>74</i>&nbsp;        return result;</b>
+<i>75</i>&nbsp;    }
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;
+<i>78</i>&nbsp;    /**
+<i>79</i>&nbsp;     * Like a god card build but uses {@link #check()} to add constraints
+<i>80</i>&nbsp;     * @see GodCard#build(int, int, int, int, boolean)
+<i>81</i>&nbsp;     * @param buildDome Specifies whether you want to build a dome or not
+<i>82</i>&nbsp;     * @return True if build is performed.
+<i>83</i>&nbsp;     */
+<i>84</i>&nbsp;    @Override
+<i>85</i>&nbsp;    public boolean build(int i_src, int j_src, int i_dst, int j_dst, boolean buildDome) {
+<b class="fc"><i>86</i>&nbsp;        boolean result = super.build(i_src, j_src, i_dst, j_dst, buildDome);</b>
+<b class="fc"><i>87</i>&nbsp;        check();</b>
+<b class="fc"><i>88</i>&nbsp;        return result;</b>
+<i>89</i>&nbsp;    }
+<i>90</i>&nbsp;
+<i>91</i>&nbsp;
+<i>92</i>&nbsp;    /**
+<i>93</i>&nbsp;     * Check a requested event given card constraints.
+<i>94</i>&nbsp;     * @return True if no constrain conflict with the input Event
+<i>95</i>&nbsp;     */
+<i>96</i>&nbsp;    public boolean checkFutureEvent(Event futureEvent) {
+<b class="fc"><i>97</i>&nbsp;        boolean allowed = true;</b>
+<i>98</i>&nbsp;
+<b class="fc"><i>99</i>&nbsp;        if(futureEvent.getType() == Event.EventType.MOVE) {</b>
+<b class="fc"><i>100</i>&nbsp;            if(blockMoveUp &amp;&amp; futureEvent.heightDifference() &gt; 0)</b>
+<b class="fc"><i>101</i>&nbsp;                allowed = false;</b>
+<i>102</i>&nbsp;        }
+<i>103</i>&nbsp;
+<b class="fc"><i>104</i>&nbsp;        if(futureEvent.getType() == Event.EventType.BUILD ||futureEvent.getType() == Event.EventType.BUILD_DOME) {</b>
+<i>105</i>&nbsp;
+<b class="fc"><i>106</i>&nbsp;            if (limusPower &amp;&amp; !futureEvent.getSrcCell().getBuilder().getPlayer().equals(player)){</b>
+<b class="fc"><i>107</i>&nbsp;                for (Builder b : player.getBuilders()){</b>
+<b class="fc"><i>108</i>&nbsp;                    if (Math.abs(b.getCell().getI() - futureEvent.getDstCell().getI()) &lt; 2 &amp;&amp;</b>
+<b class="fc"><i>109</i>&nbsp;                            Math.abs(b.getCell().getJ() - futureEvent.getDstCell().getJ()) &lt; 2 &amp;&amp;</b>
+<b class="fc"><i>110</i>&nbsp;                            !(futureEvent.getType() == Event.EventType.BUILD_DOME &amp;&amp; futureEvent.getDstCell().getHeight() == IslandBoard.maxHeight)) {</b>
+<b class="fc"><i>111</i>&nbsp;                        allowed = false;</b>
+<b class="fc"><i>112</i>&nbsp;                        break;</b>
+<i>113</i>&nbsp;                    }
+<b class="fc"><i>114</i>&nbsp;                }</b>
+<i>115</i>&nbsp;            }
+<i>116</i>&nbsp;
+<i>117</i>&nbsp;        }
+<b class="fc"><i>118</i>&nbsp;        return allowed;</b>
+<i>119</i>&nbsp;    }
+<i>120</i>&nbsp;}
+<i>121</i>&nbsp;
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-07-03 00:59</div>
+</div>
+</body>
+</html>

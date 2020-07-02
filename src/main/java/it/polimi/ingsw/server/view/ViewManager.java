@@ -15,7 +15,7 @@ import java.util.Set;
  * Container for Virtual Views. Supposed to multiplex notifies coming from ModelObservable.
  */
 public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibleMoveObserver, BuildersPlacedObserver,
-                                    EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver, GodChoiceObserver ,
+        EndGameObserver, ErrorsObserver, PlayerLoseObserver, StateObserver, GodChoiceObserver ,
         PlayerTurnObserver, ColorAssignmentObserver, ViewSelectObserver, BuilderMovementObserver, BuilderBuiltObserver, PlayerAddedObserver, ChosenStepObserver, StartPlayerSetObserver{
 
     List<VirtualView> views;
@@ -228,8 +228,11 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
      */
     @Override
     public void onWrongInsertionUpdate(String error) {
-        selectedView.send(Messages.errorMessage(error));
+        for(VirtualView view : views)
+            if (view.getNickname() != null && view.notRegistered())
+                selectedView = view;
 
+        selectedView.send(Messages.errorMessage(error));
     }
 
     /**
@@ -358,10 +361,9 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
         for(VirtualView view : views) {
-            if(view.getNickname() != null && view.getNickname().equals(nickname) && !view.registered())
+            if(view.getNickname() != null && view.getNickname().equals(nickname) && view.notRegistered())
                 selectedView = view;
         }
-
 
         if(result) {
             selectedView.register();
@@ -372,7 +374,6 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
         else {
             selectedView.setNickname(null);
             selectedView.send(Messages.playerAdded(nickname, false));
-
         }
 
     }

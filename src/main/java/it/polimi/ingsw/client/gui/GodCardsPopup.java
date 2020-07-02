@@ -185,7 +185,7 @@ public class GodCardsPopup extends Stage {
         //takes the keyset (names) of all the gods to show in the popup, based on the game phase and chosen ones
         for (String s: godCardsDescriptions.keySet()) {
 
-            ImageView tmp = new ImageView (new Image (getClass().getResourceAsStream("/" + s + ".png")));
+            ImageView tmp = new ImageView (new Image (getClass().getResourceAsStream("/Images/" + s + ".png")));
             tmp.setFitWidth(cardsWidth);
             tmp.setPreserveRatio(true);
 

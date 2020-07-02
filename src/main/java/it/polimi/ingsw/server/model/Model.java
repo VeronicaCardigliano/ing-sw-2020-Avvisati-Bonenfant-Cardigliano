@@ -143,7 +143,14 @@ public class Model extends ModelObservableWithSelect {
     public void setNextPlayer () {
         if(players.isEmpty())
             throw new RuntimeException("there are no players in this lobby");
-        currPlayer = turnManager.next();
+        if (currState.equals(State.SETUP_CARDS) && numPlayers == chosenCards.size()) {
+            //currPlayer is the challenger since he has to choose the startPlayer
+            while (!currPlayer.equals(players.get(0)))
+                currPlayer = turnManager.next();
+        }
+        else
+            currPlayer = turnManager.next();
+
         notifyPlayerTurn(currPlayer.getNickname());
     }
 
@@ -214,29 +221,36 @@ public class Model extends ModelObservableWithSelect {
      */
     public boolean addPlayer (String nickname, String birthday) {
         boolean canAdd = true;
-
-        if (nickname == null || !checkDate(birthday)) {
-            canAdd = false;
-        }
-
-        if(players.size() >= numPlayers) {
-            canAdd = false;
-        }
-
-        for(Player p : players)
-            if(p.getNickname().equals(nickname)) {
-                canAdd = false;
-                break;
-            }
+        boolean correctDate = checkDate(birthday);
 
         SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd");
         long epoch = 0;
 
         try {
             epoch = df.parse(birthday).getTime();
-        } catch (ParseException e) {
+        }
+        catch (ParseException e) {
+            notifyWrongInsertion("ERROR: invalid date format");
             canAdd = false;
         }
+
+        if (nickname == null || (canAdd && !correctDate)) {
+            if (!correctDate)
+                notifyWrongInsertion("ERROR: invalid date insertion");
+            canAdd = false;
+        }
+
+        if(players.size() >= numPlayers) {
+            notifyWrongInsertion("ERROR: Max number of players reached");
+            canAdd = false;
+        }
+
+        for(Player p : players)
+            if(p.getNickname().equals(nickname)) {
+                notifyWrongInsertion("ERROR: this nickname already exists");
+                canAdd = false;
+                break;
+            }
 
         if(canAdd) {
             players.add(new Player(nickname, epoch));

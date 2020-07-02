@@ -1,0 +1,199 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: YourMoveGodCard</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">it.polimi.ingsw.server.model.godCards</a> ]
+</div>
+
+<h1>Coverage Summary for Class: YourMoveGodCard (it.polimi.ingsw.server.model.godCards)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">YourMoveGodCard</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (5/ 5)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (48/ 48)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package it.polimi.ingsw.server.model.godCards;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import it.polimi.ingsw.server.model.Event;
+<i>4</i>&nbsp;import it.polimi.ingsw.server.model.gameMap.Builder;
+<i>5</i>&nbsp;import it.polimi.ingsw.server.model.gameMap.Cell;
+<i>6</i>&nbsp;import it.polimi.ingsw.server.model.gameMap.IslandBoard;
+<i>7</i>&nbsp;import it.polimi.ingsw.server.model.Player;
+<i>8</i>&nbsp;import java.util.ArrayList;
+<i>9</i>&nbsp;import java.util.Map;
+<i>10</i>&nbsp;
+<i>11</i>&nbsp;/**
+<i>12</i>&nbsp; * Specific Card associated to a god whom effect activates during his turn. This kind of god implements its own
+<i>13</i>&nbsp; * move depending on three different parameters read from the json file.
+<i>14</i>&nbsp; */
+<i>15</i>&nbsp;
+<i>16</i>&nbsp;public class YourMoveGodCard extends GodCard {
+<i>17</i>&nbsp;    private int pushForce;
+<i>18</i>&nbsp;    private boolean secondMoveDiffDst;
+<i>19</i>&nbsp;    private boolean extraMovePerimeter;
+<i>20</i>&nbsp;    private Cell firstSrcCell;
+<i>21</i>&nbsp;
+<i>22</i>&nbsp;
+<i>23</i>&nbsp;    public YourMoveGodCard(Player player, String name, String description, ArrayList&lt;ArrayList&lt;String&gt;&gt; states,
+<i>24</i>&nbsp;                           Map&lt;String, Boolean&gt; flagParameters, Map&lt;String, Integer&gt; intParameters) {
+<i>25</i>&nbsp;
+<b class="fc"><i>26</i>&nbsp;        super(player, name, description, states);</b>
+<i>27</i>&nbsp;
+<b class="fc"><i>28</i>&nbsp;        this.pushForce = intParameters.get(&quot;pushForce&quot;);</b>
+<b class="fc"><i>29</i>&nbsp;        this.secondMoveDiffDst = flagParameters.get(&quot;secondMoveDiffDst&quot;);</b>
+<b class="fc"><i>30</i>&nbsp;        this.extraMovePerimeter = flagParameters.get(&quot;extraMovePerimeter&quot;);</b>
+<b class="fc"><i>31</i>&nbsp;    }</b>
+<i>32</i>&nbsp;
+<i>33</i>&nbsp;
+<i>34</i>&nbsp;    /**
+<i>35</i>&nbsp;     * Override used to manage different behaviours of {@link YourMoveGodCard}
+<i>36</i>&nbsp;     * @return True if move is performed
+<i>37</i>&nbsp;     */
+<i>38</i>&nbsp;    @Override
+<i>39</i>&nbsp;    public boolean move(int i_src, int j_src, int i_dst, int j_dst) {
+<b class="fc"><i>40</i>&nbsp;        boolean result = false;</b>
+<b class="fc"><i>41</i>&nbsp;        if(askMove(i_src, j_src, i_dst, j_dst)) {</b>
+<b class="fc"><i>42</i>&nbsp;            if (super.step == 0)</b>
+<b class="fc"><i>43</i>&nbsp;                firstSrcCell = gameMap.getCell(i_src, j_src);</b>
+<b class="fc"><i>44</i>&nbsp;            Builder builderToPush = null;</b>
+<b class="fc"><i>45</i>&nbsp;            if(pushForce != 0) {</b>
+<b class="fc"><i>46</i>&nbsp;                builderToPush = gameMap.getCell(i_dst, j_dst).getBuilder();</b>
+<b class="fc"><i>47</i>&nbsp;                gameMap.getCell(i_dst, j_dst).removeOccupant();</b>
+<i>48</i>&nbsp;            }
+<b class="fc"><i>49</i>&nbsp;            if (super.askMove(i_src, j_src, i_dst, j_dst) &amp;&amp; extraMovePerimeter) {</b>
+<b class="fc"><i>50</i>&nbsp;                if (i_dst == 0 || j_dst == 0 || i_dst == IslandBoard.dimension - 1 || j_dst == IslandBoard.dimension - 1) {</b>
+<b class="fc"><i>51</i>&nbsp;                    ArrayList&lt;String&gt; list = new ArrayList&lt;&gt;(statesCopy.get(0));</b>
+<b class="fc"><i>52</i>&nbsp;                    list.add(step, &quot;MOVE&quot;);</b>
+<b class="fc"><i>53</i>&nbsp;                    statesCopy.add(0, list);</b>
+<i>54</i>&nbsp;                }
+<i>55</i>&nbsp;            }
+<b class="fc"><i>56</i>&nbsp;            result = super.move(i_src, j_src, i_dst, j_dst);</b>
+<b class="fc"><i>57</i>&nbsp;            if(builderToPush != null)</b>
+<b class="fc"><i>58</i>&nbsp;                push(builderToPush, i_src, j_src, i_dst, j_dst);</b>
+<b class="fc"><i>59</i>&nbsp;            if (this.currState.equals(&quot;BUILD&quot;))</b>
+<b class="fc"><i>60</i>&nbsp;                firstSrcCell = null;</b>
+<i>61</i>&nbsp;        }
+<b class="fc"><i>62</i>&nbsp;        return result;</b>
+<i>63</i>&nbsp;    }
+<i>64</i>&nbsp;
+<i>65</i>&nbsp;
+<i>66</i>&nbsp;    /**
+<i>67</i>&nbsp;     * Function used to support move function for {@link YourMoveGodCard}. Called after the {@link #askPush(int, int, int, int)} function
+<i>68</i>&nbsp;     * pushes an enemy into another cell
+<i>69</i>&nbsp;     */
+<i>70</i>&nbsp;    private void push(Builder builderToPush, int i_src, int j_src, int i_dst, int j_dst) {
+<b class="fc"><i>71</i>&nbsp;        int i_enemy_dst = (i_dst - i_src) * pushForce + i_dst;</b>
+<b class="fc"><i>72</i>&nbsp;        int j_enemy_dst = (j_dst - j_src) * pushForce + j_dst;</b>
+<b class="fc"><i>73</i>&nbsp;        gameMap.getCell(i_enemy_dst,j_enemy_dst).setOccupant(builderToPush);</b>
+<b class="fc"><i>74</i>&nbsp;    }</b>
+<i>75</i>&nbsp;
+<i>76</i>&nbsp;
+<i>77</i>&nbsp;    /**
+<i>78</i>&nbsp;     * Check if an enemy can be pushed. Uses card push force param read from the json
+<i>79</i>&nbsp;     * @return True if push can be performed
+<i>80</i>&nbsp;     */
+<i>81</i>&nbsp;    private boolean askPush(int i_src, int j_src, int i_dst, int j_dst) {
+<b class="fc"><i>82</i>&nbsp;        int i_enemy_dst = (i_dst - i_src) * pushForce + i_dst;</b>
+<b class="fc"><i>83</i>&nbsp;        int j_enemy_dst = (j_dst - j_src) * pushForce + j_dst;</b>
+<b class="fc"><i>84</i>&nbsp;        boolean allowSwitch = pushForce == -1;</b>
+<b class="fc"><i>85</i>&nbsp;        Cell dst = gameMap.getCell(i_dst, j_dst);</b>
+<b class="fc"><i>86</i>&nbsp;        return  dst.isOccupied() &amp;&amp; !dst.getBuilder().getPlayer().equals(player) &amp;&amp;</b>
+<i>87</i>&nbsp;                i_enemy_dst &lt; IslandBoard.dimension &amp;&amp; i_enemy_dst &gt;= 0 &amp;&amp;
+<i>88</i>&nbsp;                j_enemy_dst &lt; IslandBoard.dimension &amp;&amp; j_enemy_dst &gt;= 0 &amp;&amp;
+<b class="fc"><i>89</i>&nbsp;                !gameMap.getCell(i_enemy_dst, j_enemy_dst).isDomePresent() &amp;&amp;</b>
+<b class="fc"><i>90</i>&nbsp;                (allowSwitch || !gameMap.getCell(i_enemy_dst, j_enemy_dst).isOccupied());</b>
+<i>91</i>&nbsp;    }
+<i>92</i>&nbsp;
+<i>93</i>&nbsp;
+<i>94</i>&nbsp;    /**
+<i>95</i>&nbsp;     * Override to cover different ways to move for {@link YourMoveGodCard}. Every coordinate must be in range 0 - IslandBoard.dimension
+<i>96</i>&nbsp;     * @return True if destination is reachable from source
+<i>97</i>&nbsp;     */
+<i>98</i>&nbsp;    @Override
+<i>99</i>&nbsp;    public boolean askMove(int i_src, int j_src, int i_dst, int j_dst) {
+<b class="fc"><i>100</i>&nbsp;        boolean extraConditions = true;</b>
+<b class="fc"><i>101</i>&nbsp;        Cell src = gameMap.getCell(i_src, j_src);</b>
+<b class="fc"><i>102</i>&nbsp;        Cell dst = gameMap.getCell(i_dst, j_dst);</b>
+<b class="fc"><i>103</i>&nbsp;        boolean moveHeightCondition = IslandBoard.heightDifference(src, dst) &lt;= maxHeightDifference;</b>
+<b class="fc"><i>104</i>&nbsp;        boolean correctSrc = src.getBuilder() != null &amp;&amp; src.getBuilder().getPlayer().equals(player);</b>
+<b class="fc"><i>105</i>&nbsp;        if (secondMoveDiffDst &amp;&amp; step != 0)</b>
+<b class="fc"><i>106</i>&nbsp;            extraConditions = !firstSrcCell.equals(dst);</b>
+<b class="fc"><i>107</i>&nbsp;        return  (super.askMove(i_src, j_src, i_dst,j_dst) ||</b>
+<i>108</i>&nbsp;                (pushForce != 0 &amp;&amp; moveHeightCondition &amp;&amp;
+<b class="fc"><i>109</i>&nbsp;                !dst.isDomePresent() &amp;&amp;</b>
+<i>110</i>&nbsp;                correctSrc &amp;&amp;
+<b class="fc"><i>111</i>&nbsp;                gameMap.check(new Event(Event.EventType.MOVE, src, dst)) &amp;&amp;</b>
+<b class="fc"><i>112</i>&nbsp;                (dst.isOccupied() &amp;&amp;</b>
+<b class="fc"><i>113</i>&nbsp;                askPush(i_src, j_src, i_dst, j_dst)))) &amp;&amp;</b>
+<b class="fc"><i>114</i>&nbsp;                extraConditions &amp;&amp; IslandBoard.distanceOne(i_src, j_src, i_dst, j_dst);</b>
+<i>115</i>&nbsp;    }
+<i>116</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-07-03 00:59</div>
+</div>
+</body>
+</html>
