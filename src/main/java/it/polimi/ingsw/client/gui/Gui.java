@@ -3,6 +3,7 @@ package it.polimi.ingsw.client.gui;
 import it.polimi.ingsw.client.GameMap;
 import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.Model;
+import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 
 import javafx.animation.Animation;
@@ -26,10 +27,10 @@ import javafx.util.Duration;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author veronica
- *
  * Graphical User Interface which extends the abstract class View, to share methods and attributes with Cli
  */
 public class Gui extends View {
@@ -56,15 +57,15 @@ public class Gui extends View {
     private static final int builderIndexInStack = 1;
 
     private static final String warning = "\u26A0";
-    private static final String buttonCoralSrc = "/btn_coral.png";
-    private static final String buttonCoralPressedSrc = "/btn_coral_pressed.png";
-    protected static final String submitButton = "/btn_submit.png";
-    protected static final String submitButtonPressed = "/btn_submit_pressed.png";
-    private static final String nameTagSrc = "/nameTag.png";
-    private static final String versusSrc = "/versus.png";
-    private static final String backgroundSrc = "/SantoriniBoard.png";
-    private static final String titleSrc = "/title.png";
-    private static final String iconSrc = "/icon.png";
+    private static final String buttonCoralSrc = "/Images/btn_coral.png";
+    private static final String buttonCoralPressedSrc = "/Images/btn_coral_pressed.png";
+    protected static final String submitButton = "/Images/btn_submit.png";
+    protected static final String submitButtonPressed = "/Images/btn_submit_pressed.png";
+    private static final String nameTagSrc = "/Images/nameTag.png";
+    private static final String versusSrc = "/Images/versus.png";
+    private static final String backgroundSrc = "/Images/SantoriniBoard.png";
+    private static final String titleSrc = "/Images/title.png";
+    private static final String iconSrc = "/Images/icon.png";
     private static final Font stdFont = new Font("Arial", fontSize);
 
     private Map<String, String> matchGodCards = new HashMap<>();
@@ -80,16 +81,18 @@ public class Gui extends View {
     private VBox dialogRegion;
     private Insets playersRegionInsets;
     private int numMessages;
-    private boolean buildDome;
     private Text connectionErrorText = new Text();
     private Text setupErrorText = new Text();
     private GodCardsPopup godCardsPopup;
     private PlayerSetupPopup playerSetupPopup;
     private ChoicePopup choiceSetupPopup;
     private Map<String, Text> playersNameTags = new HashMap<>();
+    private boolean buildDome;
     private boolean challenger;
     private TextField IPInsertion;
     private TextField portInsertion;
+    private Label connecting;
+    private Button playAgainBtn;
 
     /**
      * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
@@ -110,10 +113,10 @@ public class Gui extends View {
 
         IPInsertion = new TextField ("IP");
         IPInsertion.setFont(new Font("Arial", fontSize/1.2));
-        IPInsertion.setStyle("-fx-text-inner-color: antiquewhite;");
+        IPInsertion.setStyle("-fx-text-inner-color: antiquewhite; -fx-accent: lightsalmon;");
         portInsertion = new TextField("Port");
         portInsertion.setFont(new Font("Arial", fontSize/1.2));
-        portInsertion.setStyle("-fx-text-inner-color: antiquewhite;");
+        portInsertion.setStyle("-fx-text-inner-color: antiquewhite; -fx-accent: lightsalmon ;");
 
         homeScene = new HomeScene (homePane, sceneWidth, sceneHeight, IPInsertion, portInsertion);
         activatePlayBtn();
@@ -132,6 +135,9 @@ public class Gui extends View {
         gameMap = new GuiMap(tile, primaryScene);
 
         this.numMessages = 0;
+        this.playAgainBtn = new GuiButton("Play Again", submitButton, mouseEvent -> resetAll(), submitButtonPressed);
+        playAgainBtn.setTextFill(Color.WHITESMOKE);
+        setPrimarySceneButtonBinding(playAgainBtn);
         this.playersRegion = new VBox();
         this.playersRegionInsets = new Insets(0, primaryScene.getWidth()* mapRatioFromSides /4, 0, 0);
         this.dialogRegion = new VBox();
@@ -190,13 +196,36 @@ public class Gui extends View {
         });
     }
 
+    private void setFadeTransition(Label label) {
+        label.setTextFill(Color.RED);
+        label.setFont(stdFont);
+        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), label);
+        fadeTransition.setFromValue(1.0);
+        fadeTransition.setToValue(0.0);
+        fadeTransition.setCycleCount(Animation.INDEFINITE);
+        fadeTransition.play();
+    }
+
+    /**
+     * Private method used to set the handler on a mouse clicked event, which is reset after each click, to avoid
+     * multiple connection requests simultaneously.
+     */
     private void activatePlayBtn () {
         IPInsertion.setEditable(true);
         portInsertion.setEditable(true);
         homeScene.getPlayBtn().setOnMouseClicked(mouseEvent -> {
             try {
                 int portNum = Integer.parseInt(portInsertion.getText());
+
+                connecting = new Label("Connecting...");
+                setFadeTransition(connecting);
+
+                Platform.runLater(()-> homePane.getChildren().add(connecting));
+                AnchorPane.setBottomAnchor(connecting, marginLength*2);
+                AnchorPane.setRightAnchor(connecting, (double) sceneHeight/2);
+
                 notifyConnection(IPInsertion.getText(), portNum);
+
                 homeScene.getPlayBtn().setOnMouseClicked(null);
                 IPInsertion.setEditable(false);
                 portInsertion.setEditable(false);
@@ -330,7 +359,10 @@ public class Gui extends View {
 
         super.askNumberOfPlayers();
 
-        setState(ViewState.NUMPLAYERS);
+        Platform.runLater(()-> homePane.getChildren().remove(connecting));
+        if (homePane.getChildren().contains(connectionErrorText))
+            Platform.runLater(()-> homePane.getChildren().remove(connectionErrorText));
+
         Set<String> possibleNumPlayers = new HashSet<>();
 
         for (int i = minNumberOfPlayers; i <= maxNumberOfPlayers; i++)
@@ -349,6 +381,12 @@ public class Gui extends View {
         });
     }
 
+    /**
+     * This private method is used to set the handler of a windowEvent, so that, except during the connection phase,
+     * an alert will open on close request to warn the user that closing that window he'll leave the game
+     * @param popup stage to close, on which the event happened
+     * @param windowEvent event to handle
+     */
     private void popupClosing (Stage popup, WindowEvent windowEvent) {
         if (!getState().equals(ViewState.CONNECTION)) {
             if (confirmQuit()) {
@@ -373,8 +411,8 @@ public class Gui extends View {
         TextField nickInsertion = new TextField ("nickname");
         TextField birthdayInsertion = new TextField("birthday");
         nickInsertion.setFont(stdFont);
-        nickInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue;");
-        birthdayInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue;");
+        nickInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue; -fx-accent: lightsalmon;");
+        birthdayInsertion.setStyle("-fx-text-inner-color: white; -fx-control-inner-background: steelblue; -fx-accent: lightsalmon;");
         birthdayInsertion.setFont(stdFont);
 
         Platform.runLater(() -> {
@@ -472,8 +510,6 @@ public class Gui extends View {
         });
     }
 
-    //TODO: make the server send available colors, not chosen one to avoid the manual insertion of them ?
-
     /**
      * Creates a ChoicePopup to make each player choose his color
      * @param chosenColors already chosen colors, not to be showed as possibilities
@@ -483,13 +519,13 @@ public class Gui extends View {
 
         super.askBuilderColor(chosenColors);
 
-        Set<String> availableColors = new HashSet<>(Set.of("MAGENTA", "WHITE", "LIGHT_BLUE"));
+        Set<String> availableColors = Stream.of(Builder.BuilderColor.values()).map(Enum::name).collect(Collectors.toSet());
         availableColors.removeAll(chosenColors);
 
         Set<String> printableColors = new HashSet<>();
         for (String s: availableColors)
             printableColors.add(s.replace('_',' ').toLowerCase());
-
+        
         setState(ViewState.BUILDERCOLOR);
 
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
@@ -640,9 +676,11 @@ public class Gui extends View {
                 currBuilderIndexStack = getBuilderIndexInStack(coord);
 
                 tmp.getChildren().get(currBuilderIndexStack).setOnMouseEntered(mouseEvent -> {
-                    ImageView builderToHandle = (ImageView) mouseEvent.getSource();
-                    DropShadow shadow = new DropShadow();
-                    builderToHandle.setEffect(shadow);
+                    if (!getState().equals(ViewState.CONNECTION)) {
+                        ImageView builderToHandle = (ImageView) mouseEvent.getSource();
+                        DropShadow shadow = new DropShadow();
+                        builderToHandle.setEffect(shadow);
+                    }
                 });
 
                 tmp.getChildren().get(currBuilderIndexStack).setOnMouseExited(mouseEvent -> {
@@ -652,56 +690,57 @@ public class Gui extends View {
 
                 tmp.getChildren().get(currBuilderIndexStack).setOnMouseClicked(mouseEvent -> {
 
-                    //takes the builder and sets its opacity to show that it's been selected
-                    ImageView clickedBuilder = (ImageView) mouseEvent.getSource();
-                    clickedBuilder.setOpacity(Gui.selectionOpacity);
-                    clickedBuilder.setOnMouseEntered(null);
-                    clickedBuilder.setOnMouseClicked(null);
+                    if (!getState().equals(ViewState.CONNECTION)) {
+                        //takes the builder and sets its opacity to show that it's been selected
+                        ImageView clickedBuilder = (ImageView) mouseEvent.getSource();
+                        clickedBuilder.setOpacity(Gui.selectionOpacity);
+                        clickedBuilder.setOnMouseEntered(null);
+                        clickedBuilder.setOnMouseClicked(null);
 
-                    //controls if the chosen builder is the first one or the second one of current player's builders
-                    Coordinates coordOfFirstBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
-                    StackPane firstBuilderCell = (StackPane) tile.getChildren().get(GameMap.coordinatesToIndex(coordOfFirstBuilderCell));
-                    Coordinates coordOfSecondBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
-                    StackPane secondBuilderCell = (StackPane) tile.getChildren().get(GameMap.coordinatesToIndex(coordOfSecondBuilderCell));
+                        //controls if the chosen builder is the first one or the second one of current player's builders
+                        Coordinates coordOfFirstBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex);
+                        StackPane firstBuilderCell = (StackPane) tile.getChildren().get(GameMap.coordinatesToIndex(coordOfFirstBuilderCell));
+                        Coordinates coordOfSecondBuilderCell = gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex);
+                        StackPane secondBuilderCell = (StackPane) tile.getChildren().get(GameMap.coordinatesToIndex(coordOfSecondBuilderCell));
 
-                    int currentBuilderIndexInStack = getBuilderIndexInStack(coordOfFirstBuilderCell);
+                        int currentBuilderIndexInStack = getBuilderIndexInStack(coordOfFirstBuilderCell);
 
-                    //if the clicked builder is the first one, I reset the not clicked one (second one)
-                    if (firstBuilderCell.getChildren().get(currentBuilderIndexInStack).equals(clickedBuilder)) {
+                        //if the clicked builder is the first one, I reset the not clicked one (second one)
+                        if (firstBuilderCell.getChildren().get(currentBuilderIndexInStack).equals(clickedBuilder)) {
 
-                        int secondBuilderIndexInStack = getBuilderIndexInStack(coordOfSecondBuilderCell);
+                            int secondBuilderIndexInStack = getBuilderIndexInStack(coordOfSecondBuilderCell);
 
-                        secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseClicked(null);
-                        secondBuilderCell.getChildren().get(secondBuilderIndexInStack).setOnMouseEntered(null);
-                        gameMap.setCurrentTurnBuilderPos(gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex));
-                        gameMap.setChosenBuilderNum(1);
+                            ImageView secondBuilder = (ImageView) secondBuilderCell.getChildren().get(secondBuilderIndexInStack);
+                            secondBuilder.setOnMouseClicked(null);
+                            secondBuilder.setOnMouseEntered(null);
+                            gameMap.setCurrentTurnBuilderPos(gameMap.getOccupiedCells().get(getNickname()).get(GameMap.firstBuilderIndex));
+                            gameMap.setChosenBuilderNum(1);
+                        } else {
+
+                            int firstBuilderIndexInStack = getBuilderIndexInStack(coordOfFirstBuilderCell);
+                            ImageView firstBuilder = (ImageView) firstBuilderCell.getChildren().get(firstBuilderIndexInStack);
+                            firstBuilder.setOnMouseClicked(null);
+                            firstBuilder.setOnMouseEntered(null);
+                            gameMap.setCurrentTurnBuilderPos(gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex));
+                            gameMap.setChosenBuilderNum(2);
+                        }
+
+                        gameMap.setPossibleDst(null, null);
+
+                        if (getState().toString().equals("MOVE")) {
+                            printMessage("Select where you want to move", false);
+                            moveOnBuilderChosen();
+                        } else {
+                            printMessage("Select where you want to build", false);
+                            if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) ||
+                                    (!possibleDstBuilder2forDome.isEmpty() && gameMap.getChosenBuilderNum() == 2))
+                                askForDome();
+                            buildToDst();
+                        }
                     }
-                    else {
-
-                        int firstBuilderIndexInStack = getBuilderIndexInStack(coordOfFirstBuilderCell);
-                        firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseClicked(null);
-                        firstBuilderCell.getChildren().get(firstBuilderIndexInStack).setOnMouseEntered(null);
-                        gameMap.setCurrentTurnBuilderPos(gameMap.getOccupiedCells().get(getNickname()).get(GameMap.secondBuilderIndex));
-                        gameMap.setChosenBuilderNum(2);
-                    }
-
-                    gameMap.setPossibleDst(null, null);
-
-                    if (getState().toString().equals("MOVE")) {
-                        printMessage("Select where you want to move", false);
-                        moveOnBuilderChosen();
-                    }
-                    else {
-                        printMessage("Select where you want to build", false);
-                        if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) ||
-                                (!possibleDstBuilder2forDome.isEmpty() && gameMap.getChosenBuilderNum() == 2))
-                            askForDome();
-                        buildToDst();
-                    }
-
                 });
+                first = false;
             }
-            first = false;
         }
     }
 
@@ -981,25 +1020,20 @@ public class Gui extends View {
      */
     @Override
     public void onEndGameUpdate(String winnerNickname) {
+
         Platform.runLater(() -> dialogRegion.getChildren().clear());
 
         if (!getNickname().equals(winnerNickname)) {
 
             printMessage("Player " + winnerNickname + " wins!", false);
-            EndGameMessage endGameMessage = new EndGameMessage("YOU LOSE", Color.BLUE, dialogRegion, MouseEvent -> resetAll());
-            setPrimarySceneButtonBinding(endGameMessage.getPlayAgainBtn());
+            new EndGameMessage("YOU LOSE", Color.BLUE, dialogRegion, playAgainBtn);
         }
-        else {
-            EndGameMessage endGameMessage = new EndGameMessage("YOU WIN!", Color.LIGHTSALMON,
-                    dialogRegion, MouseEvent -> resetAll());
-            setPrimarySceneButtonBinding(endGameMessage.getPlayAgainBtn());
-        }
-
-
+        else
+            new EndGameMessage("YOU WIN!", Color.LIGHTSALMON, dialogRegion, playAgainBtn);
     }
 
     /**
-     * Private method used to reset primaryScene and homeScene for a new match. It creates also a new GuiMap
+     * Private method used to reset primaryScene and homeScene for a new match. It creates also a new GuiMap.
      */
     private void resetAll () {
 
@@ -1119,8 +1153,7 @@ public class Gui extends View {
         }
         else {
             Platform.runLater(() -> dialogRegion.getChildren().clear());
-            EndGameMessage endGameMessage = new EndGameMessage("YOU LOSE", Color.BLUE, dialogRegion, MouseEvent -> resetAll());
-            setPrimarySceneButtonBinding(endGameMessage.getPlayAgainBtn());
+            new EndGameMessage("YOU LOSE", Color.BLUE, dialogRegion, playAgainBtn);
         }
         matchGodCards.remove(nickname);
         setPlayersRegion();
@@ -1168,67 +1201,65 @@ public class Gui extends View {
 
     /**
      * When the match is in the state SETUP_BUILDERS, the playersRegion is featured with players nicknames and gods,
-     * when the match is in SETUP_PLAYERS, the user is advised to wait for players to enter
+     * when the match is in SETUP_PLAYERS, the user is advised to wait for players to enter and the bottom messages VBox
+     * is set. Also the scene is changed from homeScene to primaryScene.
      * @param currState currState of the model
      */
     @Override
     public void onStateUpdate(Model.State currState) {
 
-        if (currState.equals(Model.State.SETUP_BUILDERS)) {
+        switch (currState.toString()) {
 
-            playersRegion.setBorder(new Border(new BorderStroke(SEA, SEA, SEA,Color.TRANSPARENT, BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID,
-                    BorderStrokeStyle.SOLID, null, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS, playersRegionInsets)));
+            case "SETUP_BUILDERS":
 
-            playersRegion.setBackground(new Background(new BackgroundFill(Color.ANTIQUEWHITE, null, playersRegionInsets)));
+                playersRegion.setBorder(new Border(new BorderStroke(SEA, SEA, SEA, Color.TRANSPARENT, BorderStrokeStyle.SOLID, BorderStrokeStyle.SOLID,
+                        BorderStrokeStyle.SOLID, null, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS, playersRegionInsets)));
 
-            setPlayersRegion();
+                playersRegion.setBackground(new Background(new BackgroundFill(Color.ANTIQUEWHITE, null, playersRegionInsets)));
 
-            HBox bottomBtns = new HBox();
-            bottomBtns.setSpacing(marginLength);
+                setPlayersRegion();
 
-            Button godCardsBtn = new GuiButton("GodCards",buttonCoralSrc, mouseEvent ->
-                GodCardsPopup.getInstance(primaryStage, 0, matchGodCards, null), buttonCoralPressedSrc);
+                HBox bottomBtns = new HBox();
+                bottomBtns.setSpacing(marginLength);
 
-            Button quitBtn = new GuiButton("QUIT",buttonCoralSrc,  mouseEvent -> {
-                notifyDisconnection();
-                primaryStage.close();
-                Platform.exit();
-                System.exit(0);
-            }, buttonCoralPressedSrc);
+                Button godCardsBtn = new GuiButton("GodCards", buttonCoralSrc, mouseEvent ->
+                        GodCardsPopup.getInstance(primaryStage, 0, matchGodCards, null), buttonCoralPressedSrc);
 
-            setPrimarySceneButtonBinding(godCardsBtn);
-            setPrimarySceneButtonBinding(quitBtn);
-            Platform.runLater(() -> bottomAnchorPane.getChildren().add(bottomBtns));
-            AnchorPane.setBottomAnchor(bottomBtns, Gui.marginLength);
-            AnchorPane.setRightAnchor(bottomBtns, Gui.marginLength);
-            Platform.runLater(()-> bottomBtns.getChildren().addAll(godCardsBtn, quitBtn));
-        }
+                Button quitBtn = new GuiButton("QUIT", buttonCoralSrc, mouseEvent -> {
+                    notifyDisconnection();
+                    primaryStage.close();
+                    Platform.exit();
+                    System.exit(0);
+                }, buttonCoralPressedSrc);
 
-        else if (currState.equals(Model.State.SETUP_PLAYERS)) {
+                setPrimarySceneButtonBinding(godCardsBtn);
+                setPrimarySceneButtonBinding(quitBtn);
+                Platform.runLater(() -> bottomAnchorPane.getChildren().add(bottomBtns));
+                AnchorPane.setBottomAnchor(bottomBtns, Gui.marginLength);
+                AnchorPane.setRightAnchor(bottomBtns, Gui.marginLength);
+                Platform.runLater(() -> bottomBtns.getChildren().addAll(godCardsBtn, quitBtn));
+                break;
 
-            this.bottomMessagesVBox = new VBox();
-            bottomMessagesVBox.setSpacing(marginLength/10);
-            bottomAnchorPane.getChildren().add(bottomMessagesVBox);
-            AnchorPane.setLeftAnchor(bottomMessagesVBox, marginLength);
-            AnchorPane.setTopAnchor(bottomMessagesVBox, marginLength/4);
-            bottomMessagesVBox.setAlignment(Pos.CENTER);
+            case "SETUP_PLAYERS":
+                    this.bottomMessagesVBox = new VBox();
+                    bottomMessagesVBox.setSpacing(marginLength / 10);
+                    bottomAnchorPane.getChildren().add(bottomMessagesVBox);
+                    AnchorPane.setLeftAnchor(bottomMessagesVBox, marginLength);
+                    AnchorPane.setTopAnchor(bottomMessagesVBox, marginLength / 4);
+                    bottomMessagesVBox.setAlignment(Pos.CENTER);
 
-            Platform.runLater(() ->primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double)Gui.sceneWidth/Gui.sceneHeight)));
-            Platform.runLater(() ->primaryStage.minHeightProperty().bind(root.widthProperty().divide((double)Gui.sceneWidth/Gui.sceneHeight)));
-            Platform.runLater(() ->primaryStage.setScene(primaryScene));
+                    Platform.runLater(() -> primaryStage.minWidthProperty().bind(root.heightProperty().multiply((double) Gui.sceneWidth / Gui.sceneHeight)));
+                    Platform.runLater(() -> primaryStage.minHeightProperty().bind(root.widthProperty().divide((double) Gui.sceneWidth / Gui.sceneHeight)));
+                    Platform.runLater(() -> primaryStage.setScene(primaryScene));
 
-            Label label = new Label("Waiting for players... ");
-            label.setTextFill(Color.RED);
-            label.setFont(stdFont);
+                    Label label = new Label("Waiting for players... ");
+                    setFadeTransition(label);
 
-            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.5), label);
-            fadeTransition.setFromValue(1.0);
-            fadeTransition.setToValue(0.0);
-            fadeTransition.setCycleCount(Animation.INDEFINITE);
-            fadeTransition.play();
-
-            playersRegion.setAlignment(Pos.CENTER);
-            Platform.runLater(() ->playersRegion.getChildren().add(label));
+                    playersRegion.setAlignment(Pos.CENTER);
+                    Platform.runLater(() -> playersRegion.getChildren().add(label));
+                    if (homePane.getChildren().contains(connecting))
+                        Platform.runLater(()-> homePane.getChildren().remove(connecting));
+                    break;
         }
     }
 
@@ -1256,6 +1287,7 @@ public class Gui extends View {
      */
     @Override
     public void onConnectionError(String message) {
+        Platform.runLater(()-> homePane.getChildren().remove(connecting));
         printMessage(message, false);
         activatePlayBtn();
     }
@@ -1268,15 +1300,10 @@ public class Gui extends View {
     public void onDisconnection() {
 
         super.onDisconnection();
-        if (!getState().equals(View.ViewState.END)) {
 
-            printMessage(warning + " You're disconnected " + warning, false);
-            Button playAgainBtn = new GuiButton("Play Again", submitButton, mouseEvent -> resetAll(), submitButtonPressed);
-            playAgainBtn.setTextFill(Color.WHITESMOKE);
-            setPrimarySceneButtonBinding(playAgainBtn);
+        printMessage(warning + " You're disconnected " + warning, false);
+        if (!dialogRegion.getChildren().contains(playAgainBtn))
             Platform.runLater(()-> dialogRegion.getChildren().add(playAgainBtn));
-        }
-        setState(ViewState.CONNECTION);
     }
 
     /**
@@ -1315,17 +1342,9 @@ public class Gui extends View {
             playersNameTags.put(player, text);
 
             String color = getChosenColorsForPlayer().get(player);
-            switch (color) {
-                case "LIGHT_BLUE":
-                    text.setFill(Color.LIGHTBLUE);
-                    break;
-                case "MAGENTA":
-                    text.setFill(Color.MAGENTA);
-                    break;
-                case "WHITE":
-                    text.setFill(Color.WHITE);
-                    break;
-            }
+            color = color.replaceAll("_","").toLowerCase();
+
+            text.setFill(Color.web(color));
 
             Platform.runLater(() -> tagImageText.getChildren().addAll(nameTag, text));
             Platform.runLater(() -> playersRegion.getChildren().add(tagImageText));

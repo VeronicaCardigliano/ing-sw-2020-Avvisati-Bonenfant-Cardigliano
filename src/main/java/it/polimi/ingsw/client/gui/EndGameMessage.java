@@ -1,12 +1,10 @@
 package it.polimi.ingsw.client.gui;
 
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.effect.Blend;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -17,13 +15,11 @@ import javafx.scene.text.Text;
  */
 public class EndGameMessage {
 
-    Button playAgainBtn;
-
     /**
      * Creates end game message of victory or loss with a button to eventually play again.
      * @param message string to print
      */
-    public EndGameMessage(String message, Color color, Pane ownerPane, EventHandler<MouseEvent> handler) {
+    public EndGameMessage(String message, Color color, Pane ownerPane, Button playAgainBtn) {
 
         Text text = new Text(message);
         //text.prefWidthProperty().bind(playersRegion.prefWidthProperty().subtract(marginLength*2));
@@ -51,16 +47,6 @@ public class EndGameMessage {
 
         Platform.runLater(()-> ownerPane.getChildren().add(text));
 
-        playAgainBtn = new GuiButton("Play Again", Gui.submitButton, handler, Gui.submitButtonPressed);
-        playAgainBtn.setTextFill(Color.WHITESMOKE);
         Platform.runLater(()-> ownerPane.getChildren().add(playAgainBtn));
     }
-
-    /**
-     * @return the submit button used to set the handler of an event from outside of the class
-     */
-    protected Button getPlayAgainBtn() {
-        return playAgainBtn;
-    }
-
 }

@@ -23,6 +23,17 @@ import java.util.*;
  */
 public class GuiMap extends GameMap {
 
+    private static final String builderLightBlue = "/Images/BuilderLightBlue.png";
+    private static final String builderMagenta = "/Images/BuilderMagenta.png";
+    protected static final String builderWhite = "/Images/BuilderWhite.png";
+    private static final String groundDome = "/Images/groundDome.png";
+    private static final String domeFirstLevel = "/Images/domeFirstLevel.png";
+    protected static final String domeSecondLevel = "/Images/domeSecondLevel.png";
+    private static final String domeThirdLevel = "/Images/domeThirdLevel.png";
+    private static final String firstLevel = "/Images/firstLevel.png";
+    protected static final String secondLevel = "/Images/domeSecondLevel.png";
+    protected static final String thirdLevel =  "/Images/thirdLevel.png";
+
     //index of the building in the StackPane which represents the cell
     private static final int buildingIndexInStack = 0;
     private static final int builderIndexInStack = 1;
@@ -57,6 +68,7 @@ public class GuiMap extends GameMap {
      */
     @Override
     public void setChosenBuilderNum(int chosenBuilderNumber) {
+
         super.setChosenBuilderNum(chosenBuilderNumber);
         if(chosenBuilderNumber == 0)
             resetBuilder(getCurrentTurnBuilderPos());
@@ -175,29 +187,29 @@ public class GuiMap extends GameMap {
         if (buildDome) {
             switch (oldHeight) {
                 case 0:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/groundDome.png")));
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream(groundDome)));
                     break;
                 case 1:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeFirstLevel.png")));
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream(domeFirstLevel)));
                     break;
                 case 2:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeSecondLevel.png")));
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream(domeSecondLevel)));
                     break;
                 case 3:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/domeThirdLevel.png")));
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream(domeThirdLevel)));
                     break;
             }
         }
         else {
             switch (getHeights().get(dstCoord)) {
                 case 1:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/firstLevel.png")));
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream(firstLevel)));
                     break;
                 case 2:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/secondLevel.png")));
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream(secondLevel)));
                     break;
                 case 3:
-                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream("/thirdLevel.png")));
+                    newBuilding = new ImageView (new Image(getClass().getResourceAsStream(thirdLevel)));
                     break;
             }
         }
@@ -262,13 +274,13 @@ public class GuiMap extends GameMap {
         ImageView builder = null;
         switch (color) {
             case "LIGHT_BLUE":
-                builder = new ImageView(new Image(getClass().getResourceAsStream("/BuilderLightBlue.png")));
+                builder = new ImageView(new Image(getClass().getResourceAsStream(builderLightBlue)));
                 break;
             case "MAGENTA":
-                builder = new ImageView(new Image(getClass().getResourceAsStream("/BuilderMagenta.png")));
+                builder = new ImageView(new Image(getClass().getResourceAsStream(builderMagenta)));
                 break;
             case "WHITE":
-                builder = new ImageView(new Image(getClass().getResourceAsStream("/BuilderWhite.png")));
+                builder = new ImageView(new Image(getClass().getResourceAsStream(builderWhite)));
                 break;
         }
 
@@ -351,11 +363,11 @@ public class GuiMap extends GameMap {
     }
 
     /**
-     * Resets the possible destinations cells after builder/destination choice
+     * Resets the possible destinations cells setting to null the mouse handlers and to TRANSPARENT the cells color
      */
     private void resetPossibleDestinations() {
-        for (Node cell : tile.getChildren()) {
 
+        for (Node cell : tile.getChildren()) {
             cell.setOnMouseClicked(null);
             cell.setOnMouseEntered(null);
             cell.setStyle ("-fx-background-color: TRANSPARENT");

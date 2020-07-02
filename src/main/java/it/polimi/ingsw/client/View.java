@@ -16,7 +16,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
         SocketObserver, OpponentDisconnectionObserver {
 
     public enum ViewState {
-        CONNECTION, WAITING, NUMPLAYERS, NICKDATE, MATCHGODS, PLAYERGOD, STARTPLAYER, BUILDERCOLOR, BUILDERPLACEMENT, STEP, MOVE, BUILD, END
+        CONNECTION, WAITING, NUMPLAYERS, NICKDATE, MATCHGODS, PLAYERGOD, STARTPLAYER, BUILDERCOLOR, BUILDERPLACEMENT, STEP, MOVE, BUILD
     }
 
     private ConnectionObserver connectionObserver; //will connect to server when View sends a notifyConnection
@@ -255,8 +255,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
      * @param error String representing the error
      */
     @Override
-    public void onWrongInsertionUpdate(String error) {
-    }
+    public abstract void onWrongInsertionUpdate(String error);
 
     /**
      * Handles error during the setting of the number of players for the game
@@ -354,9 +353,12 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     @Override
     public void onDisconnection() {
 
+        setState(ViewState.CONNECTION);
+
+        //resetting all game data
         setNickname(null);
         setDate(null);
-        //resetting all game data
+        gameMap.setPossibleDst(null, null);
         chosenGodCardsForPlayer = new HashMap<>();
         if (gameMap.getChosenBuilderNum() != 0)
             gameMap.setChosenBuilderNum(0);

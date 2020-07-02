@@ -26,7 +26,6 @@ public class VirtualView extends ViewObservable implements Runnable {
     private final int pingDelay = 2;
     private final Socket socket;
     private PrintWriter out;
-    private BufferedReader in;
     private String nickname;
     private boolean registered = false;
     private ConnectionObserver connectionObserver;
@@ -94,6 +93,7 @@ public class VirtualView extends ViewObservable implements Runnable {
             return;
         }
 
+        BufferedReader in;
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch (IOException e) {

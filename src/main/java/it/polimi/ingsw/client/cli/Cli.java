@@ -3,10 +3,12 @@ package it.polimi.ingsw.client.cli;
 
 import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.Model;
+import it.polimi.ingsw.server.model.gameMap.Builder;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static it.polimi.ingsw.client.cli.Color.returnColor;
 
@@ -38,7 +40,6 @@ public class Cli extends View{
 
     //flags for build phase
     private boolean askForBuildType = false; //tells if input will be used as build choice
-    private boolean buildTypeChosen = false;
     private String buildType;
     private Set<Coordinates> possibleDstBuilder = new HashSet<>();
     private boolean buildDome = false;
@@ -188,7 +189,7 @@ public class Cli extends View{
 
                                         row = null;
 
-                                        printer.setAskMessage("Choose builder number 2 \nROW: ");
+                                        printer.setAskMessage("Place your second builder \nROW: ");
                                     }
                                     printer.print();
 
@@ -457,6 +458,7 @@ public class Cli extends View{
      */
     @Override
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
+
         super.chooseMatchGodCards(numOfPlayers, godDescriptionsParam);
 
         this.allGodCards = godDescriptionsParam;
@@ -470,12 +472,18 @@ public class Cli extends View{
 
         String crown = Color.ANSI_YELLOW.escape() + crownSymbol + Color.RESET;
 
-        printer.setInfoMessage("\n" + crown + "  You're the " + Color.ANSI_YELLOW.escape() + "Challenger" + Color.RESET + " of this match!  " + crown + "\n" +
-                "Choose " + (numOfPlayers - getMatchGodCards().size()) + " godCards for the match: \n");
-        printer.setChoiceList(getMapRepresentation(availableGods));
-        printer.setAskMessage("Choose " + getNumberOfPlayers() + " cards for the game.\nChoice: ");
+        if (getMatchGodCards().size() == 0) {
+            printer.setInfoMessage("\n" + crown + "  You're the " + Color.ANSI_YELLOW.escape() + "Challenger" + Color.RESET + " of this match!  " + crown + "\n" +
+                    "Choose " + numOfPlayers + " godCards for the match: \n");
+            printer.setChoiceList(getMapRepresentation(availableGods));
+        }
+        else {
+            printer.setInfoMessage(null);
+            printer.setChoiceList(getMapRepresentation(availableGods));
+        }
+        int choiceNumber = getMatchGodCards().size() + 1;
+        printer.setAskMessage("Choice" + choiceNumber + ": ");
         printer.print();
-
     }
 
     /**
@@ -488,7 +496,7 @@ public class Cli extends View{
 
         inputOptions = new ArrayList<>();
         inputOptions.addAll(players);
-        printer.setInfoMessage(null);
+        printer.setInfoMessage("As Challenger of the match, choose the starting player: ");
         printer.setChoiceList(getSetRepresentation(players));
         printer.setAskMessage("Choice: ");
         printer.print();
@@ -525,7 +533,7 @@ public class Cli extends View{
     public void askBuilderColor(Set<String> chosenColors) {
         super.askBuilderColor(chosenColors);
 
-        Set<String> allColors = new HashSet<>(Set.of("MAGENTA", "WHITE", "LIGHT_BLUE"));
+        Set<String> allColors = Stream.of(Builder.BuilderColor.values()).map(Enum::name).collect(Collectors.toSet());
         allColors.removeAll(chosenColors);
 
         inputOptions = new ArrayList<>();
@@ -545,7 +553,7 @@ public class Cli extends View{
         printer.setGameMapString(gameMap.toString());
         printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
         printer.setChoiceList(null);
-        printer.setAskMessage("Choose your first builder.\nROW: ");
+        printer.setAskMessage("Place your first builder.\nROW: ");
         printer.print();
     }
 
@@ -709,7 +717,6 @@ public class Cli extends View{
      */
     @Override
     public void onWrongInsertionUpdate(String error) {
-        super.onWrongInsertionUpdate(error);
 
         printer.setInfoMessage(error);
         printer.print();
@@ -758,7 +765,10 @@ public class Cli extends View{
 
 
         if(result) {
-            printer.setInfoMessage("\n" + nickname + " joined the game!");
+            if (getNickname() == null)
+                printer.setInfoMessage("\n" + nickname + " joined the game!");
+            else
+                printer.setInfoMessage(nickname + " joined the game!");
         }
         else {
             printer.setInfoMessage("Could not register nickname");
@@ -804,7 +814,7 @@ public class Cli extends View{
 
         printer.erase();
 
-        if(result)
+        if(result && !getNickname().equals(nickname))
             printer.setInfoMessage("The starting player is: " + nickname);
         else
             printer.setInfoMessage("Could not set " + nickname + " as starting player");
@@ -1089,8 +1099,6 @@ public class Cli extends View{
     @Override
     public synchronized void onDisconnection() {
         super.onDisconnection();
-
-        setState(ViewState.CONNECTION);
 
         gameMap = new CliGameMap();
 

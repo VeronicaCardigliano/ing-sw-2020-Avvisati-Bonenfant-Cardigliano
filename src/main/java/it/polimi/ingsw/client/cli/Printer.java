@@ -66,7 +66,7 @@ public class Printer {
         if(infoMessage != null)
             out.println(infoMessage);
         if(choiceList != null)
-            out.println(choiceList);
+            out.print(choiceList);
         if(askMessage != null)
             out.print(askMessage);
     }
