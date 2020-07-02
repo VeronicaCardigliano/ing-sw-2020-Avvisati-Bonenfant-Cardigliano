@@ -229,7 +229,8 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     }
 
     /**
-     * Handles server response to a color assignment request
+     * Handles server response to a color assignment request.
+     * If the result is true it saves color information for nickname
      * @param nickname nickname of the player who chose his color
      * @param color color chosen
      * @param result true if the server accepted the request
@@ -247,9 +248,7 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
      * @param winnerNickname nickname of the player who won
      */
     @Override
-    public void onEndGameUpdate(String winnerNickname) {
-        setState(ViewState.END);
-    }
+    public abstract void onEndGameUpdate(String winnerNickname);
 
     /**
      * Handles generic error from server

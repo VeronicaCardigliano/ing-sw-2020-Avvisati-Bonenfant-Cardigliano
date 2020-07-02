@@ -489,7 +489,7 @@ public class Gui extends View {
         Set<String> printableColors = new HashSet<>();
         for (String s: availableColors)
             printableColors.add(s.replace('_',' ').toLowerCase());
-        
+
         setState(ViewState.BUILDERCOLOR);
 
         ChoiceBox<String> choiceBox = new ChoiceBox<>();
@@ -981,7 +981,6 @@ public class Gui extends View {
      */
     @Override
     public void onEndGameUpdate(String winnerNickname) {
-        super.onEndGameUpdate(winnerNickname);
         Platform.runLater(() -> dialogRegion.getChildren().clear());
 
         if (!getNickname().equals(winnerNickname)) {

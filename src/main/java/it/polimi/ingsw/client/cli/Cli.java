@@ -4,7 +4,6 @@ package it.polimi.ingsw.client.cli;
 import it.polimi.ingsw.client.View;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
-import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,6 +30,18 @@ public class Cli extends View{
     private Map<String, String> allGodCards; //all godCards descriptions sent from server.
 
     private Scanner in;
+    private String input;
+
+    private Integer row;
+    private Coordinates coord;
+
+
+    //flags for build phase
+    private boolean askForBuildType = false; //tells if input will be used as build choice
+    private boolean buildTypeChosen = false;
+    private String buildType;
+    private Set<Coordinates> possibleDstBuilder = new HashSet<>();
+    private boolean buildDome = false;
 
 
     public Cli() {
@@ -49,48 +60,6 @@ public class Cli extends View{
         return chosenBuilderPositions;
     }
 
-    /**
-     * Initially parses an Integer from String input.
-     * If it fails it calls getInteger().
-     * @param input String from which to parse Integer.
-     * @return integer parsed.
-     */
-    private int getInteger(String input) {
-        int result;
-        try {
-            result = Integer.parseInt(input);
-        } catch (NumberFormatException e) {
-            printer.setInfoMessage("You have to type a number.");
-            printer.print();
-            result = getInteger();
-        }
-
-        return result;
-    }
-
-    /**
-     * Keep asking for input until it parses an Integer from it
-     * @return integer parsed
-     */
-    private int getInteger() {
-        boolean ok = false;
-        int result = 0;
-
-        while(!ok) {
-            try {
-                result = in.nextInt();
-                in.nextLine(); //reads new line character from buffer
-                ok = true;
-            } catch (InputMismatchException e) {
-                printer.setInfoMessage("You have to type a number.");
-                printer.print();
-                in.nextLine(); //reads new line character from buffer
-            }
-        }
-
-        return result;
-    }
-
     private void addMatchGodCard(String godCard) throws Exception{
         if(!matchGodCards.contains(godCard))
             matchGodCards.add(godCard);
@@ -106,10 +75,13 @@ public class Cli extends View{
      */
     @Override
     public  void run() {
+
+        String server = null;
+
         printer.erase();
         printer.printTitle();
 
-        String input;
+
         printer.setAskMessage("Server to join: ");
         printer.print();
         in = new Scanner(System.in);
@@ -125,122 +97,170 @@ public class Cli extends View{
 
                 Scanner parser = new Scanner(input);
 
+                int column;
                 try {
 
                     //Cli decisions according to state
                     switch (getState()) {
                         case CONNECTION:
-                            String ip = parser.nextLine();
-                            printer.setAskMessage("port: ");
-                            printer.print();
-                            int port = getInteger();
+                            if(server == null) {
+                                server = input;
+                                printer.setAskMessage("port: ");
+                                printer.print();
+                            } else {
+                                notifyConnection(server, Integer.parseInt(input));
+                                server = null;
+                            }
 
-                            notifyConnection(ip, port);
                             break;
 
                         case NUMPLAYERS:
-                            setNumberOfPlayers(getInteger(input));
+                            setNumberOfPlayers(Integer.parseInt(input));
 
                             notifyNumberOfPlayers(getNumberOfPlayers());
                             setState(ViewState.WAITING);
 
                             break;
                         case NICKDATE:
-                            setNickname(parser.nextLine());
+                            if(getNickname() == null) {
+                                setNickname(input);
 
-                            printer.erase();
-                            printer.setAskMessage("Birth Date (yyyy.mm.dd): ");
-                            printer.print();
-                            printer.erase();
-
-                            setDate(in.nextLine());
-
-                            notifyNewPlayer(getNickname(), getDate());
-                            setState(ViewState.WAITING);
+                                printer.erase();
+                                printer.setAskMessage("Birth Date (yyyy.mm.dd): ");
+                                printer.print();
+                                printer.erase();
+                            } else {
+                                setDate(input);
+                                notifyNewPlayer(getNickname(), getDate());
+                                setState(ViewState.WAITING);
+                            }
 
                             break;
 
                         case MATCHGODS:
-                            while (getMatchGodCards().size() < getNumberOfPlayers()) {
+                            if(getMatchGodCards().size() < getNumberOfPlayers()) {
+                                addMatchGodCard(getOption(Integer.parseInt(input)));
 
-                                if (parser.hasNext()) {                             //if parser buffer is not empty we just entered case branch.
-                                    addMatchGodCard(getOption(getInteger(input)));  //it however uses String input and not parser.
-                                    parser.nextLine();                              //frees parser buffer.
-                                } else {
+                                if(getMatchGodCards().size() < getNumberOfPlayers())
                                     chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
-                                    addMatchGodCard(getOption(getInteger()));
-                                }
+
                             }
 
-                            printer.erase();
-                            printer.print();
+                            if(getMatchGodCards().size() == getNumberOfPlayers()) {
+                                printer.erase();
 
-                            notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
-                            setState(ViewState.WAITING);
+                                notifyMatchGodCardsChoice(getNickname(), getMatchGodCards());
+                                setState(ViewState.WAITING);
+                            }
 
                             break;
 
                         case STARTPLAYER:
-                            notifySetStartPlayer(getNickname(), getOption(getInteger(input)));
+                            notifySetStartPlayer(getNickname(), getOption(Integer.parseInt(input)));
                             setState(ViewState.WAITING);
 
                             break;
 
                         case PLAYERGOD:
-                            notifyGodCardChoice(getNickname(), getOption(getInteger(input)));
+                            notifyGodCardChoice(getNickname(), getOption(Integer.parseInt(input)));
                             setState(ViewState.WAITING);
 
                             break;
 
                         case BUILDERCOLOR:
-                            notifyColorChoice(getNickname(), getOption(getInteger(input)));
+                            notifyColorChoice(getNickname(), getOption(Integer.parseInt(input)));
                             setState(ViewState.WAITING);
 
                             break;
 
                         case BUILDERPLACEMENT:
-                            int row;
-                            int column;
-
                             printer.erase();
 
-                            while (getChosenBuilderPositions().size() < 2) {
-                                if (parser.hasNext()) {                         //if parser buffer is not empty we just entered case branch.
-                                    row = getInteger(input);                    //it however uses String input and not parser.
-                                    parser.nextLine();                          //frees parser buffer.
-                                } else {
-                                    row = getInteger();
-                                }
+                            switch (getChosenBuilderPositions().size()) {
+                                case 0:
+                                    if(row == null) {
+                                        row = Integer.valueOf(input);
+                                        printer.setAskMessage("COLUMN: ");
+                                    }
+                                    else {
+                                        column = Integer.parseInt(input);
+                                        addBuilderPosition(new Coordinates(row, column));
 
-                                printer.setAskMessage("COLUMN: ");
-                                printer.print();
+                                        row = null;
 
-                                column = getInteger();
-                                addBuilderPosition(new Coordinates(row, column));
-
-                                if (getChosenBuilderPositions().size() < 2) {
-                                    printer.setAskMessage("Choose builder number " + (getChosenBuilderPositions().size() + 1) + "\nROW: ");
+                                        printer.setAskMessage("Choose builder number 2 \nROW: ");
+                                    }
                                     printer.print();
-                                }
+
+                                    //we have now one builder
+                                    break;
+
+                                case 1:
+                                    if(row == null) {
+                                        row = Integer.valueOf(input);
+                                        printer.setAskMessage("COLUMN: ");
+                                        printer.print();
+                                    } else {
+                                        column = Integer.parseInt(input);
+                                        addBuilderPosition(new Coordinates(row, column));
+
+                                        row = null;
+
+                                        notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
+                                        setState(ViewState.WAITING);
+                                    }
+                                    break;
                             }
-
-
-                            notifySetupBuilders(getNickname(), getChosenBuilderPositions().get(0), getChosenBuilderPositions().get(1));
-                            setState(ViewState.WAITING);
 
                             break;
 
                         case STEP:
-                            notifyStepChoice(getNickname(), getOption(getInteger(input)));
+                            notifyStepChoice(getNickname(), getOption(Integer.parseInt(input)));
                             setState(ViewState.WAITING);
 
                             break;
 
                         case MOVE:
-                            move();
+                            if(row == null) {
+                                printer.erase();
+                                row = Integer.parseInt(input);
+                                printer.setAskMessage("COLUMN: ");
+                                printer.print();
+                            } else {
+                                column = Integer.parseInt(input);
+
+                                coord = new Coordinates(row, column);
+
+                                //got the coordinates
+
+                                move();
+
+                                row = null;
+                            }
+
                             break;
                         case BUILD:
-                            build();
+
+                            if(askForBuildType)
+                                build();
+                            else if(row == null) {
+                                printer.erase();
+                                row = Integer.parseInt(input);
+                                printer.setAskMessage("COLUMN: ");
+                                printer.print();
+
+                            } else {
+                                column = Integer.parseInt(input);
+
+                                coord = new Coordinates(row, column);
+
+                                //got the coordinates
+
+                                build();
+
+                                row = null;
+                            }
+
                             break;
 
                         case WAITING:
@@ -249,20 +269,23 @@ public class Cli extends View{
                             break;
 
                     }
-                } catch (NullPointerException e) { //can occur when server disconnects client
-                    //e.printStackTrace();
+                } catch (NumberFormatException e) {
+                    printer.setInfoMessage("You have to insert a number");
 
+                    if((getState().equals(ViewState.MOVE) || getState().equals(ViewState.BUILD) || getState().equals(ViewState.BUILDERPLACEMENT) && row == null))
+                        printer.setAskMessage("ROW: ");
+                    printer.print();
+                    printer.setInfoMessage(null);
                 } catch (InvalidOptionException e) {
                     printer.setInfoMessage(e.getMessage());
                     printer.print();
 
                 } catch (IllegalArgumentException e) {      //new Coordinates(a,b) throws IllegalArgumentException if (a,b) is out of Map.
-                    printer.setInfoMessage(e.getMessage());
+                    row = null;
+                    printer.setInfoMessage("Coordinates out of Map");
                     printer.setAskMessage("ROW: ");
                     printer.print();
-                } catch (NoSuchElementException ignored) { //parser.nextLine() throws NoSuchElementException when user types '\n'
-
-                } catch (Exception e) {
+                }  catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -273,86 +296,44 @@ public class Cli extends View{
 
             }
         }
-        synchronized (this) {
-            System.out.println("You exited the game.");
-            System.exit(0);
-        }
+
+        System.out.println("You exited the game.");
+        System.exit(0);
+
     }
 
 
-    /**
-     * prints Coordinates request and acquire user input.
-     * Used in move() and build() functions.
-     * @return coordinates given.
-     */
-    private Coordinates coordinatesInsertion() {
-        int row = 0;
-        int column = 0;
-
-        boolean coordinatesOK = false;
-
-        while(!coordinatesOK) {
-            //asks for row
-            printer.erase();
-            printer.setAskMessage("ROW: ");
-            printer.print();
-
-            row = getInteger();
-
-            //asks for column
-            printer.setAskMessage("COLUMN: ");
-            printer.print();
-
-            column = getInteger();
-
-            if(row >= 0 && row < IslandBoard.dimension && column >= 0 && column < IslandBoard.dimension)
-                coordinatesOK = true;
-            else {
-                printer.setInfoMessage("This Coordinates are outside the map");
-                printer.print();
-            }
-        }
-
-
-        return new Coordinates(row, column);
-    }
 
     /**
-     * Asks user to insert coordinates of the builder to use.
-     * It keeps asking until a valid position is given
-     * @return coordinates of the valid builder position
+     * Check if coord attribute is a cell containing an owned builder that is not blocked
+     * @return true if coord attribute contains a valid cell
      */
-    private Coordinates chooseTurnBuilder () {
-        Coordinates src;
+    private boolean chooseTurnBuilder () {
 
-        gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
-        gameMap.setChosenBuilderNum(0); //resets builder choice
-
-        printer.setGameMapString(gameMap.toString());
-        printer.setInfoMessage("Insert the coordinates of the builder you want to use ");
-        printer.print();
-
-        src = coordinatesInsertion();
+        boolean result = true;
 
         //verifies that the selected cell contains a valid builder
-        while (!((Coordinates.equals(gameMap.getOccupiedCells().get(getNickname()).get(0), src) &&
+        if(!((Coordinates.equals(gameMap.getOccupiedCells().get(getNickname()).get(0), coord) &&
                 (!possibleDstBuilder1.isEmpty() || !possibleDstBuilder1forDome.isEmpty())) ||
-                (Coordinates.equals(gameMap.getOccupiedCells().get(getNickname()).get(1), src) &&
+                (Coordinates.equals(gameMap.getOccupiedCells().get(getNickname()).get(1), coord) &&
                         (!possibleDstBuilder2.isEmpty() || !possibleDstBuilder2forDome.isEmpty())))) {
 
 
             printer.setAskMessage(null);
             printer.setInfoMessage("Invalid coordinates, select a cell with a valid builder");
+            printer.setAskMessage("ROW: ");
             printer.print();
 
-            src = coordinatesInsertion();
+            result = false;
+        } else {
+            if (Coordinates.equals(gameMap.getOccupiedCells().get(getNickname()).get(0), coord))
+                gameMap.setChosenBuilderNum(1);
+            else
+                gameMap.setChosenBuilderNum(2);
+
         }
 
-        if (Coordinates.equals(gameMap.getOccupiedCells().get(getNickname()).get(0), src))
-            gameMap.setChosenBuilderNum(1);
-        else
-            gameMap.setChosenBuilderNum(2);
-        return src;
+        return result;
     }
 
     /**
@@ -448,6 +429,9 @@ public class Cli extends View{
 
     //override View methods
 
+    /**
+     * Prints request
+     */
     @Override
     public void askNumberOfPlayers() {
         super.askNumberOfPlayers();
@@ -456,6 +440,9 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints request
+     */
     @Override
     public void askNickAndDate() {
         super.askNickAndDate();
@@ -464,6 +451,10 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints request
+     * @param godDescriptionsParam Map having god names as keys and their power description as values
+     */
     @Override
     public void chooseMatchGodCards(int numOfPlayers, Map<String, String> godDescriptionsParam) {
         super.chooseMatchGodCards(numOfPlayers, godDescriptionsParam);
@@ -487,6 +478,10 @@ public class Cli extends View{
 
     }
 
+    /**
+     * Prints request
+     * @param players players to choose from
+     */
     @Override
     public void chooseStartPlayer(Set<String> players) {
         super.chooseStartPlayer(players);
@@ -499,6 +494,11 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints request
+     * @param godDescriptions Map having god names as keys and their power description as values
+     * @param chosenCards Set containing names of gods already chosen
+     */
     @Override
     public void askGodCard(Map<String, String> godDescriptions, Set<String> chosenCards) {
         super.askGodCard(godDescriptions, chosenCards);
@@ -517,6 +517,10 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints request
+     * @param chosenColors colors already chosen
+     */
     @Override
     public void askBuilderColor(Set<String> chosenColors) {
         super.askBuilderColor(chosenColors);
@@ -531,6 +535,9 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints request
+     */
     @Override
     public void placeBuilders() {
         super.placeBuilders();
@@ -542,6 +549,13 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints request
+     *
+     * possibleSteps can contain only Strings that equal to "MOVE", "BUILD", "END".
+     *
+     * @param possibleSteps Set of possible Steps to choose from.
+     */
     @Override
     public void chooseNextStep(Set<String> possibleSteps) {
         super.chooseNextStep(possibleSteps);
@@ -557,6 +571,14 @@ public class Cli extends View{
         printer.erase();
     }
 
+    /**
+     * If results is true it updates gameMap with the new build event and prints it. If result is false it prints an error message
+     * @param nickname player who played
+     * @param src position of the builder who built
+     * @param dst where the builder built
+     * @param dome true if the builder built a Dome
+     * @param result true if the server accepted it
+     */
     @Override
     public void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result) {
         super.onBuilderBuild(nickname, src, dst, dome, result);
@@ -565,9 +587,6 @@ public class Cli extends View{
             printer.setInfoMessage("Build failed");
         }
         else {
-            gameMap.modifyHeight(dst, dome);
-
-            gameMap.setPossibleDst(null, null);
             printer.setGameMapString(gameMap.toString());
             printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
 
@@ -578,6 +597,13 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * If results is true it updates gameMap with the new move event and prints it. If result is false it prints an error message
+     * @param nickname player who played
+     * @param src position of the builder that moved
+     * @param dst where the builder moved
+     * @param result true if the server accepted it
+     */
     @Override
     public void onBuilderMovement(String nickname, Coordinates src, Coordinates dst, boolean result) {
         super.onBuilderMovement(nickname, src, dst, result);
@@ -599,6 +625,13 @@ public class Cli extends View{
 
     }
 
+    /**
+     * If results is true it updates gameMap with the new builders and prints it. If result is false it prints an error message
+     * @param nickname nickname of the player who placed his builders
+     * @param positionBuilder1 position of the first builder placed
+     * @param positionBuilder2 position of the second builder placed
+     * @param result true if the server accepted it
+     */
     @Override
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         super.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2, result);
@@ -623,6 +656,12 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints an error message if the step choice request failed
+     * @param nickname nickname of the player who chose the step
+     * @param step step chosen
+     * @param result true if the server accepted the request
+     */
     @Override
     public void onChosenStep(String nickname, String step, boolean result) {
         super.onChosenStep(nickname, step, result);
@@ -633,6 +672,12 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Updates color informations for players if result is true or prints an error message if result is false
+     * @param nickname nickname of the player who chose his color
+     * @param color color chosen
+     * @param result true if the server accepted the request
+     */
     @Override
     public void onColorAssigned(String nickname, String color, boolean result) {
         super.onColorAssigned(nickname, color, result);
@@ -645,9 +690,12 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints a game over messsage and notifies the user about the player who won
+     * @param winnerNickname nickname of the player who won
+     */
     @Override
     public void onEndGameUpdate(String winnerNickname) {
-        super.onEndGameUpdate(winnerNickname);
 
         printer.erase();
         printer.setState("Game Over!");
@@ -655,6 +703,10 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints error received from server
+     * @param error String representing the error
+     */
     @Override
     public void onWrongInsertionUpdate(String error) {
         super.onWrongInsertionUpdate(error);
@@ -663,15 +715,24 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints error about invalid value for the number of players
+     */
     @Override
     public void onWrongNumberInsertion() {
         super.onWrongNumberInsertion();
 
-        printer.setInfoMessage("SERVER: Wrong Number Insertion");
+        printer.setInfoMessage("You can only insert 2 or 3");
         printer.print();
         setState(ViewState.NUMPLAYERS);
     }
 
+    /**
+     * Prints a message according to the result value and if result is true it updates player and relative cards information
+     * @param nickname nickname of the player who chose the card
+     * @param card card chosen
+     * @param result true if the server accepted the request
+     */
     @Override
     public void onGodCardAssigned(String nickname, String card, boolean result) {
         super.onGodCardAssigned(nickname, card, result);
@@ -686,6 +747,11 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints a message according to the result value and if result is true it updates the set of nicknames
+     * @param nickname nickname of the player
+     * @param result true if the server accepted the registration
+     */
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
         super.onPlayerAdded(nickname, result);
@@ -703,24 +769,35 @@ public class Cli extends View{
         printer.erase();
     }
 
+    /**
+     * Removes player and his card from game data and prints a message
+     * @param nickname nickname of the player who just lost
+     */
     @Override
     public void onLossUpdate(String nickname) {
         super.onLossUpdate(nickname);
 
-        gameMap.removePlayer(nickname);
         printer.setInfoMessage(nickname + " has lost!");
         printer.print();
     }
 
+    /**
+     * Prints a message about whose turn is
+     * @param nickname nickname of the player whose turn is
+     */
     @Override
     public void onPlayerTurn(String nickname) {
         super.onPlayerTurn(nickname);
-        currentTurnBuilderPos = null;
 
         printer.setInfoMessage("Now playing: " + nickname);
         printer.print();
     }
 
+    /**
+     * Prints error message if result is false
+     * @param nickname of the starting player
+     * @param result true if correctly set
+     */
     @Override
     public void onStartPlayerSet(String nickname, boolean result) {
         super.onStartPlayerSet(nickname, result);
@@ -735,11 +812,13 @@ public class Cli extends View{
         printer.print();
     }
 
-
+    /**
+     * Prints Waiting message if currState equals SETUP_PLAYERS
+     * @param currState new ModelState of the game
+     */
     @Override
     public void onStateUpdate(Model.State currState) {
 
-        super.onStateUpdate(currState);
 
         printer.erase();
 
@@ -751,6 +830,12 @@ public class Cli extends View{
 
     }
 
+    /**
+     * if result is true if prints which card names will be used during the game.
+     * if result is false it will ask to choose cards.
+     * @param godCardsToUse cards chosen
+     * @param result true if the server accepted the choice
+     */
     @Override
     public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
         super.onMatchGodCardsAssigned(godCardsToUse, result);
@@ -763,96 +848,185 @@ public class Cli extends View{
         }
     }
 
+    /**
+     * Update information about which cells can be used by owned builders and set the ViewState to MOVE
+     * @param possibleDstBuilder1 positions at which builder 1 can move
+     * @param possibleDstBuilder2 positions at which builder 2 can move
+     */
     @Override
     public void updatePossibleMoveDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2) {
         super.updatePossibleMoveDst(possibleDstBuilder1, possibleDstBuilder2);
 
         gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
-        printer.setInfoMessage("Move action required.");
-        printer.setAskMessage("Press ENTER.\n");
+
+        printer.setGameMapString(gameMap.toString());
+        if(gameMap.getChosenBuilderNum() == 0)
+            printer.setInfoMessage("Insert the coordinates of the builder you want to use");
+        else
+            printer.setInfoMessage("Insert the coordinates of where you want to move");
+        printer.setAskMessage("ROW: ");
         printer.print();
 
 
     }
 
+    /**
+     * Update information about which cells can be used by owned builders and set the ViewState to BUILD
+     * @param possibleDstBuilder1 positions where builder 1 can build a normal building
+     * @param possibleDstBuilder2 positions where builder 2 can build a normal building
+     * @param possibleDstBuilder1forDome positions where builder 1 can build a dome
+     * @param possibleDstBuilder2forDome positions where builder 2 can build a dome
+     */
     @Override
     public void updatePossibleBuildDst(Set<Coordinates> possibleDstBuilder1, Set<Coordinates> possibleDstBuilder2, Set<Coordinates> possibleDstBuilder1forDome, Set<Coordinates> possibleDstBuilder2forDome) {
         super.updatePossibleBuildDst(possibleDstBuilder1, possibleDstBuilder2, possibleDstBuilder1forDome, possibleDstBuilder2forDome);
 
-        printer.setInfoMessage("Build action required.");
-        printer.setAskMessage("Press ENTER.\n");
-        printer.print();
+        gameMap.setPossibleDst(possibleDstBuilder1, possibleDstBuilder2);
 
+        if(gameMap.getChosenBuilderNum() == 0) {
+            printer.setInfoMessage("Insert the coordinates of the builder you want to use");
+            printer.setAskMessage("ROW: ");
+        }
+        else if((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
+                gameMap.getChosenBuilderNum() == 2)) {
+            gameMap.setPossibleDst(null, null);
+            printer.setAskMessage("Select what you want to build: insert 'D' for dome or 'B' for building: ");
+            askForBuildType = true;
+        }
+        else {
+            printer.setInfoMessage("Insert the coordinates of where you want to build");
+            printer.setAskMessage("ROW: ");
+        }
+
+        printer.setGameMapString(gameMap.toString());
+        printer.print();
 
     }
 
+    /**
+     * Function that handles input during building phase.
+     * If there is no buildType selected and player can build in at least one position a dome it will compare attribute string
+     * to 'D' and 'B'. if 'D' string is given the move will be a Dome build; if 'B' string is given the move will be a regular move;
+     * if none of the previous string is given it will prompt an error message. The rest of the function is similar to move() as it uses
+     * coord attribute to select a valid builder or to select the destination position.
+     *
+     * This function computes only one of the phases listed above per call.
+     */
     @Override
     public void build() {
-        String buildType = "B";
-        Coordinates dst;
-        Set<Coordinates> possibleDstBuilder;
-        boolean buildDome = false;
 
-        if (gameMap.getChosenBuilderNum() == 0)
-            currentTurnBuilderPos = chooseTurnBuilder();
+        boolean buildTypeChosen = false;
+        boolean inputForBuilderChoice = false;
 
-        if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
-                gameMap.getChosenBuilderNum() == 2)) {
-            printer.setAskMessage("Select what you want to build: insert 'D' for dome or 'B' for building: ");
-            printer.print();
-            buildType = in.nextLine().toUpperCase();
+        //if no builder has been selected
+        if (gameMap.getChosenBuilderNum() == 0) {
+            if(chooseTurnBuilder()) {
+                inputForBuilderChoice = true;
+                gameMap.setCurrentTurnBuilderPos(coord);
+            } else
+                return;
+        }
 
-            while (!(buildType.equals("D") || buildType.equals("B"))) {
-                printer.setAskMessage("Invalid insertion. Select what you want to build: insert 'D' for dome or 'B' for building ");
-                printer.print();
-                buildType = in.nextLine().toUpperCase();
+
+        //have to set the buildType
+        if (buildType == null) {
+
+            //if i can build dome
+            if ((!possibleDstBuilder1forDome.isEmpty() && gameMap.getChosenBuilderNum() == 1) || (!possibleDstBuilder2forDome.isEmpty() &&
+                    gameMap.getChosenBuilderNum() == 2)) {
+
+
+                if (inputForBuilderChoice) {
+                    printer.setAskMessage("Select what you want to build: insert 'D' for dome or 'B' for building: ");
+                    printer.print();
+                    askForBuildType = true;
+                    return;
+                }
+
+                switch (input.toUpperCase()) {
+                    case "D":
+                        buildDome = true;
+                        buildType = "D";
+                        possibleDstBuilder = gameMap.getChosenBuilderNum() == 1 ? possibleDstBuilder1forDome : possibleDstBuilder2forDome;
+                        break;
+
+                    case "B":
+                        buildType = "B";
+                        possibleDstBuilder = gameMap.getChosenBuilderNum() == 1 ? possibleDstBuilder1 : possibleDstBuilder2;
+                        break;
+
+                    default:
+                        printer.setInfoMessage("Invalid insertion");
+                        printer.print();
+                        return;
+                }
+
+                buildTypeChosen = true;
+                askForBuildType = false;
+
+            } else {
+                buildType = "B";
+                possibleDstBuilder = gameMap.getChosenBuilderNum() == 1 ? possibleDstBuilder1 : possibleDstBuilder2;
+
             }
         }
 
+
         printer.setAskMessage(null);
 
-        if (buildType.equals("D")) {
-            buildDome = true;
-            if (gameMap.getChosenBuilderNum() == 1)
-                possibleDstBuilder = possibleDstBuilder1forDome;
-            else
-                possibleDstBuilder = possibleDstBuilder2forDome;
-        }
-        else {
-            if (gameMap.getChosenBuilderNum() == 1)
-                possibleDstBuilder = possibleDstBuilder1;
-            else
-                possibleDstBuilder = possibleDstBuilder2;
-        }
 
         if (gameMap.getChosenBuilderNum() == 1)
             gameMap.setPossibleDst(possibleDstBuilder, null);
         else
             gameMap.setPossibleDst(null, possibleDstBuilder);
 
-        printer.setGameMapString(gameMap.toString());
-        printer.setInfoMessage("Insert the coordinates of where you want to build ");
-        printer.print();
-        dst = coordinatesInsertion();
+        if(inputForBuilderChoice || buildTypeChosen) {
+            //buildTypeChosen = false;
+            printer.setGameMapString(gameMap.toString());
+            printer.setInfoMessage("Insert the coordinates of where you want to build ");
+            printer.setAskMessage("ROW: ");
+            printer.print();
+            return;
+        }
 
-        while (!possibleDstBuilder.contains(dst)){
+        if(!possibleDstBuilder.contains(coord)){
             printer.setInfoMessage("Invalid coordinates. Select a cell from the selected ones");
-            dst = coordinatesInsertion();
+            printer.setAskMessage("ROW: ");
+            printer.print();
+            return;
         }
 
-        synchronized (this) {
-            notifyBuild(getNickname(), currentTurnBuilderPos, dst, buildDome);
-            setState(ViewState.WAITING);
-        }
+        possibleDstBuilder.clear();
+        buildType = null;
+
+        notifyBuild(getNickname(), gameMap.getCurrentTurnBuilderPos(), coord, buildDome);
+        setState(ViewState.WAITING);
+
+
+        buildDome = false;
     }
 
+
+    /**
+     * Function that handles input during move phase.
+     * It uses coord attribute to select a valid builder if not done before or to select the destination position.
+     *
+     * The function computes only one of the phases listed above per call.
+     */
     @Override
     public void move() {
 
         Set<Coordinates> possibleDstBuilder;
+        boolean inputForBuilderChoice = false;
 
-        if (gameMap.getChosenBuilderNum() == 0)
-            currentTurnBuilderPos = chooseTurnBuilder();
+        //if no builder has been selected
+        if (gameMap.getChosenBuilderNum() == 0) {
+            if(chooseTurnBuilder()) {
+                gameMap.setCurrentTurnBuilderPos(coord);
+                inputForBuilderChoice = true;
+            } else
+                return;
+        }
 
         if (gameMap.getChosenBuilderNum() == 1) {
             possibleDstBuilder = possibleDstBuilder1;
@@ -869,27 +1043,36 @@ public class Cli extends View{
         printer.setGameMapString(gameMap.toString());
         printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
 
-        printer.setInfoMessage("Insert the coordinates of where you want to move ");
+        printer.setInfoMessage("Insert the coordinates of where you want to move");
+        printer.setAskMessage("ROW: ");
         printer.print();
-        Coordinates dstMove = coordinatesInsertion();
 
+        //builder has been chosen
 
-        //verifies that the selected cell contains a valid builder
-        while (!possibleDstBuilder.contains(dstMove)){
-            printer.erase();
-            printer.setInfoMessage("Invalid coordinates. Select a cell from the available ones");
+        if(!inputForBuilderChoice) {
 
-            printer.setGameMapString(gameMap.toString());
-            printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
-            dstMove = coordinatesInsertion();
-        }
+            //verifies that the selected cell contains a valid builder
+            if(!possibleDstBuilder.contains(coord)) {
+                printer.erase();
+                printer.setInfoMessage("Invalid coordinates. Select a cell from the available ones");
+                printer.setAskMessage("ROW: ");
 
-        synchronized (this) {
-            notifyMove(getNickname(), currentTurnBuilderPos, dstMove);
-            setState(ViewState.WAITING);
+                printer.setGameMapString(gameMap.toString());
+                printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+
+                printer.print();
+            } else {
+
+                notifyMove(getNickname(), gameMap.getCurrentTurnBuilderPos(), coord);
+                setState(ViewState.WAITING);
+
+            }
         }
     }
 
+    /**
+     * Prints connection error message
+     */
     @Override
     public void onConnectionError(String message) {
         printer.erase();
@@ -900,13 +1083,15 @@ public class Cli extends View{
         printer.print();
     }
 
+    /**
+     * Prints disconnecting message and go back to Game Initial menu asking for server to join.
+     */
     @Override
     public synchronized void onDisconnection() {
         super.onDisconnection();
 
         setState(ViewState.CONNECTION);
 
-        gameMap.setChosenBuilderNum(0);
         gameMap = new CliGameMap();
 
         chosenBuilderPositions = new ArrayList<>();
