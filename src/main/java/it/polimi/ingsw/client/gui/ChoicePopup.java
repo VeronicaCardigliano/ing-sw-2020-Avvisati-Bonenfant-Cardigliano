@@ -27,7 +27,7 @@ public class ChoicePopup extends Stage {
 
         this.initOwner(ownerStage);
         this.setTitle(title);
-        this.setResizable(false);
+        this.setResizable(true);
 
         anchorPane = new AnchorPane();
         anchorPane.setStyle("-fx-background-color: lightslategrey");

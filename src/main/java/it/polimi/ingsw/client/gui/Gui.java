@@ -1278,6 +1278,7 @@ public class Gui extends View {
         alert.setTitle("Quit");
         alert.setHeaderText("Closing this window you'll leave the game");
         alert.setContentText("Do you want to quit?");
+        alert.setResizable(true);
         return alert.showAndWait().orElse(cancel) == yes;
     }
 

@@ -64,7 +64,7 @@ public class GodCardsPopup extends Stage {
         initOwner(ownerStage);
         maxSelectionsNum = maxSelections;
         setTitle("GodCards");
-        setResizable(false);
+        setResizable(true);
         this.chosenGodCards = new HashSet<>();
         this.selectionsNum = 0;
         VBox vbox = new VBox();

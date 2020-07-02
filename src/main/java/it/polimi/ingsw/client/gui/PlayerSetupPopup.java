@@ -34,7 +34,7 @@ public class PlayerSetupPopup extends Stage {
         this.initOwner(ownerStage);
         this.initStyle(StageStyle.DECORATED);
         this.setTitle("New player");
-        this.setResizable(false);
+        this.setResizable(true);
         this.anchorPane = new AnchorPane();
         anchorPane.setStyle("-fx-background-color: lightslategrey");
 

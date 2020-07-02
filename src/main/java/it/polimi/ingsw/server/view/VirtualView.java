@@ -165,15 +165,28 @@ public class VirtualView extends ViewObservable implements Runnable {
      * @param message String read from socket. Supposed to be a JSON String
      */
     private void handleMessage(String message) {
-
-        NetworkParser parser = new NetworkParser(message);
+        NetworkParser parser;
 
         Coordinates src, dst;
         Coordinates builder1, builder2;
         String date, color;
         int numberOfPlayers;
+        String request = "";
 
-        switch (parser.getRequest()) {
+        try {
+            parser = new NetworkParser(message);
+        } catch (JSONException e) {
+            send(Messages.errorMessage("You did not sent a JSON String"));
+            return;
+        }
+
+        try {
+            request = parser.getRequest();
+        } catch (JSONException e) {
+            send(Messages.errorMessage("You did not specify a type of message"));
+        }
+
+        switch (request) {
 
             case Messages.ADD_PLAYER:
                 if (this.nickname == null) {
@@ -183,10 +196,9 @@ public class VirtualView extends ViewObservable implements Runnable {
                         notifyNewPlayer(this.nickname, date);
                     } catch (JSONException e) {
                         send(Messages.errorMessage("Parsing error: " + e.getMessage()));
-                        //send(Messages.parseErrorPlayer());
                     }
                 } else {    //drops redundant add player command
-                    send(Messages.errorMessage("nickname already set"));
+                    send(Messages.errorMessage("Nickname already set"));
                 }
                 break;
 
@@ -196,7 +208,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     numberOfPlayers = parser.getNumberOfPlayers();
                     notifyNumberOfPlayers(numberOfPlayers);
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.SET_NUMBER_OF_PLAYERS + ": " + e.getMessage()));
                 }
                 break;
 
@@ -206,7 +218,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     color = parser.getColor();
                     notifyColorChoice(nickname, color);
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.COLOR_UPDATE + ": " + e.getMessage()));
                 }
                 break;
 
@@ -215,7 +227,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                 try {
                     notifyGodCardChoice(nickname, parser.getGodCardName());
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.SET_GOD_CARD + ": " + e.getMessage()));
                 }
                 break;
 
@@ -223,7 +235,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                 try {
                     notifyMatchGodCardsChoice(nickname, parser.getSetFromArray(Messages.GOD_DESCRIPTIONS));
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.SET_MATCH_GOD_CARDS + ": " + e.getMessage()));
                 }
                 break;
 
@@ -233,7 +245,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     builder2 = parser.getCoordArray().get(1);
                     notifySetupBuilders(nickname, builder1, builder2);
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.BUILDERS_PLACEMENT + ": " + e.getMessage()));
                 }
                 break;
 
@@ -243,7 +255,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     String stepChoice = parser.getStepChoice();
                     notifyStepChoice(nickname, stepChoice);
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.SET_STEP_CHOICE + ": " + e.getMessage()));
                 }
                 break;
 
@@ -252,7 +264,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                 try {
                     notifySetStartPlayer(nickname, parser.getAttribute(Messages.NAME));
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.SET_START_PLAYER + ": " + e.getMessage()));
                 }
                 break;
 
@@ -262,9 +274,8 @@ public class VirtualView extends ViewObservable implements Runnable {
                     dst = parser.getDstCoordinates();
                     notifyMove(nickname, src, dst);
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.MOVE + ": " + e.getMessage()));
                 }
-
                 break;
 
             case Messages.BUILD:
@@ -273,7 +284,7 @@ public class VirtualView extends ViewObservable implements Runnable {
                     dst = parser.getDstCoordinates();
                     notifyBuild(nickname, src, dst, parser.getBuildDome());
                 } catch (JSONException e) {
-                    send(Messages.errorMessage(e.getMessage()));
+                    send(Messages.errorMessage(Messages.BUILD + ": " + e.getMessage()));
                 }
                 break;
 

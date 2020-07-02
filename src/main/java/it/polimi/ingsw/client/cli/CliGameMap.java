@@ -10,7 +10,6 @@ import java.util.Set;
 public class CliGameMap extends GameMap {
 
     private final String green = Color.ANSI_GREEN.escape(), yellow = Color.ANSI_YELLOW.escape(), blue = Color.ANSI_BLUE.escape();
-    private String builderColor;
     private final String reset = Color.RESET;
 
 
@@ -23,9 +22,12 @@ public class CliGameMap extends GameMap {
     private final String horizontalLine = green + boxDrawingsHorizontal + boxDrawingsHorizontal + boxDrawingsHorizontal + boxDrawingsHorizontal;
     private final String possibleDstSymbol = yellow + " " + dottedCircle + reset;
     private final String dome = blue + filledCircle + reset;
-    private final String builder =  " " + hammerAndPick + reset;
 
 
+    /**
+     * Used to print the map
+     * @return string representation of the gameMap
+     */
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
@@ -44,7 +46,11 @@ public class CliGameMap extends GameMap {
     }
 
 
-    //utility function to print map
+    //utility functions to print map
+
+    /**
+     * prints horizontal indexes of the gameMap
+     */
     private String printHorizontalIndexes () {
         StringBuilder indexes = new StringBuilder("   ");
         for (int i = 0; i< IslandBoard.dimension; i++) {
@@ -53,12 +59,18 @@ public class CliGameMap extends GameMap {
         return indexes.toString() + "\n";
     }
 
+    /**
+     * returns first line of the gameMap
+     */
     private String printFirstLine() {
         return("   " + green + boxDrawingsDownAndRight + horizontalLine + boxDrawingsDownAndHorizontal + horizontalLine +
                 boxDrawingsDownAndHorizontal + horizontalLine + boxDrawingsDownAndHorizontal + horizontalLine + boxDrawingsDownAndHorizontal +
                 horizontalLine + boxDrawingsDownAndLeft + reset + "\n");
     }
 
+    /**
+     * returns central line of the gameMap
+     */
     private String printCentralLine() {
         return("   " + green + boxDrawingsVerticalAndRight + horizontalLine + boxDrawingsVerticalAndHorizontal +
                 horizontalLine + boxDrawingsVerticalAndHorizontal + horizontalLine + boxDrawingsVerticalAndHorizontal +
@@ -66,7 +78,9 @@ public class CliGameMap extends GameMap {
     }
 
 
-
+    /**
+     * Controls if coordinates is contained in possibleDst
+     */
     private boolean controlIfPossibleDst (Set<Coordinates> possibleDstSet, Coordinates coordinates) {
         boolean result = false;
         for (Coordinates coord : possibleDstSet) {
@@ -78,6 +92,10 @@ public class CliGameMap extends GameMap {
     }
 
 
+    /**
+     * Prints gameMap content at row i
+     * @param i row
+     */
     public String printContents(int i, Set<Coordinates> possibleDstBuilder1,
                                Set<Coordinates> possibleDstBuilder2, int chosenBuilderNumber) {
         StringBuilder line = new StringBuilder(" " + i + " ");
@@ -94,6 +112,7 @@ public class CliGameMap extends GameMap {
 
                     //I could want to print the possible destinations of just one builder or both, or none of them
                     //With the following 'if' I control whether the builder is also one of the possible destinations
+                    String builderColor;
                     if ((possibleDstBuilder1 != null && (chosenBuilderNumber == 0 || chosenBuilderNumber == 1) &&
                             controlIfPossibleDst(possibleDstBuilder1, coordinates)) || (possibleDstBuilder2 != null &&
                             (chosenBuilderNumber == 0 || chosenBuilderNumber == 2) && controlIfPossibleDst(possibleDstBuilder2, coordinates))) {
@@ -101,6 +120,7 @@ public class CliGameMap extends GameMap {
                     }
                     else
                         builderColor = Color.returnColor(View.getColor(player).toUpperCase());
+                    String builder = " " + hammerAndPick + reset;
                     line.append(green).append(boxDrawingsVerticalLine).append(reset).append(builderColor).append(builder);
                     printed = true;
                 }
@@ -130,6 +150,9 @@ public class CliGameMap extends GameMap {
         return line + green + boxDrawingsVerticalLine + reset + "\n";
     }
 
+    /**
+     * returns last gameMap line
+     */
     private String printLastLine() {
         return ("   " + green + boxDrawingsUpAndRight + horizontalLine + boxDrawingsUpAndHorizontal + horizontalLine +
                 boxDrawingsUpAndHorizontal + horizontalLine + boxDrawingsUpAndHorizontal + horizontalLine +

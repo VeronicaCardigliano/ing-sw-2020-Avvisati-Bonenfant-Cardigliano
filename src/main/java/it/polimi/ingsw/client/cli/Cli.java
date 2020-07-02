@@ -106,7 +106,7 @@ public class Cli extends View{
                         case CONNECTION:
                             if(server == null) {
                                 server = input;
-                                printer.setAskMessage("port: ");
+                                printer.setAskMessage("Port: ");
                                 printer.print();
                             } else {
                                 notifyConnection(server, Integer.parseInt(input));
@@ -273,10 +273,13 @@ public class Cli extends View{
                 } catch (NumberFormatException e) {
                     printer.setInfoMessage("You have to insert a number");
 
-                    if((getState().equals(ViewState.MOVE) || getState().equals(ViewState.BUILD) || getState().equals(ViewState.BUILDERPLACEMENT) && row == null))
+                    if ((getState().equals(ViewState.MOVE) || getState().equals(ViewState.BUILD) || getState().equals(ViewState.BUILDERPLACEMENT) && row == null))
                         printer.setAskMessage("ROW: ");
                     printer.print();
                     printer.setInfoMessage(null);
+
+                } catch (NoSuchElementException ignored) {
+
                 } catch (InvalidOptionException e) {
                     printer.setInfoMessage(e.getMessage());
                     printer.print();
@@ -353,6 +356,8 @@ public class Cli extends View{
             inputOptions.add(index, godName);
         }
 
+        result.append("\n");
+
         return result.toString();
 
     }
@@ -371,21 +376,26 @@ public class Cli extends View{
 
         for(String element : set) {
             index++;
-
             switch (element) {
                 case "MAGENTA":
                     realColor = Color.ANSI_MAGENTA.escape();
+
                     break;
                 case "LIGHT_BLUE":
                     realColor = Color.ANSI_LIGHTBLUE.escape();
+
                     break;
                 default:
                     realColor = "";
                     break;
             }
-
-            result.append(index).append(") ").append(realColor).append(element).append(Color.RESET).append("\n");
             inputOptions.add(index, element);
+
+            if(getState().equals(ViewState.BUILDERCOLOR))
+                element = element.replace("_", " ");
+
+            result.append(index).append(") ").append(realColor).append(element.toLowerCase()).append(Color.RESET).append("\n");
+
         }
 
 
@@ -475,12 +485,11 @@ public class Cli extends View{
         if (getMatchGodCards().size() == 0) {
             printer.setInfoMessage("\n" + crown + "  You're the " + Color.ANSI_YELLOW.escape() + "Challenger" + Color.RESET + " of this match!  " + crown + "\n" +
                     "Choose " + numOfPlayers + " godCards for the match: \n");
-            printer.setChoiceList(getMapRepresentation(availableGods));
         }
         else {
             printer.setInfoMessage(null);
-            printer.setChoiceList(getMapRepresentation(availableGods));
         }
+        printer.setChoiceList(getMapRepresentation(availableGods));
         int choiceNumber = getMatchGodCards().size() + 1;
         printer.setAskMessage("Choice" + choiceNumber + ": ");
         printer.print();
@@ -520,6 +529,7 @@ public class Cli extends View{
             inputOptions.add(godName);
         }
 
+        printer.setInfoMessage("Choose you god Card");
         printer.setChoiceList(getMapRepresentation(availableGods));
         printer.setAskMessage("Choice: ");
         printer.print();
@@ -644,11 +654,10 @@ public class Cli extends View{
     public void onBuildersPlacedUpdate(String nickname, Coordinates positionBuilder1, Coordinates positionBuilder2, boolean result) {
         super.onBuildersPlacedUpdate(nickname, positionBuilder1, positionBuilder2, result);
 
+        printer.erase();
+
         if(!result) {
             printer.setInfoMessage("Builders placement failed");
-            printer.setGameMapString(gameMap.toString());
-            printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
-            printer.setAskMessage("ROW: ");
 
             chosenBuilderPositions = new ArrayList<>();
         }
@@ -662,6 +671,7 @@ public class Cli extends View{
         }
 
         printer.print();
+        printer.erase();
     }
 
     /**
@@ -814,7 +824,7 @@ public class Cli extends View{
 
         printer.erase();
 
-        if(result && !getNickname().equals(nickname))
+        if(result)
             printer.setInfoMessage("The starting player is: " + nickname);
         else
             printer.setInfoMessage("Could not set " + nickname + " as starting player");
@@ -850,10 +860,14 @@ public class Cli extends View{
     public void onMatchGodCardsAssigned(Set<String> godCardsToUse, boolean result) {
         super.onMatchGodCardsAssigned(godCardsToUse, result);
 
+        StringBuilder godNamesToPrint = new StringBuilder();
+        for(String name : godCardsToUse)
+            godNamesToPrint.append(" ").append(name);
+
         if(!result) {
             chooseMatchGodCards(getNumberOfPlayers(), allGodCards);
         } else {
-            printer.setInfoMessage("GodCards to use: " + godCardsToUse);
+            printer.setInfoMessage("GodCards to use: " + godNamesToPrint);
             printer.print();
         }
     }
@@ -1047,19 +1061,18 @@ public class Cli extends View{
             gameMap.setPossibleDst(null, possibleDstBuilder);
         }
 
-        gameMap.setChosenBuilderNum(gameMap.getChosenBuilderNum());
+        if (inputForBuilderChoice) {
 
-        printer.erase();
-        printer.setGameMapString(gameMap.toString());
-        printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
+            gameMap.setChosenBuilderNum(gameMap.getChosenBuilderNum());
+            printer.erase();
+            printer.setGameMapString(gameMap.toString());
+            printer.setPlayersList(getPlayersAndCardsRepresentation(getChosenGodCardsForPlayer(), getChosenColorsForPlayer()));
 
-        printer.setInfoMessage("Insert the coordinates of where you want to move");
-        printer.setAskMessage("ROW: ");
-        printer.print();
+            printer.setInfoMessage("Insert the coordinates of where you want to move");
+            printer.setAskMessage("ROW: ");
+            printer.print();
 
-        //builder has been chosen
-
-        if(!inputForBuilderChoice) {
+        } else {
 
             //verifies that the selected cell contains a valid builder
             if(!possibleDstBuilder.contains(coord)) {

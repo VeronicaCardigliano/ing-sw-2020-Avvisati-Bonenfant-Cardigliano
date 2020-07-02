@@ -20,52 +20,88 @@ public class NetworkParser {
 
     }
 
+    /**
+     * Extract from json value at key attribute
+     * @param attribute key to look for
+     */
     public String getAttribute(String attribute) {
         return jsonObject.getString(attribute);
     }
 
+    /**
+     * Extract request type from jsonObject
+     */
     public String getRequest(){
         return jsonObject.getString(Messages.TYPE);
     }
 
+    /**
+     * Extract color value from jsonObject
+     */
     public String getColor() {
         return jsonObject.getString(Messages.COLOR);
     }
 
-    //"coordinates": [ [i_src, j_src], [i_dst, j_dst] ],
+    /**
+     * Extract source value from jsonObject
+     */
     public Coordinates getSrcCoordinates(){
         int i = jsonObject.getJSONObject(Messages.SRC).getInt("i");
         int j = jsonObject.getJSONObject(Messages.SRC).getInt("j");
         return new Coordinates(i,j);
     }
 
+    /**
+     * Extract destination value from jsonObject
+     */
     public Coordinates getDstCoordinates(){
         int i = jsonObject.getJSONObject(Messages.DST).getInt("i");
         int j = jsonObject.getJSONObject(Messages.DST).getInt("j");
         return new Coordinates(i,j);
     }
 
+    /**
+     * Extract buildDome boolean value from jsonObject
+     */
     public boolean getBuildDome(){
         return jsonObject.getBoolean(Messages.BUILD_DOME);
     }
 
+    /**
+     * Extract number of players value from jsonObject
+     */
     public int getNumberOfPlayers(){
         return jsonObject.getInt(Messages.NUMBER_OF_PLAYERS);
     }
 
 
+    /**
+     * Extract date value from jsonObject
+     */
     public String getDate() {
         return jsonObject.getString(Messages.DATE);
     }
 
+    /**
+     * Extract result boolean value from jsonObject
+     */
     public boolean getResult() {
         return jsonObject.getBoolean(Messages.RESULT);
     }
 
+    /**
+     * Extract name value from jsonObject
+     */
     public String getName() { return jsonObject.getString(Messages.NAME);}
 
+    /**
+     * Extract step choice value from jsonObject
+     */
     public String getStepChoice() { return jsonObject.getString(Messages.STEP_CHOICE);}
 
+    /**
+     * Extract coordinate value from jsonObject
+     */
     private Coordinates fromJSONObject(JSONObject coordJSON) {
         return new Coordinates(coordJSON.getInt("i"), coordJSON.getInt("j"));
     }
@@ -83,6 +119,9 @@ public class NetworkParser {
 
     }
 
+    /**
+     * extract list of coordinates from jsonObject
+     */
     public ArrayList<Coordinates> getCoordArray() {
         JSONArray arr = jsonObject.getJSONArray(Messages.POSITIONS);
         ArrayList<Coordinates> list = new ArrayList<>();
@@ -94,6 +133,9 @@ public class NetworkParser {
 
     }
 
+    /**
+     * extract list of sets of coordinates from jsonObject
+     */
     public ArrayList<Set<Coordinates>> getCoordSetList() {
         JSONArray arr = jsonObject.getJSONArray(Messages.POSSIBLE_DST);
         ArrayList<Set<Coordinates>> list = new ArrayList<>();
@@ -104,6 +146,9 @@ public class NetworkParser {
         return list;
     }
 
+    /**
+     * extract god card name value from jsonObject
+     */
     public String getGodCardName() {
         return jsonObject.getString(Messages.GOD_CARD);
     }
@@ -118,6 +163,10 @@ public class NetworkParser {
         return godDescriptions;
     }
 
+    /**
+     * extract Set of strings from array in jsonObject
+     * @param key key position of the jsonArray contained in jsonObject
+     */
     public Set<String> getSetFromArray(String key) {
         Set<String> set = new HashSet<>();
 
