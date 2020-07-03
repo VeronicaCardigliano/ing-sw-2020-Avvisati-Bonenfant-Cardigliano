@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model.godCards;
 
+import it.polimi.ingsw.server.model.Event;
 import it.polimi.ingsw.server.model.gameMap.Cell;
 import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 import it.polimi.ingsw.server.model.Player;
@@ -64,7 +65,8 @@ public class YourBuildGodCard extends GodCard {
                 canBuildDomeEverywhere && (dst.getHeight() < IslandBoard.maxHeight || buildDome)) ||
                 (src.getBuilder() != null && src.getBuilder().getPlayer().equals(player) && !dst.isDomePresent() &&
                  buildHeightCondition && blockUnderItself && !buildDome && src.getHeight() < IslandBoard.maxHeight &&
-                        src.equals(dst))) && extraConditions;
+                        src.equals(dst))) && extraConditions &&
+                        gameMap.check(new Event(buildDome ? Event.EventType.BUILD_DOME : Event.EventType.BUILD, src, dst));
     }
 
 
