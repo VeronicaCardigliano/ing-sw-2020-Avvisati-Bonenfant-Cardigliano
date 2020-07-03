@@ -75,24 +75,24 @@ public class Gui extends View {
     private final BorderPane root;
     private final AnchorPane bottomAnchorPane;
     private final AnchorPane homePane;
-    private VBox bottomMessagesVBox;
-    private final VBox playersRegion;
-    private TilePane tile;
     private final VBox dialogRegion;
     private final Insets playersRegionInsets;
-    private int numMessages;
+    private final VBox playersRegion;
     private final Text connectionErrorText = new Text();
     private final Text setupErrorText = new Text();
+    private final Map<String, Text> playersNameTags = new HashMap<>();
+    private final TextField IPInsertion;
+    private final TextField portInsertion;
+    private final Button playAgainBtn;
+    private VBox bottomMessagesVBox;
+    private TilePane tile;
+    private int numMessages;
     private GodCardsPopup godCardsPopup;
     private PlayerSetupPopup playerSetupPopup;
     private ChoicePopup choiceSetupPopup;
-    private final Map<String, Text> playersNameTags = new HashMap<>();
+    private Label connecting;
     private boolean buildDome;
     private boolean challenger;
-    private final TextField IPInsertion;
-    private final TextField portInsertion;
-    private Label connecting;
-    private final Button playAgainBtn;
 
     /**
      * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
@@ -1119,13 +1119,14 @@ public class Gui extends View {
      */
     @Override
     public void onPlayerAdded(String nickname, boolean result) {
+        super.onPlayerAdded(nickname,result);
 
         boolean onPopup = false;
         if(result) {
             if (getNickname() != null && getNickname().equals(nickname))
                 Platform.runLater(() -> playerSetupPopup.close());
 
-                //if Nickname == null, it means the setUp player popup is still open
+            //if Nickname == null, it means the setUp player popup is still open
             else  if (getNickname() == null)
                 onPopup = true;
             printMessage (nickname + " joined the game!", onPopup);
@@ -1305,6 +1306,11 @@ public class Gui extends View {
 
         if (!dialogRegion.getChildren().contains(playAgainBtn))
             Platform.runLater(()-> dialogRegion.getChildren().add(playAgainBtn));
+
+        if(homePane.getChildren().contains(connecting)) {
+            Platform.runLater(() -> homePane.getChildren().remove(connecting));
+            activatePlayBtn();
+        }
 
         ViewState currState = getState();
         if (currState.equals(ViewState.NICKDATE) || currState.equals(ViewState.MATCHGODS) ||
