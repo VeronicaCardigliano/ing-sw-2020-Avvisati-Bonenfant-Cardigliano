@@ -3,10 +3,23 @@ import it.polimi.ingsw.client.cli.CliClient;
 import it.polimi.ingsw.client.gui.GuiClient;
 import it.polimi.ingsw.server.Server;
 
+/**
+ * Application entry point class
+ */
+public abstract class App {
 
-public class App {
 
-
+    /**
+     * Main function. Application starts here.
+     *
+     * If no arguments are given Application defaults to GUI mode.
+     * If 2 arguments are given they have bo either "Server portNumber" (e.g. "Server 2033")
+     * or "Client [CLI | GUI]" (e.g. "Client CLI" to start application in CLI mode)
+     *
+     * @param args command line arguments.
+     *
+     *
+     */
     public static void main(String[] args) {
         switch (args.length) {
 

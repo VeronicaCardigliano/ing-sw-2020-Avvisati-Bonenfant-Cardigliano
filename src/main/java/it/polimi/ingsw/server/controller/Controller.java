@@ -13,7 +13,7 @@ import java.util.Set;
  * This controller manages only one model and one view manager
  */
 
-public class Controller extends AbstractController implements ConnectionObserver{
+public class Controller extends AbstractController implements ConnectionObserver {
 
     private Model model;
     private final ViewManager viewManager;

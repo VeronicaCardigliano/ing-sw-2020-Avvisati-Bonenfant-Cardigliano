@@ -1,0 +1,60 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: BuilderPossibleBuildObserver</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">it.polimi.ingsw.interfaces.view</a> ]
+</div>
+
+<h1>Coverage Summary for Class: BuilderPossibleBuildObserver (it.polimi.ingsw.interfaces.view)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">BuilderPossibleBuildObserver</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package it.polimi.ingsw.interfaces.view;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import it.polimi.ingsw.server.model.gameMap.Coordinates;
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;import java.util.Set;
+<i>6</i>&nbsp;
+<i>7</i>&nbsp;/**
+<i>8</i>&nbsp; * This interface is implemented to be informed about new possible destinations for a build, when it&#39;s the moment to build.
+<i>9</i>&nbsp; */
+<i>10</i>&nbsp;public interface BuilderPossibleBuildObserver {
+<i>11</i>&nbsp;    void updatePossibleBuildDst (Set&lt;Coordinates&gt; possibleDstBuilder1, Set&lt;Coordinates&gt; possibleDstBuilder2,
+<i>12</i>&nbsp;                                 Set&lt;Coordinates&gt; possibleDstBuilder1forDome, Set&lt;Coordinates&gt; possibleDstBuilder2forDome);
+<i>13</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-07-03 16:44</div>
+</div>
+</body>
+</html>

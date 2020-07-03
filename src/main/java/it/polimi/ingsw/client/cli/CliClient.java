@@ -3,8 +3,14 @@ package it.polimi.ingsw.client.cli;
 import it.polimi.ingsw.client.NetworkHandler;
 import it.polimi.ingsw.client.View;
 
-public class CliClient {
+/**
+ * Cli Client entry point class
+ */
+public abstract class CliClient {
 
+    /**
+     * initializes a network handler and a Cli
+     */
     public static void launch() {
         NetworkHandler nh = new NetworkHandler();
         View view = new Cli();
@@ -41,7 +47,6 @@ public class CliClient {
         nh.setSocketObserver(view);
         nh.setStartPlayerSetObserver(view);
 
-        //(new Thread(nh)).start();
         view.run();
 
     }

@@ -57,15 +57,15 @@ public class Gui extends View {
     private static final int builderIndexInStack = 1;
 
     private static final String warning = "\u26A0";
-    private static final String buttonCoralSrc = "/Images/btn_coral.png";
-    private static final String buttonCoralPressedSrc = "/Images/btn_coral_pressed.png";
-    protected static final String submitButton = "/Images/btn_submit.png";
-    protected static final String submitButtonPressed = "/Images/btn_submit_pressed.png";
-    private static final String nameTagSrc = "/Images/nameTag.png";
-    private static final String versusSrc = "/Images/versus.png";
-    private static final String backgroundSrc = "/Images/SantoriniBoard.png";
-    private static final String titleSrc = "/Images/title.png";
-    private static final String iconSrc = "/Images/icon.png";
+    private static final String buttonCoralSrc = "/images/btn_coral.png";
+    private static final String buttonCoralPressedSrc = "/images/btn_coral_pressed.png";
+    protected static final String submitButton = "/images/btn_submit.png";
+    protected static final String submitButtonPressed = "/images/btn_submit_pressed.png";
+    private static final String nameTagSrc = "/images/nameTag.png";
+    private static final String versusSrc = "/images/versus.png";
+    private static final String backgroundSrc = "/images/SantoriniBoard.png";
+    private static final String titleSrc = "/images/title.png";
+    private static final String iconSrc = "/images/icon.png";
     private static final Font stdFont = new Font("Arial", fontSize);
 
     private Map<String, String> matchGodCards = new HashMap<>();

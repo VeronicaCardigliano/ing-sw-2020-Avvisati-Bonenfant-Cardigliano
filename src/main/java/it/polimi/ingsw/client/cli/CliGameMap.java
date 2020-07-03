@@ -7,6 +7,11 @@ import it.polimi.ingsw.server.model.gameMap.IslandBoard;
 
 import java.util.Set;
 
+/**
+ * Printable GameMap used by CLI
+ * @see Cli
+ * @see GameMap
+ */
 public class CliGameMap extends GameMap {
 
     private final String green = Color.ANSI_GREEN.escape(), yellow = Color.ANSI_YELLOW.escape(), blue = Color.ANSI_BLUE.escape();

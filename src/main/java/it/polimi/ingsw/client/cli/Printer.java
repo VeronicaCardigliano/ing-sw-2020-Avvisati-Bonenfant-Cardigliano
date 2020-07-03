@@ -2,6 +2,10 @@ package it.polimi.ingsw.client.cli;
 
 import java.io.PrintStream;
 
+/**
+ * Can sets 6 different messages to print in CLI.
+ * It will print in order state, infoMessage, gameMapString, playersList, choiceList, askMessage.
+ */
 public class Printer {
 
     private final PrintStream out;
@@ -45,6 +49,9 @@ public class Printer {
         this.choiceList = choiceList;
     }
 
+    /**
+     * Prints Home Title
+     */
     public void printTitle() {
         out.println("\n" +
                 "░██████╗░█████╗░███╗░░██╗████████╗░█████╗░██████╗░██╗███╗░░██╗██╗\n" +
@@ -55,6 +62,9 @@ public class Printer {
                 "╚═════╝░╚═╝░░╚═╝╚═╝░░╚══╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝╚═╝");
     }
 
+    /**
+     * prints all strings.
+     */
     public synchronized void print() {
 
         if(state != null)
@@ -71,6 +81,9 @@ public class Printer {
             out.print(askMessage);
     }
 
+    /**
+     * erase all strings
+     */
     public synchronized void erase() {
         state = null;
         infoMessage = null;

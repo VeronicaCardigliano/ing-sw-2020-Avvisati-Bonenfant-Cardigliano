@@ -1,8 +1,8 @@
 package it.polimi.ingsw.client;
 
-import it.polimi.ingsw.server.controller.*;
+import it.polimi.ingsw.interfaces.controller.*;
 import it.polimi.ingsw.server.model.Model;
-import it.polimi.ingsw.server.model.ModelObservable;
+import it.polimi.ingsw.interfaces.ModelObservable;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import it.polimi.ingsw.network.Messages;
 import it.polimi.ingsw.network.NetworkParser;
@@ -419,23 +419,16 @@ public class NetworkHandler extends ModelObservable implements Runnable, Connect
 
     /**
      * connects to server
-     * @param ip server ip/domain
+     * @param server server server/domain
      * @param port server port
      */
     @Override
-    public void onConnection(String ip, int port) {
-        setIp(ip);
+    public void onConnection(String server, int port) {
+        setIp(server);
         setPort(port);
-        onConnection();
-    }
-
-    /**
-     * connects to server
-     */
-    @Override
-    public void onConnection() {
         executorS.execute(this);
     }
+
 
     //------------------------------------------------------------------------------------------------------------------
 

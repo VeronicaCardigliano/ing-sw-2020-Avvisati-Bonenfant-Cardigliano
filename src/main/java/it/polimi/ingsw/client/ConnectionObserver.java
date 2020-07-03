@@ -1,7 +1,16 @@
 package it.polimi.ingsw.client;
 
+/**
+ * Handles View connection and disconnection requests
+ */
 public interface ConnectionObserver {
-    void onConnection(String ip, int port);
-    void onConnection();
+    /**
+     * Connection request handler
+     */
+    void onConnection(String server, int port);
+
+    /**
+     * Disconnection request handler
+     */
     void onDisconnection();
 }

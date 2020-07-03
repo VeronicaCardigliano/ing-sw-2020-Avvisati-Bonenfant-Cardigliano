@@ -20,10 +20,10 @@ import static it.polimi.ingsw.client.gui.Gui.sceneWidth;
 
 public class HomeScene extends Scene {
 
-    private static final String playButtonSrc = "/Images/PlayButton.png";
-    private static final String IPInsertionSrc = "/Images/IP_insertion.png";
-    private static final String PortInsertionSrc = "/Images/Port_insertion.png";
-    private static final String homeBackgroundSrc = "/Images/homeScreenBackground.png";
+    private static final String playButtonSrc = "/images/PlayButton.png";
+    private static final String IPInsertionSrc = "/images/IP_insertion.png";
+    private static final String PortInsertionSrc = "/images/Port_insertion.png";
+    private static final String homeBackgroundSrc = "/images/homeScreenBackground.png";
 
     public static final double networkReqRatio = 232.0/ sceneWidth;
     public static final double networkInsertionRatio = 100.0/ sceneWidth;

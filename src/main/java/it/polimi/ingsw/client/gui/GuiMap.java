@@ -23,16 +23,16 @@ import java.util.*;
  */
 public class GuiMap extends GameMap {
 
-    private static final String builderLightBlue = "/Images/BuilderLightBlue.png";
-    private static final String builderMagenta = "/Images/BuilderMagenta.png";
-    protected static final String builderWhite = "/Images/BuilderWhite.png";
-    private static final String groundDome = "/Images/groundDome.png";
-    private static final String domeFirstLevel = "/Images/domeFirstLevel.png";
-    protected static final String domeSecondLevel = "/Images/domeSecondLevel.png";
-    private static final String domeThirdLevel = "/Images/domeThirdLevel.png";
-    private static final String firstLevel = "/Images/firstLevel.png";
-    protected static final String secondLevel = "/Images/secondLevel.png";
-    protected static final String thirdLevel =  "/Images/thirdLevel.png";
+    private static final String builderLightBlue = "/images/BuilderLightBlue.png";
+    private static final String builderMagenta = "/images/BuilderMagenta.png";
+    protected static final String builderWhite = "/images/BuilderWhite.png";
+    private static final String groundDome = "/images/groundDome.png";
+    private static final String domeFirstLevel = "/images/domeFirstLevel.png";
+    protected static final String domeSecondLevel = "/images/domeSecondLevel.png";
+    private static final String domeThirdLevel = "/images/domeThirdLevel.png";
+    private static final String firstLevel = "/images/firstLevel.png";
+    protected static final String secondLevel = "/images/secondLevel.png";
+    protected static final String thirdLevel = "/images/thirdLevel.png";
 
     //index of the building in the StackPane which represents the cell
     private static final int buildingIndexInStack = 0;

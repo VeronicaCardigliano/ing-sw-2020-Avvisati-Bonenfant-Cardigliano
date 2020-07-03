@@ -1,5 +1,6 @@
 package it.polimi.ingsw.server.model;
 
+import it.polimi.ingsw.interfaces.ModelObservable;
 import it.polimi.ingsw.server.view.ViewSelectObserver;
 
 /**

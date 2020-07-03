@@ -1,8 +1,9 @@
 package it.polimi.ingsw.client;
 
+import it.polimi.ingsw.interfaces.ViewObservable;
+import it.polimi.ingsw.interfaces.view.*;
 import it.polimi.ingsw.server.model.Model;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
-import it.polimi.ingsw.server.view.*;
 
 import java.util.*;
 

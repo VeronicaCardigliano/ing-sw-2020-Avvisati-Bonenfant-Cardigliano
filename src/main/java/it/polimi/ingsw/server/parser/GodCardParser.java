@@ -42,15 +42,39 @@ public class GodCardParser {
 
     }
 
+    /**
+     * returns godDescriptions
+     */
     public Map<String, String> getGodDescriptions() {
         return godDescriptions;
     }
 
 
+    /**
+     * extract from jsonObject description of a specific godCard
+     * @param godCardName godCard whose description will be returned
+     * @return description String
+     */
     private static String getDescription (JSONObject jsonObject, String godCardName) {
             return jsonObject.getJSONObject(godCardName).getString("description");
     }
 
+    /**
+     * Creates a godCard and assigns it to a player.
+     * The type value from jsonObject attribute will decide which object type will the card be.
+     * @see YourMoveGodCard
+     * @see YourBuildGodCard
+     * @see YourTurnGodCard
+     * @see WinConditionGodCard
+     * @see OpponentTurnGodCard
+     * @see GodCard
+     *
+     *
+     * For every type of card the parser extracts different values that will change card's behaviour
+     *
+     * @param player player to assign the card to
+     * @param godName name of the godCard
+     */
     public GodCard createCard(Player player, String godName) {
         GodCard cardCreated;
         JSONObject godObject;
@@ -133,6 +157,9 @@ public class GodCardParser {
         return cardCreated;
     }
 
+    /**
+     * Extracts Turn Structures of a GodCard from a jsonObject
+     */
     private ArrayList<ArrayList<String>> parseStates(JSONObject jsonObject) {
 
         //initialize states attribute which contains all possible states configurations

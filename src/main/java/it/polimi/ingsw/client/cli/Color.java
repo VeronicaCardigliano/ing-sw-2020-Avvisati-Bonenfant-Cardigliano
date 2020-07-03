@@ -1,5 +1,8 @@
 package it.polimi.ingsw.client.cli;
 
+/**
+ * Colors unicode codes to color strings in Cli
+ */
 public enum Color {
 
     ANSI_MAGENTA ("\u001B[35m"),

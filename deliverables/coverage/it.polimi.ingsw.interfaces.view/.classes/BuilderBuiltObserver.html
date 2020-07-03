@@ -1,0 +1,57 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: BuilderBuiltObserver</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">it.polimi.ingsw.interfaces.view</a> ]
+</div>
+
+<h1>Coverage Summary for Class: BuilderBuiltObserver (it.polimi.ingsw.interfaces.view)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">BuilderBuiltObserver</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package it.polimi.ingsw.interfaces.view;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import it.polimi.ingsw.server.model.gameMap.Coordinates;
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;/** This interface is implemented to be informed about the effective build if the result is true,
+<i>6</i>&nbsp; * the failure of a build attempt if the result is false
+<i>7</i>&nbsp; */
+<i>8</i>&nbsp;public interface BuilderBuiltObserver {
+<i>9</i>&nbsp;    void onBuilderBuild(String nickname, Coordinates src, Coordinates dst, boolean dome, boolean result);
+<i>10</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2020-07-03 16:44</div>
+</div>
+</body>
+</html>
