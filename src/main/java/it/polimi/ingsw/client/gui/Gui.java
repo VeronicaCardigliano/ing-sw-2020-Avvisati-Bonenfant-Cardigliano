@@ -602,6 +602,7 @@ public class Gui extends View {
         Label chooseStep = new Label ("Choose the next step: ");
         chooseStep.setFont(stdFont);
         ChoiceBox<String> stepChoice = new ChoiceBox<>();
+        stepChoice.prefWidthProperty().bind(primaryScene.widthProperty().divide(11));
         for (String step: possibleSteps)
             stepChoice.getItems().add(step);
         // set a default value
@@ -1285,7 +1286,9 @@ public class Gui extends View {
      */
     @Override
     public void onConnectionError(String message) {
-        Platform.runLater(()-> homePane.getChildren().remove(connecting));
+        if (homePane.getChildren().contains(connecting))
+            Platform.runLater(()-> homePane.getChildren().remove(connecting));
+
         printMessage(message, false);
         activatePlayBtn();
     }
@@ -1299,10 +1302,9 @@ public class Gui extends View {
 
         super.onDisconnection();
 
-        if (!homePane.getChildren().contains(connecting))
+        //I print this only in primaryScene otherwise in home there's already a connection error message
+        if (primaryStage.getScene().equals(primaryScene))
             printMessage(warning + " You're disconnected " + warning, false);
-        else
-             Platform.runLater(()-> homePane.getChildren().remove(connecting));
 
         if (!dialogRegion.getChildren().contains(playAgainBtn))
             Platform.runLater(()-> dialogRegion.getChildren().add(playAgainBtn));
@@ -1366,6 +1368,8 @@ public class Gui extends View {
      */
     @Override
     public void onOpponentDisconnection(String nickname) {
+        numMessages = 0;
+        Platform.runLater(() -> bottomMessagesVBox.getChildren().clear());
         printMessage(warning + " " + nickname + " disconnected " + warning, false);
     }
 

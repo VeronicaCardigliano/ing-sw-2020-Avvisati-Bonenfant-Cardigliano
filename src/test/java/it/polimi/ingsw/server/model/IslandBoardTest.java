@@ -13,7 +13,6 @@ public class IslandBoardTest {
     @Test
     public void validArgument(){
         IslandBoard board = new IslandBoard();
-        Cell cell = board.getCell(2,3);
 
 //        assertEquals(2, cell.getI());
 //        assertEquals(3, cell.getJ());

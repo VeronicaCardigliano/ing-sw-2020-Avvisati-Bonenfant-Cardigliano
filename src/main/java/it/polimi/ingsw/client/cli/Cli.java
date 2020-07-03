@@ -447,7 +447,7 @@ public class Cli extends View{
     public void askNumberOfPlayers() {
         super.askNumberOfPlayers();
 
-        printer.setAskMessage("Number Of Players: ");
+        printer.setAskMessage("Number of players: ");
         printer.print();
     }
 
@@ -583,7 +583,7 @@ public class Cli extends View{
         inputOptions.addAll(possibleSteps);
 
         printer.setChoiceList(getSetRepresentation(possibleSteps));
-        printer.setAskMessage("Next Step: ");
+        printer.setAskMessage("Next step: ");
         printer.print();
 
         printer.erase();
@@ -1113,6 +1113,7 @@ public class Cli extends View{
     public synchronized void onDisconnection() {
         super.onDisconnection();
 
+        setState(ViewState.CONNECTION);
         gameMap = new CliGameMap();
 
         chosenBuilderPositions = new ArrayList<>();

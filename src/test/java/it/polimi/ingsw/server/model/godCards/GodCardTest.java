@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-//TODO: end JavaDoc (also for event)
 class GodCardTest {
 
     static GodCard godCard;
@@ -104,8 +103,6 @@ class GodCardTest {
 
     @Test
     public void getGodData(){
-        ArrayList list = new ArrayList<String>();
-        list.add("MOVE");
         assertEquals(opponentGodCard.getName(), "Demeter");
         assertEquals(opponentGodCard.getDescription(),"Your Worker may build one additional time, but not on the same space");
     }

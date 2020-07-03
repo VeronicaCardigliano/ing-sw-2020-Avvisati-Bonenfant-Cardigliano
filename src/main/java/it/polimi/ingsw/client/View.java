@@ -353,8 +353,6 @@ public abstract class View extends ViewObservable implements BuilderPossibleMove
     @Override
     public void onDisconnection() {
 
-        setState(ViewState.CONNECTION);
-
         //resetting all game data
         setNickname(null);
         setDate(null);
