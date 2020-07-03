@@ -19,8 +19,8 @@ import java.util.Set;
 
 public class ChoicePopup extends Stage {
 
-    private AnchorPane anchorPane;
-    private Button submit;
+    private final AnchorPane anchorPane;
+    private final Button submit;
 
     public ChoicePopup(Stage ownerStage, Set<String> choices, String requestLabel, String title,
                        ChoiceBox<String> choiceBox, EventHandler<WindowEvent> handler) {

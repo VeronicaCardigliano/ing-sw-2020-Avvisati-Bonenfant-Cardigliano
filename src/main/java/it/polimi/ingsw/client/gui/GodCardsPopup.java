@@ -27,12 +27,12 @@ public class GodCardsPopup extends Stage {
 
     private final static int cardsWidth = 100;
     private static GodCardsPopup firstInstance;
-    private Set<String> chosenGodCards;
+    private final Set<String> chosenGodCards;
     private Button submit;
-    private TilePane tilePane;
-    private AnchorPane bottomPane;
+    private final TilePane tilePane;
+    private final AnchorPane bottomPane;
 
-    private int maxSelectionsNum;
+    private final int maxSelectionsNum;
     private int selectionsNum;
 
 

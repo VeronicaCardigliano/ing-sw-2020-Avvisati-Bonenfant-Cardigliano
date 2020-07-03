@@ -14,9 +14,9 @@ import java.util.Map;
  */
 
 public class YourMoveGodCard extends GodCard {
-    private int pushForce;
-    private boolean secondMoveDiffDst;
-    private boolean extraMovePerimeter;
+    private final int pushForce;
+    private final boolean secondMoveDiffDst;
+    private final boolean extraMovePerimeter;
     private Cell firstSrcCell;
 
 

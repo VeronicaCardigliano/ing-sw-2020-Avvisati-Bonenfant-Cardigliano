@@ -39,8 +39,8 @@ public class GuiMap extends GameMap {
     private static final int builderIndexInStack = 1;
     private static final double cellDimension = 78.0;
     private static final int cellGap = 1;
-    private Scene scene;
-    private TilePane tile;
+    private final Scene scene;
+    private final TilePane tile;
     private EventHandler<MouseEvent> currClickCellHandler;
 
     /**

@@ -33,10 +33,14 @@ public class App {
                     default:
                         printUsage();
                 }
+                break;
+
+            default:
+                printUsage();
         }
     }
 
     public static void printUsage() {
-        System.out.println("Usage:\tjava -jar Server PORT\n\t\tjava -jar Client [CLI | GUI]");
+        System.out.println("Usage:\tjava -jar Server PORT\n\tjava -jar Client [CLI | GUI]");
     }
 }

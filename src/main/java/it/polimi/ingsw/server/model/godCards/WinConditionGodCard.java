@@ -26,7 +26,6 @@ public class WinConditionGodCard extends GodCard {
 
     /**
      * Override to cover cards different win conditions
-     * @return
      */
     @Override
     public boolean winCondition() {

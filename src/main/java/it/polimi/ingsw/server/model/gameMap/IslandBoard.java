@@ -15,8 +15,8 @@ public class IslandBoard {
     public final static int dimension = 5;
     public final static int maxHeight = 3;
 
-    private Cell[][] matrix = new Cell[dimension][dimension];
-    private Set<OpponentTurnGodCard> constraintsList;
+    private final Cell[][] matrix = new Cell[dimension][dimension];
+    private final Set<OpponentTurnGodCard> constraintsList;
     private OpponentTurnGodCard constraintToActivate;
 
     /**

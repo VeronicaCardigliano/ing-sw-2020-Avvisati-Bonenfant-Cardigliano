@@ -775,8 +775,13 @@ public class Cli extends View{
 
 
         if(result) {
-            if (getNickname() == null)
+            if (getNickname() == null || getDate() == null) {
                 printer.setInfoMessage("\n" + nickname + " joined the game!");
+                if(getNickname() == null)
+                    printer.setAskMessage("Nickname: ");
+                else
+                    printer.setAskMessage("Birth Date (yyyy.mm.dd): ");
+            }
             else
                 printer.setInfoMessage(nickname + " joined the game!");
         }

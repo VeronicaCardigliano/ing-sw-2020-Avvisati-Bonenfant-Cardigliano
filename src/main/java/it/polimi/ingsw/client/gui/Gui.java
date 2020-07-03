@@ -69,30 +69,30 @@ public class Gui extends View {
     private static final Font stdFont = new Font("Arial", fontSize);
 
     private Map<String, String> matchGodCards = new HashMap<>();
-    private Stage primaryStage;
-    private Scene primaryScene;
-    private HomeScene homeScene;
-    private BorderPane root;
-    private AnchorPane bottomAnchorPane;
-    private AnchorPane homePane;
+    private final Stage primaryStage;
+    private final Scene primaryScene;
+    private final HomeScene homeScene;
+    private final BorderPane root;
+    private final AnchorPane bottomAnchorPane;
+    private final AnchorPane homePane;
     private VBox bottomMessagesVBox;
-    private VBox playersRegion;
+    private final VBox playersRegion;
     private TilePane tile;
-    private VBox dialogRegion;
-    private Insets playersRegionInsets;
+    private final VBox dialogRegion;
+    private final Insets playersRegionInsets;
     private int numMessages;
-    private Text connectionErrorText = new Text();
-    private Text setupErrorText = new Text();
+    private final Text connectionErrorText = new Text();
+    private final Text setupErrorText = new Text();
     private GodCardsPopup godCardsPopup;
     private PlayerSetupPopup playerSetupPopup;
     private ChoicePopup choiceSetupPopup;
-    private Map<String, Text> playersNameTags = new HashMap<>();
+    private final Map<String, Text> playersNameTags = new HashMap<>();
     private boolean buildDome;
     private boolean challenger;
-    private TextField IPInsertion;
-    private TextField portInsertion;
+    private final TextField IPInsertion;
+    private final TextField portInsertion;
     private Label connecting;
-    private Button playAgainBtn;
+    private final Button playAgainBtn;
 
     /**
      * Constructor that creates the primaryStage, sets the home scene and creates the main scene opened after the connection
@@ -1058,10 +1058,7 @@ public class Gui extends View {
      */
     @Override
     public void onWrongInsertionUpdate(String error) {
-        if (getState().equals(ViewState.NICKDATE))
-            printMessage(error, true);
-        else
-            printMessage(error, false);
+        printMessage(error, getState().equals(ViewState.NICKDATE));
     }
 
     /**

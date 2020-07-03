@@ -52,10 +52,9 @@ public class OpponentTurnGodCard extends GodCard {
     /**
      * Like {@link GodCard#setGameMap(IslandBoard)} but adds god constraints if necessary
      * @param gameMap Every GodCard will be interacting with.
-     * @throws IllegalArgumentException
      */
     @Override
-    public void setGameMap(IslandBoard gameMap) throws IllegalArgumentException{
+    public void setGameMap(IslandBoard gameMap){
         super.setGameMap(gameMap);
         if(alwaysActive)
             gameMap.addConstraint(this);

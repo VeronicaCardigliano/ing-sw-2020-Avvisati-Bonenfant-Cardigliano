@@ -18,8 +18,8 @@ import javafx.stage.WindowEvent;
  */
 public class PlayerSetupPopup extends Stage {
 
-    private AnchorPane anchorPane;
-    private Button submit;
+    private final AnchorPane anchorPane;
+    private final Button submit;
 
     /**
      * Scene made by an anchorPane which contains texts and textFields and a button with its eventHandlers

@@ -29,7 +29,7 @@ public class HomeScene extends Scene {
     public static final double networkInsertionRatio = 100.0/ sceneWidth;
     public static final double playBtnRatio = 283.0/ sceneWidth;
 
-    private ImageView playBtn = new ImageView(new Image (getClass().getResourceAsStream(playButtonSrc)));
+    private final ImageView playBtn = new ImageView(new Image (getClass().getResourceAsStream(playButtonSrc)));
 
     /**
      * Creates a new HomeScene setting home pane children's properties and handlers on mouse events.

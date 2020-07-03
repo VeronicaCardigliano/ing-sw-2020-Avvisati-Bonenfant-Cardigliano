@@ -38,11 +38,11 @@ public class ViewManager implements BuilderPossibleBuildObserver, BuilderPossibl
     }
 
     /**
-     * Remove VirtualView bound nickname
+     * Remove VirtualView bound to nickname
      * @param nickname String bound to the VirtualView
      */
     public void remove(String nickname) {
-        views.removeIf(view -> view.getNickname().equals(nickname));
+        views.removeIf(view -> view.getNickname() != null && view.getNickname().equals(nickname));
 
     }
 

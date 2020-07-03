@@ -28,14 +28,12 @@ public class GodCardParser {
             InputStream fileStream = getClass().getResourceAsStream(path);
             jsonString = new String(fileStream.readAllBytes());
         } catch (NullPointerException | IOException e) {
-            System.out.println("Configuration file not found");
+            System.err.println("Error reading json file: " + e.getMessage());
+            System.exit(1);
         }
 
 
-        if (jsonString != null)
-            this.jsonObject = new JSONObject(jsonString);
-        else
-            this.jsonObject = new JSONObject("{}");
+        this.jsonObject = new JSONObject(jsonString);
 
         godNames = jsonObject.keySet();
 

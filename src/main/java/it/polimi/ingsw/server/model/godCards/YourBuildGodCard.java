@@ -12,12 +12,12 @@ import java.util.Map;
  */
 public class YourBuildGodCard extends GodCard {
 
-    private boolean canBuildDomeEverywhere;
-    private boolean secondBuildDiffDest;
-    private boolean secondBuildNotDome;
-    private boolean blockUnderItself;
-    private boolean extraBuildNotPerimeter;
-    private int numberOfBuilds;
+    private final boolean canBuildDomeEverywhere;
+    private final boolean secondBuildDiffDest;
+    private final boolean secondBuildNotDome;
+    private final boolean blockUnderItself;
+    private final boolean extraBuildNotPerimeter;
+    private final int numberOfBuilds;
     private Cell firstBuildDst;
 
     public YourBuildGodCard (Player player, String name, String description, ArrayList<ArrayList<String>> states,
