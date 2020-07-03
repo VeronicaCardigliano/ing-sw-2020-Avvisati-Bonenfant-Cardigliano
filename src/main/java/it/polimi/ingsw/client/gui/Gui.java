@@ -743,8 +743,8 @@ public class Gui extends View {
                         }
                     }
                 });
-                first = false;
             }
+            first = false;
         }
     }
 
