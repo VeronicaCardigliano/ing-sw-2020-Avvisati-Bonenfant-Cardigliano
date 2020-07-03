@@ -299,9 +299,13 @@ public class Gui extends View {
                 break;
             case "STARTPLAYER":
             case "BUILDERCOLOR":
-                setupErrorText.setText(message);
-                if (!choiceSetupPopup.isChildPresent(setupErrorText))
-                    choiceSetupPopup.addChildren(setupErrorText);
+                if (onPopup) {
+                    if (!choiceSetupPopup.isChildPresent(setupErrorText))
+                        choiceSetupPopup.addChildren(setupErrorText);
+                    setupErrorText.setText(message);
+                }
+                else
+                    printOnPrimaryScene(message);
                 break;
             case "MATCHGODS":
             case "PLAYERGOD":
@@ -315,6 +319,7 @@ public class Gui extends View {
                 else
                     printOnPrimaryScene(message);
                 break;
+
             case "BUILDERPLACEMENT":
             case "STEP":
             case "MOVE":
@@ -1173,8 +1178,8 @@ public class Gui extends View {
             Glow glow = new Glow();
             glow.setLevel(1);
             playersNameTags.get(nickname).setEffect(glow);
-
         }
+
         printMessage("Turn of: " + nickname, false);
     }
 

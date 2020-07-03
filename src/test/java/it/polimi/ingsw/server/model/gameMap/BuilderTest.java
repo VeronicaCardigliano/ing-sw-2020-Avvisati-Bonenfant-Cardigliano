@@ -1,6 +1,7 @@
-package it.polimi.ingsw.server.model;
+package it.polimi.ingsw.server.model.gameMap;
 
 
+import it.polimi.ingsw.server.model.Player;
 import it.polimi.ingsw.server.model.gameMap.Builder;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
