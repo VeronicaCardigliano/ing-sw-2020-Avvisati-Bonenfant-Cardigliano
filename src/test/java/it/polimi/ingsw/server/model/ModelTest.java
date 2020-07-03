@@ -3,6 +3,7 @@ package it.polimi.ingsw.server.model;
 import it.polimi.ingsw.server.model.gameMap.Coordinates;
 import org.junit.jupiter.api.*;
 
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -137,6 +138,61 @@ class ModelTest {
         testModel.setNextPlayer();
         assertFalse(testModel.setCurrPlayerBuilders(new Coordinates(1,1), new Coordinates(2,2)));
         assertTrue(testModel.setCurrPlayerBuilders(new Coordinates(2,1), new Coordinates(2,2)));
+
+    }
+
+    @Test
+    public void instantLoseTest() {
+
+        //game with 3 builders where one of them is completely blocked at start
+
+        testModel.setNumberOfPlayers(3);
+        testModel.setNextState();
+
+        testModel.addPlayer("p3", "1980.01.01");
+        testModel.addPlayer("p2", "1990.01.01");
+        testModel.addPlayer("p1", "2000.01.01");
+
+        testModel.setNextPlayer();
+        testModel.setNextState();
+
+        testModel.assignCard("Atlas");
+
+        testModel.setNextPlayer();
+        testModel.assignCard("Zeus");
+
+        testModel.setNextPlayer();
+        testModel.assignCard("Athena");
+
+        testModel.setNextPlayer();
+        testModel.setNextState();
+
+        testModel.assignColor("WHITE");
+        testModel.setNextPlayer();
+
+        testModel.assignColor("MAGENTA");
+        testModel.setNextPlayer();
+
+        testModel.assignColor("LIGHT_BLUE");
+        testModel.setNextPlayer();
+
+        testModel.setNextState();
+
+        testModel.setCurrPlayerBuilders(new Coordinates(0,0), new Coordinates(0,1));
+        testModel.setNextPlayer();
+
+        testModel.setCurrPlayerBuilders(new Coordinates(1,0), new Coordinates(1,1));
+        testModel.setNextPlayer();
+
+        testModel.setCurrPlayerBuilders(new Coordinates(0,2), new Coordinates(1,2));
+        testModel.setNextPlayer();
+
+        testModel.setNextState();
+
+        testModel.startTurn();
+
+        testModel.findPossibleDestinations();
+        assertFalse(testModel.hasNotLostDuringMove());
 
     }
 
