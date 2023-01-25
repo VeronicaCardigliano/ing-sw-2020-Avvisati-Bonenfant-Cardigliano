@@ -6,7 +6,7 @@
 
 ## Componenti del gruppo:
 
-- ###   10608313    Giulio Avvisati ([@gavvisati](https://github.com/gavvisati))<br>giulio.avvisati@mail.polimi.it
+- ###   10608313    Giulio Avvisati ([@Pit95](https://github.com/Pit95)<br>giulio.avvisati@mail.polimi.it
 - ###   10597564    Thomas Jean Bernard Bonenfant ([@thomasbonenfant](https://github.com/thomasbonenfant))<br>thomasjean.bonenfant@mail.polimi.it
 - ###   10627267    Veronica Cardigliano ([@VeronicaCardigliano](https://github.com/VeronicaCardigliano))<br>veronica.cardigliano@mail.polimi.it
 
